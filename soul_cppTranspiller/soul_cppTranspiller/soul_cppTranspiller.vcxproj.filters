@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\readFile">
+      <UniqueIdentifier>{35a1d4e4-9488-4639-99ce-96b6c9f80e87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tokenizer">
+      <UniqueIdentifier>{01bceeea-5278-4583-849d-4032110cf6f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\metaData">
+      <UniqueIdentifier>{07e019fe-ba48-4ac6-b025-d4b34bfbc798}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\stringTools">
+      <UniqueIdentifier>{efe63f4e-aa5f-4300-aa64-94aea8de3f3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\stringTools\string_remove">
+      <UniqueIdentifier>{72a11264-3159-4574-9ce4-951ccf8e00ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\stringTools\string_find">
+      <UniqueIdentifier>{e8f9ab8e-9e56-4071-bc30-824a98c4b91d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\stringTools\string_replace">
+      <UniqueIdentifier>{e2d9471f-d287-41bc-8ce6-a272d9db158f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\stringTools\string_contain">
+      <UniqueIdentifier>{83aaf4e9-a11c-4b15-b048-19d405a91a63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\stringTools\string_split">
+      <UniqueIdentifier>{949903f1-c6f0-431c-aedc-8bf1dd71d013}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\stringTools\string_hash">
+      <UniqueIdentifier>{f88597c5-2be3-4be8-b7be-4569a2383cd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\stringTools\string_copy">
+      <UniqueIdentifier>{ef7f5d00-4549-4cb7-9f43-7c55ccff0774}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="soul_cppTranspiller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="readFile.cpp">
+      <Filter>Source Files\readFile</Filter>
+    </ClCompile>
+    <ClCompile Include="tokenizer.cpp">
+      <Filter>Source Files\tokenizer</Filter>
+    </ClCompile>
+    <ClCompile Include="Tokens.h">
+      <Filter>Source Files\metaData</Filter>
+    </ClCompile>
+    <ClCompile Include="string_remove.cpp">
+      <Filter>Source Files\stringTools\string_remove</Filter>
+    </ClCompile>
+    <ClCompile Include="string_find.cpp">
+      <Filter>Source Files\stringTools\string_find</Filter>
+    </ClCompile>
+    <ClCompile Include="string_replace.cpp">
+      <Filter>Source Files\stringTools\string_replace</Filter>
+    </ClCompile>
+    <ClCompile Include="string_contain.cpp">
+      <Filter>Source Files\stringTools\string_contain</Filter>
+    </ClCompile>
+    <ClCompile Include="string_split.cpp">
+      <Filter>Source Files\stringTools\string_split</Filter>
+    </ClCompile>
+    <ClCompile Include="string_hash.cpp">
+      <Filter>Source Files\stringTools\string_hash</Filter>
+    </ClCompile>
+    <ClCompile Include="string_copy.cpp">
+      <Filter>Source Files\stringTools\string_copy</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source.soul">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="readFile.h">
+      <Filter>Source Files\readFile</Filter>
+    </ClInclude>
+    <ClInclude Include="tokenizer.h">
+      <Filter>Source Files\tokenizer</Filter>
+    </ClInclude>
+    <ClInclude Include="stringTools.h">
+      <Filter>Source Files\stringTools</Filter>
+    </ClInclude>
+    <ClInclude Include="string_remove.h">
+      <Filter>Source Files\stringTools\string_remove</Filter>
+    </ClInclude>
+    <ClInclude Include="string_find.h">
+      <Filter>Source Files\stringTools\string_find</Filter>
+    </ClInclude>
+    <ClInclude Include="string_replace.h">
+      <Filter>Source Files\stringTools\string_replace</Filter>
+    </ClInclude>
+    <ClInclude Include="string_contain.h">
+      <Filter>Source Files\stringTools\string_contain</Filter>
+    </ClInclude>
+    <ClInclude Include="string_split.h">
+      <Filter>Source Files\stringTools\string_split</Filter>
+    </ClInclude>
+    <ClInclude Include="string_hash.h">
+      <Filter>Source Files\stringTools\string_hash</Filter>
+    </ClInclude>
+    <ClInclude Include="string_copy.h">
+      <Filter>Source Files\stringTools\string_copy</Filter>
+    </ClInclude>
+    <ClInclude Include="C_strPair.h">
+      <Filter>Source Files\metaData</Filter>
+    </ClInclude>
+    <ClInclude Include="metaData.h">
+      <Filter>Source Files\metaData</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

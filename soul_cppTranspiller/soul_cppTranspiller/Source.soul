@@ -1,0 +1,24 @@
+func sum(i32 a, i32 b): i32
+{
+	return a + b;
+}
+
+func sumPlusOne(i32 a, mut i32 b): i32
+{
+	b++;
+	return a + b;
+}
+
+func increment(out i32 a): none
+{
+	a++;
+}
+
+func main(): i32
+{
+	i32 sum = sum(1, 2);
+	println(sum);
+
+	i32 sumPlus = sumPlusOne(1, 2);
+	println(f"sumPlus: {sumPlus}");
+}
