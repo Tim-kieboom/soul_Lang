@@ -1,5 +1,6 @@
 #include "string_replace.h"
 #include "string_remove.h"
+#include "string_find.h"
 
 using namespace std;
 
@@ -139,4 +140,20 @@ bool string_replaceAt(string& str, int64_t index, const char* replaceStr)
 bool string_replaceAt(string& str, int64_t index, const string& replaceStr)
 {
 	return string_replaceAt(str, index, index, replaceStr.c_str());
+}
+
+bool string_replaceInSpan(std::string& str, const char* replaceStr, const char* withString, uint32_t begin, uint32_t end)
+{
+	uint64_t replaceStrLen = strlen(replaceStr);
+	vector<uint32_t> indexes = string_find(str, replaceStr, begin);
+	
+	for(uint32_t index : indexes)
+	{
+		if (index > end)
+			break;
+		
+		string_replaceAt(str, index, index + replaceStrLen, withString);
+	}
+
+	return true;
 }

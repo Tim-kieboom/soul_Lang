@@ -5,14 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Source Files\readFile">
       <UniqueIdentifier>{35a1d4e4-9488-4639-99ce-96b6c9f80e87}</UniqueIdentifier>
     </Filter>
@@ -46,9 +38,42 @@
     <Filter Include="Source Files\stringTools\string_copy">
       <UniqueIdentifier>{ef7f5d00-4549-4cb7-9f43-7c55ccff0774}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\transpiller">
+      <UniqueIdentifier>{64e4a780-8136-4eaf-bd60-7c85a84b95f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\metaData\types">
+      <UniqueIdentifier>{388187d7-51b9-4fcd-b121-71b339324082}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\metaData\var">
+      <UniqueIdentifier>{d44b7eeb-1162-4ada-aa19-8ba1191b3068}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\soulCheckers">
+      <UniqueIdentifier>{dd06883d-5be9-48b0-959f-b6b05bc08e4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\cppConverter">
+      <UniqueIdentifier>{d7ce423b-4b22-427f-a70e-14f586ee5811}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func">
+      <UniqueIdentifier>{23e74551-d281-4d9b-910f-58b034fba510}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\funcBody">
+      <UniqueIdentifier>{1174d11f-cd99-4b76-ba3d-13d0e2f39623}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\funcDecleration">
+      <UniqueIdentifier>{3527d4e5-1027-4031-a4c6-7d1151a42a68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\funcDecleration\storeArguments">
+      <UniqueIdentifier>{5468ee91-88f4-4068-9c0a-fe5155fc6afe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\scope">
+      <UniqueIdentifier>{7a75fab2-0608-4ee1-b94e-99b0b5123de7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\funcBody\callFunc">
+      <UniqueIdentifier>{d22fab18-9a76-4155-9713-3a73d3b68d49}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="soul_cppTranspiller.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="readFile.cpp">
@@ -80,6 +105,36 @@
     </ClCompile>
     <ClCompile Include="string_copy.cpp">
       <Filter>Source Files\stringTools\string_copy</Filter>
+    </ClCompile>
+    <ClCompile Include="transpiller.cpp">
+      <Filter>Source Files\transpiller</Filter>
+    </ClCompile>
+    <ClCompile Include="funcDecleration.cpp">
+      <Filter>Source Files\transpiller\func\funcDecleration</Filter>
+    </ClCompile>
+    <ClCompile Include="Type.cpp">
+      <Filter>Source Files\metaData\types</Filter>
+    </ClCompile>
+    <ClCompile Include="ArgumentType.cpp">
+      <Filter>Source Files\metaData\types</Filter>
+    </ClCompile>
+    <ClCompile Include="soulCheckers.cpp">
+      <Filter>Source Files\transpiller\soulCheckers</Filter>
+    </ClCompile>
+    <ClCompile Include="storeArguments.cpp">
+      <Filter>Source Files\transpiller\func\funcDecleration\storeArguments</Filter>
+    </ClCompile>
+    <ClCompile Include="cppConverter.cpp">
+      <Filter>Source Files\transpiller\cppConverter</Filter>
+    </ClCompile>
+    <ClCompile Include="funcBody.cpp">
+      <Filter>Source Files\transpiller\func\funcBody</Filter>
+    </ClCompile>
+    <ClCompile Include="scope.cpp">
+      <Filter>Source Files\transpiller\func\scope</Filter>
+    </ClCompile>
+    <ClCompile Include="callFunc.cpp">
+      <Filter>Source Files\transpiller\func\funcBody\callFunc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -121,8 +176,56 @@
     <ClInclude Include="C_strPair.h">
       <Filter>Source Files\metaData</Filter>
     </ClInclude>
-    <ClInclude Include="metaData.h">
+    <ClInclude Include="metaData.hpp">
       <Filter>Source Files\metaData</Filter>
+    </ClInclude>
+    <ClInclude Include="transpiller.h">
+      <Filter>Source Files\transpiller</Filter>
+    </ClInclude>
+    <ClInclude Include="funcDecleration.h">
+      <Filter>Source Files\transpiller\func\funcDecleration</Filter>
+    </ClInclude>
+    <ClInclude Include="FuncInfo.h">
+      <Filter>Source Files\metaData</Filter>
+    </ClInclude>
+    <ClInclude Include="Type.h">
+      <Filter>Source Files\metaData\types</Filter>
+    </ClInclude>
+    <ClInclude Include="ArgumentInfo.h">
+      <Filter>Source Files\metaData</Filter>
+    </ClInclude>
+    <ClInclude Include="ArgumentType.h">
+      <Filter>Source Files\metaData\types</Filter>
+    </ClInclude>
+    <ClInclude Include="VarInfo.h">
+      <Filter>Source Files\metaData\var</Filter>
+    </ClInclude>
+    <ClInclude Include="internalFunction.h">
+      <Filter>Source Files\metaData</Filter>
+    </ClInclude>
+    <ClInclude Include="TokenIterator.h">
+      <Filter>Source Files\metaData</Filter>
+    </ClInclude>
+    <ClInclude Include="Result.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="soulCheckers.h">
+      <Filter>Source Files\transpiller\soulCheckers</Filter>
+    </ClInclude>
+    <ClInclude Include="storeArguments.h">
+      <Filter>Source Files\transpiller\func\funcDecleration\storeArguments</Filter>
+    </ClInclude>
+    <ClInclude Include="cppConverter.h">
+      <Filter>Source Files\transpiller\cppConverter</Filter>
+    </ClInclude>
+    <ClInclude Include="funcBody.h">
+      <Filter>Source Files\transpiller\func\funcBody</Filter>
+    </ClInclude>
+    <ClInclude Include="scope.h">
+      <Filter>Source Files\transpiller\func\scope</Filter>
+    </ClInclude>
+    <ClInclude Include="callFunc.h">
+      <Filter>Source Files\transpiller\func\funcBody\callFunc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

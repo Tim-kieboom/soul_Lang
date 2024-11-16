@@ -127,8 +127,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ArgumentType.cpp" />
+    <ClCompile Include="callFunc.cpp" />
+    <ClCompile Include="cppConverter.cpp" />
+    <ClCompile Include="funcBody.cpp" />
+    <ClCompile Include="funcDecleration.cpp" />
     <ClCompile Include="readFile.cpp" />
-    <ClCompile Include="soul_cppTranspiller.cpp" />
+    <ClCompile Include="scope.cpp" />
+    <ClCompile Include="soulCheckers.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="storeArguments.cpp" />
     <ClCompile Include="string_contain.cpp" />
     <ClCompile Include="string_copy.cpp" />
     <ClCompile Include="string_find.cpp" />
@@ -138,14 +146,28 @@
     <ClCompile Include="string_split.cpp" />
     <ClCompile Include="tokenizer.cpp" />
     <ClCompile Include="Tokens.h" />
+    <ClCompile Include="transpiller.cpp" />
+    <ClCompile Include="Type.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.soul" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ArgumentInfo.h" />
+    <ClInclude Include="ArgumentType.h" />
+    <ClInclude Include="callFunc.h" />
+    <ClInclude Include="cppConverter.h" />
     <ClInclude Include="C_strPair.h" />
-    <ClInclude Include="metaData.h" />
+    <ClInclude Include="funcBody.h" />
+    <ClInclude Include="funcDecleration.h" />
+    <ClInclude Include="FuncInfo.h" />
+    <ClInclude Include="internalFunction.h" />
+    <ClInclude Include="metaData.hpp" />
     <ClInclude Include="readFile.h" />
+    <ClInclude Include="Result.h" />
+    <ClInclude Include="scope.h" />
+    <ClInclude Include="soulCheckers.h" />
+    <ClInclude Include="storeArguments.h" />
     <ClInclude Include="stringTools.h" />
     <ClInclude Include="string_contain.h" />
     <ClInclude Include="string_copy.h" />
@@ -154,7 +176,11 @@
     <ClInclude Include="string_remove.h" />
     <ClInclude Include="string_replace.h" />
     <ClInclude Include="string_split.h" />
+    <ClInclude Include="TokenIterator.h" />
     <ClInclude Include="tokenizer.h" />
+    <ClInclude Include="transpiller.h" />
+    <ClInclude Include="Type.h" />
+    <ClInclude Include="VarInfo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

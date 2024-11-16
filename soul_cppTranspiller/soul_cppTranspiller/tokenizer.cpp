@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "stringTools.h"
 
@@ -72,54 +73,24 @@ static inline bool removeComment(/*out*/ string& line)
     return true;
 }
 
-static inline bool storeRawString_inMap(/*out*/ string& sourceFile, /*out*/ MetaData& metaData)
+static inline int64_t findEndOfStringIndex(const string& str, uint32_t offset)
 {
-    unordered_map<ui64_string, C_strPair>& constStringStore = metaData.c_strStore;
-    if (string_count(sourceFile, '\"') % 2 == 1)
+    uint32_t safetyCounter = 0;
+    while (safetyCounter++ < str.size())
     {
-        cout << "\" count is uneven" << endl;
-        return false;
+        int64_t qouteInString = string_findFirst(str, "\\\"", offset);
+        int64_t stringEnd = string_findFirst(str, "\"", offset);
+
+        if (qouteInString == stringEnd)
+            offset = (uint32_t)qouteInString+1;
+        else
+            return stringEnd;
     }
 
-    int64_t replaceOffset = 0;
-    int64_t oldSize = sourceFile.size();
-    vector<uint32_t> indexes = string_find(sourceFile, '\"');
-    uint64_t c_strCounter = 0;
-
-    unordered_map<uint64_t, const char*> rawStrings;
-    for (uint64_t i = 0; i < indexes.size(); i += 2)
-    {
-        int64_t newSize;
-        const uint64_t begin = indexes.at(i) + replaceOffset;
-        const uint64_t end = indexes.at(i + 1) + replaceOffset;
-
-        const char* rawStr = string_copyTo_c_str(sourceFile.substr(begin, end - begin + 1));
-        uint64_t strHash = string_hash(rawStr);
-        if (rawStrings.find(strHash) != rawStrings.end()) //if c_str already exists
-        {
-            string_replaceAt(sourceFile, begin, end + 1, rawStrings.at(strHash));
-            newSize = sourceFile.size();
-            replaceOffset = newSize - oldSize;
-            continue;
-        }
-
-        stringstream ss;
-        ss << "__" << c_strCounter++ << "c_str__";
-        const char* c_strName = string_copyTo_c_str(ss.str());
-        rawStrings.insert({ strHash, c_strName });
-
-
-        string_replaceAt(sourceFile, begin, end + 1, c_strName);
-        newSize = sourceFile.size();
-        replaceOffset = newSize - oldSize;
-
-        constStringStore.insert({ string_consexprHash(c_strName), {c_strName, rawStr} });
-    }
-
-    return true;
+    return -1;
 }
 
-static inline bool checkBrackets(string& sourceFile)
+static inline bool checkBrackets(const string& sourceFile)
 {
     if (string_count(sourceFile, '(') != string_count(sourceFile, ')'))
     {
@@ -137,6 +108,117 @@ static inline bool checkBrackets(string& sourceFile)
     {
         cout << "uneven amount of open/closed square bracket '[' count: " << string_count(sourceFile, '[') << ", ']' count: " << string_count(sourceFile, ']') << endl;
         return false;
+    }
+
+    return true;
+}
+
+static inline bool convertFormatStrings(/*out*/ string& sourceFile)
+{
+    uint32_t amountOfqouts = string_count(sourceFile, "\"") - string_count(sourceFile, "\\\"");
+    if (amountOfqouts % 2 == 1)
+    {
+        cout << "\" count is uneven" << endl;
+        return false;
+    }
+
+    const string fromatFuncName = "__soul_format_string__";
+    
+    uint64_t offset = 0;
+    int64_t replaceOffet = 0;
+    uint64_t safetyCounter = 0;
+    while(safetyCounter++ < sourceFile.size())
+    {
+        int64_t index = string_findFirst(sourceFile, "f\"", offset);
+        if (index < 0)
+            break;
+
+        index -= replaceOffet;
+        int64_t endOfStringIndex = findEndOfStringIndex(sourceFile, (uint32_t)index+2);
+        if (endOfStringIndex < 0)
+        {
+            cout << "could not find endOfStringIndex" << endl;
+            return false;
+        }
+
+        string formatStringPart = sourceFile.substr(index, endOfStringIndex - index+1);
+        if(!checkBrackets(formatStringPart))
+        {
+            cout << "in convertFormatString index: " << index << endl;
+            return false;
+        }
+
+        uint64_t oldSize = sourceFile.size();
+
+        string_replaceInSpan(sourceFile, "{", "\", ", (uint32_t)index, (uint32_t)endOfStringIndex);
+        replaceOffet = oldSize - sourceFile.size();
+        
+        index -= replaceOffet;
+        endOfStringIndex -= replaceOffet;
+        string_replaceInSpan(sourceFile, "}", ", \"", (uint32_t)index, (uint32_t)endOfStringIndex);
+        replaceOffet = oldSize - sourceFile.size();
+
+        endOfStringIndex -= replaceOffet;
+        string_replaceAt(sourceFile, endOfStringIndex-2, endOfStringIndex-1, "\")");
+        replaceOffet = oldSize - sourceFile.size();
+
+        offset = endOfStringIndex - replaceOffet;
+    }
+
+    string_replace(sourceFile, "f\"", fromatFuncName + "(\"");
+    return true;
+}
+
+static inline bool storeRawString_inMap(/*out*/ string& sourceFile, /*out*/ MetaData& metaData)
+{
+    unordered_map<string, C_strPair>& constStringStore = metaData.c_strStore;
+    uint64_t amountOfqouts = (uint64_t)string_count(sourceFile, "\"") - (uint64_t)string_count(sourceFile, "\\\"");
+    if (amountOfqouts % 2 == 1)
+    {
+        cout << "\" count is uneven" << endl;
+        return false;
+    }
+
+    int64_t replaceOffset = 0;
+    int64_t oldSize = sourceFile.size();
+    vector<uint32_t> indexes = string_find(sourceFile, '\"');
+
+    vector<uint32_t> _inStringIndexes = string_find(sourceFile, "\\\"");
+    unordered_set<uint32_t> inStringIndexes(_inStringIndexes.begin(), _inStringIndexes.end());
+    for(uint32_t i = 0; i < indexes.size(); i++)
+    {
+        if(inStringIndexes.find(indexes.at(i)-1) != inStringIndexes.end())
+            indexes.erase(indexes.begin() + i);
+    }
+
+    uint64_t c_strCounter = 0;
+
+    unordered_map<string, string> rawStrings;
+    for (uint64_t i = 0; i < indexes.size(); i += 2)
+    {
+        int64_t newSize;
+        const uint64_t begin = indexes.at(i) + replaceOffset;
+        const uint64_t end = indexes.at(i + 1) + replaceOffset;
+
+        string rawStr = sourceFile.substr(begin, end - begin + 1);
+        if (rawStrings.find(rawStr) != rawStrings.end()) //if c_str already exists
+        {
+            string_replaceAt(sourceFile, begin, end + 1, rawStrings.at(rawStr));
+            newSize = sourceFile.size();
+            replaceOffset = newSize - oldSize;
+            continue;
+        }
+
+        stringstream ss;
+        ss << "__" << c_strCounter++ << "c_str__";
+        string c_strName = ss.str();
+        rawStrings.insert({ rawStr, c_strName });
+
+        string_replaceAt(sourceFile, begin, end + 1, c_strName);
+        newSize = sourceFile.size();
+        replaceOffset = newSize - oldSize;
+
+        constStringStore[c_strName] = {string_copyTo_c_str(c_strName), string_copyTo_c_str(rawStr)};
     }
 
     return true;
@@ -165,13 +247,16 @@ vector<Token> tokenize(/*out*/ string& sourceFile, /*out*/ MetaData& metaData)
     tokenizer.reserve(string_count(sourceFile, ' '));
 
     string_replace(sourceFile, '\t', ' ');
-
+    
     if (!removeComment(/*out*/sourceFile))
+        return {};
+
+    if (!convertFormatStrings(/*out*/ sourceFile))
         return {};
 
     if (!storeRawString_inMap(/*out*/ sourceFile, /*out*/ metaData))
         return {};
-
+    
     if (!checkBrackets(sourceFile))
         return {};
 

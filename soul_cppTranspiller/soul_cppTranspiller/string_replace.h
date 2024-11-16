@@ -19,3 +19,5 @@ bool string_replaceAt(std::string& str, int64_t begin, int64_t end, const std::s
 bool string_replaceAt(std::string& str, int64_t index, const char* replaceStr);
 bool string_replaceAt(std::string& str, int64_t index, const std::string& replaceStr);
 
+bool string_replaceInSpan(std::string& str, const char* replaceStr, const char* withString, uint32_t begin, uint32_t end);
+

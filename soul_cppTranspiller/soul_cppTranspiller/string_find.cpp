@@ -38,12 +38,12 @@ vector<uint32_t> string_find(const string& str, string findStr, uint64_t offset)
 
 vector<uint32_t> string_find(const string& str, const char* findStr, uint64_t offset)
 {
-	return string_find(str, string(findStr));
+	return string_find(str, string(findStr), offset);
 }
 
 int64_t string_findFirst(const std::string& str, char findChar, uint64_t offset)
 {
-	vector<uint32_t> result = string_find(str, findChar);
+	vector<uint32_t> result = string_find(str, findChar, offset);
 	if (result.empty())
 		return -1;
 
@@ -52,7 +52,7 @@ int64_t string_findFirst(const std::string& str, char findChar, uint64_t offset)
 
 int64_t string_findFirst(const std::string& str, std::string findStr, uint64_t offset)
 {
-	vector<uint32_t> result = string_find(str, findStr);
+	vector<uint32_t> result = string_find(str, findStr, offset);
 	if (result.empty())
 		return -1;
 

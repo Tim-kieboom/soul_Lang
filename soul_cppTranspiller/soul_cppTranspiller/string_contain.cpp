@@ -1,5 +1,6 @@
 #include "string_contain.h"
 #include "string_split.h"
+#include "string_find.h"
 
 using namespace std;
 
@@ -39,4 +40,15 @@ uint32_t string_count(const string& str, char findChar)
 	}
 
 	return counter;
+}
+
+uint32_t string_count(const string& str, const char* findStr)
+{
+	return string_find(str, findStr).size();
+}
+
+
+uint32_t string_count(const string& str, string findStr)
+{
+	return string_find(str, findStr).size();
 }

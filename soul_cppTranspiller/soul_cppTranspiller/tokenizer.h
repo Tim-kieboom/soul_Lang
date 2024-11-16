@@ -1,5 +1,5 @@
 #pragma once
-#include "metaData.h"
+#include "metaData.hpp"
 
 std::vector<Token> tokenize(/*out*/ std::string& sourceFile, /*out*/ MetaData& metaData);
 
