@@ -18,7 +18,7 @@ static inline Result<string> convertFuncDeclaration_arguments
 {
 	Result<void*> result = storeArguments(/*out*/iterator, /*out*/metaData, /*out*/funcInfo, /*out*/scope);
 	if (result.hasError)
-		return result;
+		return result.error;
 
 	vector<ArgumentInfo>& args = funcInfo.args;
 	stringstream ss;
@@ -64,7 +64,7 @@ Result<string> convertFuncDeclaration(/*out*/TokenIterator& iterator, /*out*/Met
 
 		Result<string> argsResult = convertFuncDeclaration_arguments(iterator, metaData, funcInfo, scope);
 		if (argsResult.hasError)
-			return argsResult;
+			return argsResult.error;
 
 		string returnType = typeToCppType(funcInfo.returnType);
 

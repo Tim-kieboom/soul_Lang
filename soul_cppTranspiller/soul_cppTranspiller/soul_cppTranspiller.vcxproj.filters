@@ -71,6 +71,9 @@
     <Filter Include="Source Files\transpiller\func\funcBody\callFunc">
       <UniqueIdentifier>{d22fab18-9a76-4155-9713-3a73d3b68d49}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\transpiller\func\funcBody\varSetter">
+      <UniqueIdentifier>{2868b7bb-0466-48e4-a5a3-b56544ac050a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -135,6 +138,9 @@
     </ClCompile>
     <ClCompile Include="callFunc.cpp">
       <Filter>Source Files\transpiller\func\funcBody\callFunc</Filter>
+    </ClCompile>
+    <ClCompile Include="varSetter.cpp">
+      <Filter>Source Files\transpiller\func\funcBody\varSetter</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -226,6 +232,9 @@
     </ClInclude>
     <ClInclude Include="callFunc.h">
       <Filter>Source Files\transpiller\func\funcBody\callFunc</Filter>
+    </ClInclude>
+    <ClInclude Include="varSetter.h">
+      <Filter>Source Files\transpiller\func\funcBody\varSetter</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

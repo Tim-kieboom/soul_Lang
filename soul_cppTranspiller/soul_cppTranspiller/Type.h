@@ -31,6 +31,7 @@ enum class Type
 enum class TypeCategory
 {
 	invalid,
+	compile_dynamic,
 
 	text,
 	boolean,
@@ -43,6 +44,7 @@ enum class TypeCategory
 enum class DuckType
 {
 	invalid,
+	compile_dynamic,
 
 	text,
 	character,

@@ -35,6 +35,9 @@ TypeCategory getTypeCategory(Type type)
 	case Type::c_str:
 		return TypeCategory::text;
 
+	case Type::compile_dynamic:
+		return TypeCategory::compile_dynamic;
+
 	default:
 		return TypeCategory::invalid;
 	}
@@ -49,6 +52,9 @@ DuckType getDuckType(TypeCategory type)
 {
 	switch (type)
 	{
+	case TypeCategory::compile_dynamic:
+		return DuckType::compile_dynamic;
+
 	case TypeCategory::boolean:
 	case TypeCategory::interger:
 	case TypeCategory::floatingPoint:
@@ -124,6 +130,54 @@ Type getType(const string& rawType)
 	return Type::invalid;
 }
 
+string toString(TypeCategory type)
+{
+	switch (type)
+	{
+	case TypeCategory::boolean:
+		return "boolean";
+
+	case TypeCategory::compile_dynamic:
+		return "compile_dynamic";
+
+	case TypeCategory::character:
+		return "character";
+
+	case TypeCategory::floatingPoint:
+		return "foatingPoint";
+
+	case TypeCategory::interger:
+		return "interger";
+
+	case TypeCategory::unsignedInterger:
+		return "insignedInterger";
+
+	case TypeCategory::text:
+		return "text";
+	}
+
+	return "invalid";
+}
+
+string toString(DuckType type)
+{
+	switch (type)
+	{
+	case DuckType::number:
+		return "number";
+
+	case DuckType::compile_dynamic:
+		return "compile_dynamic";
+
+	case DuckType::character:
+		return "character";
+
+	case DuckType::text:
+		return "text";
+	}
+
+	return "invalid";
+}
 string toString(Type type)
 {
 	switch (type)

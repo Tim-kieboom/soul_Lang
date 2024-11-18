@@ -34,11 +34,10 @@ public:
 
 	Result() = default;
 
-	//to transfer error between diffrentTypes Result
 	template <typename V>
-	Result(const Result<V>& other)
-		: hasError(other.hasError), value_(), error(other.error)
+	static Result<T> TransfereError(const Result<V>& other)
 	{
+		return Result<T>(error);
 	}
 
 	Result(T value)
@@ -53,8 +52,8 @@ public:
 
 	T& value()
 	{
-		//if (hasError) 
-		//	throw std::runtime_error("Attempting to access value of an error Result");
+		if (hasError) 
+			throw std::runtime_error("Attempting to access value of an error Result");
 
 		return value_;
 	}

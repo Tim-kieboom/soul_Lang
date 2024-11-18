@@ -13,17 +13,16 @@ struct TokenIterator
 	{
 	}
 
-	bool peekToken(std::string& tokenText, uint32_t step = 1)
+	bool peekToken(std::string& tokenText, int64_t step = 1)
 	{
 		if (i + step > (int64_t)tokens.size())
 			return false;
 
-		i += step;
-		tokenText = tokens.at(i).text;
+		tokenText = tokens.at(i + step).text;
 		return true;
 	}
 
-	bool nextToken(std::string& tokenText, uint32_t step = 1)
+	bool nextToken(std::string& tokenText, int64_t step = 1)
 	{
 		if (i + step > (int64_t)tokens.size())
 			return false;
@@ -31,6 +30,17 @@ struct TokenIterator
 		i += step;
 		const Token& token = tokens.at(i);
 		tokenText = token.text;
+		currentLine = token.lineNumber;
+		return true;
+	}
+
+	bool skipToken(int64_t step = 1)
+	{
+		if (i + step > (int64_t)tokens.size())
+			return false;
+
+		i += step;
+		const Token& token = tokens.at(i);
 		currentLine = token.lineNumber;
 		return true;
 	}

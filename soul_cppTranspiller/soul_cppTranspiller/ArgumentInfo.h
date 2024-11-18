@@ -1,6 +1,8 @@
 #pragma once
+#include <string>
 
 #include "Type.h"
+#include "Result.h"
 #include "ArgumentType.h"
 
 struct ArgumentInfo

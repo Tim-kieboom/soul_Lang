@@ -11,7 +11,7 @@ struct FuncInfo
 	const char* funcName = "";
 	std::vector<ArgumentInfo> args;
 	std::vector<VarInfo> scope;
-	Type returnType = Type::none;
+	Type returnType = Type::invalid;
 
 	FuncInfo() = default;
 

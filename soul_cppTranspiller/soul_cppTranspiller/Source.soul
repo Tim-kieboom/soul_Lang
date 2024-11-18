@@ -1,3 +1,65 @@
+/*
+//Result is Result<T, default=str>
+func passErrorChild(bool value): Result<i32>
+{
+	if(value == true)
+		return 1;
+
+	return Error("error thrown");
+}
+
+//Result is Result<T, i32>
+func passErrorInt(bool value): Result<i32, i32>
+{
+	if(value == true)
+		return 1;
+
+	return Error(-1);
+}
+
+func passErrorParent(bool value): Result<str>
+{	
+	//if Ok() is returned then text is filled and code continues,
+	//if Error() is returned then it will return the error and skip the rest of the code
+	//!NOTE!: pass only works if func's returnType is Result<T, R> (T DOESN'T have to be the sameType but R DOES)
+	i32 number = pass passErrorChild(value);
+
+	//can't use pass because thisFunc is Result<T, str> and callFunc Result Result<T, i32>
+	Result<i32, i32> number2 = passErrorInt(value);
+	if (number2.hasError())
+		return Error(f"passErrorInt returned: {number2.error()}");
+
+	return number.toStr();
+}
+
+func handleResult(bool value): str
+{
+	Result<str> result = passErrorParent(value);
+	if(result.hasError() || !result.isOk())
+	{
+		println(f"this code contains an error: {result.error()}");
+		return "";
+	}
+
+	//if you do result.value() when valueEmpty exception is thrown
+	str unsafeValue = result.value();
+
+	//if you do result.valueOr() when valueEmpty default value is returned
+	str defaultValue = result.valueOr();
+
+	//if you do result.valueOr(x) when valueEmpty value 'x' is returned
+	str customDefaultValue = result.valueOr("empty");
+
+	return result.value;
+}
+
+
+struct func;
+struct mut;
+class i32;
+func println(string msg);
+*/
+
 func sum(i32 a, i32 b): i32
 {
 	return a + b;
@@ -16,13 +78,21 @@ func increment(out i32 a): none
 
 func main(): i32
 {
-	i32 sum = sum(1, 2);
-	println(sum);
+	println("------ sum ------\n");
+	i32 result = sum(1, 2);
+	println(result); //prints 3
 
+	println("\n\n------ sumPlusOne ------\n");
 	i32 sumPlus = sumPlusOne(1, 2);
-	println(f"sumPlus: {sumPlus}");
-	println(f"sumPlus: {sumPlus}");
-	println("test \" ");
-	println("test");
-	println("test");
+	println(f"sumPlus: {sumPlus}"); //prints 4
+
+	println("\n\n------ increment ------\n");
+	i32 value = 1;
+	println(f"first value: {value}"); //prints 1
+	increment(out value);
+	println(f"after increment value: {value}"); //prints 2
+
+	//increment(out i32 initInOutValue);
+	//println(f"after increment initInOutValue: {value}"); //prints 1
+
 }

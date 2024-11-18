@@ -7,7 +7,6 @@
 #include "FuncInfo.h"
 #include "C_strPair.h"
 #include "stringTools.h"
-
 struct MetaData
 {
 	std::vector<std::vector<VarInfo>> scopeStack;
@@ -15,9 +14,9 @@ struct MetaData
 	std::unordered_map<std::string, C_strPair> c_strStore;
 	std::unordered_map<std::string, std::string> cppIncludeStore;
 
-	void addCppInclude(const std::string& key, const std::string& value)
+	void addCppInclude(const std::string& key, std::string value)
 	{
-		cppIncludeStore.insert({ key, value });
+		cppIncludeStore[key] = value;
 	}
 
 	std::string getCpptIncludes()
@@ -28,9 +27,9 @@ struct MetaData
 		return ss.str();
 	}
 
-	void addFuncInfo(const std::string& funcName, const FuncInfo& info)
+	void addFuncInfo(const std::string& funcName, FuncInfo info)
 	{
-		funcStore.insert({ funcName, info });
+		funcStore[funcName] = info;
 	}
 
 	bool TryGetfuncInfo(const std::string& funcName, FuncInfo& funcInfo)

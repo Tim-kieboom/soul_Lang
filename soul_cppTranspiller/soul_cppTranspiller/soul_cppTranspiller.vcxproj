@@ -148,6 +148,7 @@
     <ClCompile Include="Tokens.h" />
     <ClCompile Include="transpiller.cpp" />
     <ClCompile Include="Type.cpp" />
+    <ClCompile Include="varSetter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.soul" />
@@ -181,6 +182,7 @@
     <ClInclude Include="transpiller.h" />
     <ClInclude Include="Type.h" />
     <ClInclude Include="VarInfo.h" />
+    <ClInclude Include="varSetter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

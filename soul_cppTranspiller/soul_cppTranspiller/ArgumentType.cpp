@@ -23,9 +23,14 @@ const char* toString(ArgumentType argType)
 	}
 }
 
+bool argType_isOut(ArgumentType type)
+{
+	return type == ArgumentType::tk_out || type == ArgumentType::tk_optional_out;
+}
+
 bool argType_isMutable(ArgumentType type)
 {
-	return type == ArgumentType::tk_default || type == ArgumentType::tk_optional;
+	return !(type == ArgumentType::tk_default || type == ArgumentType::tk_optional);
 }
 
 bool argType_isOptions(ArgumentType type)

@@ -54,19 +54,17 @@ Result<string> transpileToCpp(const vector<Token> tokens, const TranspilerOption
 			FuncInfo funcInfo;
 			Result<string> funcDecl = convertFuncDeclaration(/*out*/iterator, /*out*/metaData, /*out*/funcInfo);
 			if (funcDecl.hasError)
-				return funcDecl;
+				return funcDecl.error;
 				
 			fileStream << funcDecl.value();
 
 			Result<string> funcBody = convertFunctionBody(/*out*/iterator, /*out*/funcInfo, /*out*/metaData);
 			if (funcBody.hasError)
-				return funcBody;
+				return funcBody.error;
 
-			fileStream << funcBody.value();
+			fileStream << "{\n" << funcBody.value();
 			validEnd = true;
 		}
-
-		break;
 	}
 
 	if (!validEnd)

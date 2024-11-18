@@ -16,6 +16,7 @@ enum class ArgumentType
 
 const char* toString(ArgumentType argType);
 
+bool argType_isOut(ArgumentType type);
 bool argType_isMutable(ArgumentType type);
 bool argType_isOptions(ArgumentType type);
 ArgumentType getArgType_symbol(std::string& str);
