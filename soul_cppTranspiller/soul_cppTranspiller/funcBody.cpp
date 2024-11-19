@@ -9,13 +9,15 @@
 #include "callFunc.h"
 
 using namespace std;
+
+initializer_list<const char*> bodiedStatements = { "if", "else", "while", "for"};
+
 #define ERROR_var ErrorInfo("incomplete functionBody funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine)
-#define ERROR_varInit ErrorInfo("incomplete functionBody funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine)
+#define ERROR_varInit ErrorInfo("incomplete functionBody funcName: \'" + string(callFunc.funcName) + '\'', iterator.currentLine)
 #define ERROR_funcBody ErrorInfo("incomplete functionBody funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine);
 
-static inline Result<string> convertVar(Result<VarInfo>& varResult, TokenIterator& iterator, FuncInfo& funcInfo)
+static inline Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo)
 {
-	VarInfo varInfo = varResult.value();
 	stringstream ss;
 
 	string token;
@@ -39,11 +41,15 @@ static inline Result<string> convertVar(Result<VarInfo>& varResult, TokenIterato
 		return ss.str();
 	}
 
-	ss << varInfo.name << ' ' << symbool << ' ' << "";//convertVarSetter(tokens, var.type, /*out*/ i, /*out*/ currentLine, funcInfo, constStringStore, funcStore);
+	Result<string> varSetResult = convertVarSetter(iterator, metaData, varInfo.type, funcInfo);
+	if (varSetResult.hasError)
+		return varSetResult.error;
+
+	ss << varInfo.name << ' ' << symbool << ' ' << varSetResult.value();
 	return ss.str();
 }
 
-static inline Result<string> convertVarInit(Type type, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo)
+static inline Result<string> convertVarInit(Type type, bool isMutable, TokenIterator& iterator, MetaData& metaData, FuncInfo& callFunc, FuncInfo& funcInfo)
 {
 	stringstream ss;
 	string token;
@@ -55,6 +61,8 @@ static inline Result<string> convertVarInit(Type type, TokenIterator& iterator, 
 		return ErrorInfo("name invalid name: " + token, iterator.currentLine);
 
 	ss << typeToCppType(type) << ' ' << token;
+
+	funcInfo.scope.emplace_back(string_copyTo_c_str(token), type, isMutable);
 
 	if (!iterator.nextToken(/*out*/token))
 		return ERROR_varInit;
@@ -73,7 +81,7 @@ static inline Result<string> convertVarInit(Type type, TokenIterator& iterator, 
 	if (!iterator.nextToken(/*out*/token))
 		return ERROR_varInit;
 
-	Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, funcInfo);
+	Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, callFunc);
 	if (varSetterResult.hasError)
 		return varSetterResult.error;
 
@@ -85,7 +93,6 @@ static inline Result<string> convertVarInit(Type type, TokenIterator& iterator, 
 Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, MetaData& metaData)
 {
 	stringstream ss;
-	ss << "{\n";
 
 	string token;
 	if (!iterator.peekToken(/*out*/token))
@@ -98,7 +105,7 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 
 	while(iterator.nextToken(/*out*/token))
 	{
-		if (iterator.currentLine == 92)
+		if (iterator.currentLine >= 115)
 			int debug = 0;
 
 		if (token == "{")
@@ -121,11 +128,11 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 
 		FuncInfo callFunc;
 		Type type = getType(token);
-		Result<VarInfo> varResult = getVarFromScope(callFunc, token);
+		Result<VarInfo> varResult = getVarFromScope(funcInfo, metaData, token);
 
 		if (metaData.TryGetfuncInfo(token, /*out*/callFunc))
 		{
-			Result<string> funcCallResult = convertFuncCall(iterator, metaData, callFunc, funcInfo);
+			Result<string> funcCallResult = convertFuncCall(iterator, metaData, funcInfo.scope, callFunc, funcInfo);
 			if (funcCallResult.hasError)
 				return funcCallResult.error;
 
@@ -141,15 +148,26 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 		}
 		else if (!varResult.hasError)
 		{
-			Result<string> result = convertVar(varResult, iterator, funcInfo);
+			Result<string> result = convertVar(varResult.value(), iterator, metaData, funcInfo);
 			if (result.hasError)
 				return result.error;
 
 			ss << result.value();
 		}
-		else if(type != Type::invalid)
+		else if(type != Type::invalid || token == "const")
 		{
-			Result<string> result = convertVarInit(type, iterator, metaData, callFunc);
+			bool isMutable = true;
+			if(token == "const")
+			{
+				isMutable = false;
+
+				if (!iterator.nextToken(/*out*/token))
+					return ERROR_funcBody;
+
+				type = getType(token);
+			}
+
+			Result<string> result = convertVarInit(type, isMutable, iterator, metaData, callFunc, /*out*/funcInfo);
 			if (result.hasError)
 				return result.error;
 
@@ -165,6 +183,39 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 				return varSetterResult.error;
 
 			ss << "return " << varSetterResult.value();
+		}
+		else if (initListEquals(bodiedStatements, token))
+		{
+			string bodiedStatment = token;
+
+			string nextToken;
+			if (!iterator.peekToken(/*out*/nextToken))
+				return ERROR_funcBody;
+
+			if (token == "else" && nextToken == "if")
+			{
+				if (!iterator.nextToken(/*out*/nextToken, /*step:*/3))
+					return ERROR_funcBody;
+			}
+			else
+			{
+				if (!iterator.nextToken(/*out*/token, /*step:*/2))
+					return ERROR_funcBody;
+			}
+
+			if (nextToken != "(")
+				return ErrorInfo("bodiedStatement: \'" + token + "\' doesn't start with '('", iterator.currentLine);
+
+			Result<string> varSetterResult = convertVarSetter(iterator, metaData, Type::bool_, funcInfo);
+			if (varSetterResult.hasError)
+				return varSetterResult.error;
+
+			ss << bodiedStatment << varSetterResult.value();
+			Result<string> bodyResult = convertFunctionBody(iterator, funcInfo, metaData);
+		}
+		else
+		{
+			return ErrorInfo("unknown token: \'" + token + '\'', iterator.currentLine);
 		}
 	}
 

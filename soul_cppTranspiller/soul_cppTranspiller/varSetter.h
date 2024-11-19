@@ -5,4 +5,4 @@
 #include "Result.h"
 #include "TokenIterator.h"
 
-Result<std::string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, const Type& type, const FuncInfo& funcInfo);
+Result<std::string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, const Type& type, FuncInfo& funcInfo);

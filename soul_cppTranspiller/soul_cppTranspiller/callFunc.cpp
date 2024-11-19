@@ -17,14 +17,14 @@ static inline Result<ArgumentInfo> getArgInfo(uint32_t argPosition, const FuncIn
 	return callFunc.args.at(argPosition);
 }
 
-static inline Result<vector<pair<string, uint32_t>>> getCallArgument(TokenIterator& iterator, MetaData& metaData, const FuncInfo& inCurrentFunc, const FuncInfo& callFunc, uint32_t& currentArgument, bool& lastArgument)
+static inline Result<vector<pair<string, uint32_t>>> getCallArgument(TokenIterator& iterator, MetaData& metaData, FuncInfo& inCurrentFunc, FuncInfo& callFunc, const vector<VarInfo>& currentScope, uint32_t& currentArgument, bool& lastArgument)
 {
 	stringstream ss;
 	string token;
 
 	vector<pair<string, uint32_t>> args;
 
-	uint32_t openBracketStack = 0;
+	uint32_t openBracketStack = 1;
 	lastArgument = false;
 
 	while(iterator.nextToken(/*out*/token))
@@ -40,7 +40,10 @@ static inline Result<vector<pair<string, uint32_t>>> getCallArgument(TokenIterat
 			openBracketStack--;
 			ss << ')';
 			if (openBracketStack == 0)
+			{
+				lastArgument = true;
 				return ERROR_callArg;
+			}
 			continue;
 		}
 
@@ -57,43 +60,73 @@ static inline Result<vector<pair<string, uint32_t>>> getCallArgument(TokenIterat
 				if (!argType_isOut(argInfo.argType))
 					return ErrorInfo("argument contains \'out\' without it being a out typed argument", iterator.currentLine);
 
-				ss << token;
+				ss << "/*" << token << "*/";
 
 				if (!iterator.nextToken(token))
 					return ERROR_callArg;
 			}
 
-			Result<VarInfo> varResult = getVarFromScope(inCurrentFunc, token);
-			if (!varResult.hasError)
+			FuncInfo argCallFunc;
+			Result<VarInfo> varResult = getVarFromScope(currentScope, metaData, token);
+			if(metaData.TryGetfuncInfo(token, argCallFunc))
+			{
+				if(getDuckType(argInfo.valueType) != getDuckType(argCallFunc.returnType) && getDuckType(argInfo.valueType) != DuckType::compile_dynamic)
+					return ErrorInfo("type given incorrect for argument: \'" + string(argInfo.name) + "\', typeGiven: \'" + toString(argCallFunc.returnType) + "\', argType: \'" + toString(argInfo.valueType) + '\'', iterator.currentLine);
+
+				Result<string> callResult = convertFuncCall(iterator, metaData, currentScope, argCallFunc, callFunc);
+				if (callResult.hasError)
+					return callResult.error;
+
+				ss << callResult.value();
+			}
+			else if (!varResult.hasError)
 			{
 				VarInfo varInfo = varResult.value();
-				if (getDuckType(varInfo.type) != getDuckType(argInfo.valueType))
+				if (getDuckType(varInfo.type) != getDuckType(argInfo.valueType) && getDuckType(argInfo.valueType) != DuckType::compile_dynamic)
 					return ErrorInfo("type given incorrect for argument: \'" + string(argInfo.name) + "\', typeGiven: \'" + toString(varInfo.type) + "\', argType: \'" + toString(argInfo.valueType) + '\'', iterator.currentLine);
+				ss << token;
 			}
 			else
 			{
 				if (!checkValue(token, argInfo.valueType))
 					return ErrorInfo("type given incorrect for argument: \'" + string(argInfo.name) + "\', givenArgument: \'" + token + "\', argType: \'" + toString(argInfo.valueType) + '\'', iterator.currentLine);
+				ss << token;
 			}
 
-			ss << token;
 			if (!iterator.nextToken(token))
 				return ERROR_callArg;
+
+			if (token == ")")
+			{
+				ss << ")";
+				openBracketStack--;
+				if (openBracketStack <= 0)
+				{			
+					lastArgument = true;
+					args.emplace_back(ss.str(), currentArgument);
+					return args;
+				}
+
+				if (!iterator.skipToken())
+					return ERROR_callArg;
+			}
 
 			if (token == ",")
 			{
 				ss << ", ";
 				args.emplace_back(ss.str(), currentArgument);
+				ss.str("");
 			}
-			else if (token == ")")
+			else
 			{
-				ss << ")";
-				args.emplace_back(ss.str(), currentArgument);
-				return args;
+				return ErrorInfo("argument in funcCall has to end with ',' or ')'", iterator.currentLine);
 			}
 
 			if (!argInfo.canBeMultiple)
 				break;
+
+			if (!iterator.nextToken(/*out*/token))
+				return ERROR_callArg;
 		}
 	}
 
@@ -101,7 +134,7 @@ static inline Result<vector<pair<string, uint32_t>>> getCallArgument(TokenIterat
 }
 
 
-Result<string> convertFuncCall(TokenIterator& iterator, MetaData& metaData, FuncInfo callFunc, FuncInfo funcInfo)
+Result<string> convertFuncCall(TokenIterator& iterator, MetaData& metaData, const vector<VarInfo>& currentScope, FuncInfo& callFunc, FuncInfo& funcInfo)
 {
 	stringstream ss;
 	string token;
@@ -128,9 +161,9 @@ Result<string> convertFuncCall(TokenIterator& iterator, MetaData& metaData, Func
 
 	uint32_t currentArgument = 0;
 	bool lastArgument = false;
-	while(lastArgument)
+	while(!lastArgument)
 	{
-		Result<vector<pair<string, uint32_t>>> argResult = getCallArgument(iterator, metaData, funcInfo, callFunc, /*out*/currentArgument, /*out*/lastArgument);
+		Result<vector<pair<string, uint32_t>>> argResult = getCallArgument(iterator, metaData, funcInfo, callFunc, currentScope, /*out*/currentArgument, /*out*/lastArgument);
 		if (argResult.hasError)
 			return argResult.error;
 
@@ -140,17 +173,7 @@ Result<string> convertFuncCall(TokenIterator& iterator, MetaData& metaData, Func
 		currentArgument++;
 	}
 
-	//sort
-	//(
-	//	argsStrings.begin(), argsStrings.end(),
-	//	[](const pair<string, uint32_t>& a, const pair<string, uint32_t>& b)
-	//	{
-	//		return a.second < b.second;
-	//	}
-	//);
-
 	for (const auto& pair : argsStrings)
 		ss << pair.first;
-	ss << ')';
 	return ss.str();
 }

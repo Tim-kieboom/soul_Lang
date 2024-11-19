@@ -1,9 +1,7 @@
 #pragma once
 #include <vector>
 
-#include "Type.h"
 #include "VarInfo.h"
-#include "ArgumentType.h"
 #include "ArgumentInfo.h"
 
 struct FuncInfo
@@ -20,15 +18,21 @@ struct FuncInfo
 	{
 	}
 
-	FuncInfo(const char* funcName, std::initializer_list<ArgumentInfo> args)
-		: funcName(funcName)
+	FuncInfo(const char* funcName, Type returnType)
+		: funcName(funcName), returnType(returnType)
+	{
+	}
+
+	FuncInfo(const char* funcName, Type returnType, std::initializer_list<ArgumentInfo> args)
+		: funcName(funcName), returnType(returnType)
 	{
 		this->args.reserve(args.size());
 		for (const ArgumentInfo& arg : args)
 			this->args.push_back(arg);
 	}
 
-	FuncInfo(std::initializer_list<ArgumentInfo> args)
+	FuncInfo(Type returnType, std::initializer_list<ArgumentInfo> args)
+		: returnType(returnType)
 	{
 		this->args.reserve(args.size());
 		for (const ArgumentInfo& arg : args)

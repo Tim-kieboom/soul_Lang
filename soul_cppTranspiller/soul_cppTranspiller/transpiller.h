@@ -3,8 +3,8 @@
 #include <vector>
 #include <cstdint>
 
-#include "tokenizer.h"
 #include "Result.h"
+#include "tokenizer.h"
 
 struct TranspilerOptions
 {

@@ -1,36 +1,9 @@
 template <typename T>
-void __soul__append_to_stream__(std::ostringstream& oss, T&& arg) 
-{
-    oss << std::forward<T>(arg);
-}
-
-template <typename T, typename... Args>
-void __soul__append_to_stream__(std::ostringstream& oss, T&& arg, Args&&... args) 
-{
-    oss << std::forward<T>(arg);
-    __soul__append_to_stream__(oss, std::forward<Args>(args)...);
-}
-
-template <typename ...Args>
-const char* __soul_format__(Args&&... args)
-{
-    std::ostringstream oss;
-    __soul__append_to_stream__(oss, std::forward<Args>(args)...);
-
-    string str = oss.str();
-    char* buffer = new char[str.size() + 1];
-    copy(str.begin(), str.end(), buffer);
-    buffer[str.size()] = '\0';
-
-    return (const char*)buffer;
-}
-
-template <typename T>
-class soul_optional 
+class soul_optional
 {
 private:
-	bool has_value_;
-	alignas(T) unsigned char storage_[sizeof(T)];
+    bool has_value_;
+    alignas(T) unsigned char storage_[sizeof(T)];
 
     constexpr void clearStorage()
     {
@@ -65,7 +38,7 @@ public:
     // Copy constructor
     constexpr soul_optional(const soul_optional& other) : has_value_(other.has_value_)
     {
-        if (has_value_) 
+        if (has_value_)
         {
             new (storage_) T(*other);
         }
@@ -74,11 +47,11 @@ public:
     // Assignment operators
     constexpr soul_optional& operator=(const soul_optional& other)
     {
-        if (this != &other) 
+        if (this != &other)
         {
             clearStorage();
             has_value_ = other.has_value_;
-            if (has_value_) 
+            if (has_value_)
             {
                 new (storage_) T(*other);
             }
@@ -88,7 +61,7 @@ public:
 
     constexpr soul_optional& operator=(soul_optional&& other) noexcept
     {
-        if (this != &other) 
+        if (this != &other)
         {
             clearStorage();
             has_value_ = other.has_value_;
@@ -100,7 +73,7 @@ public:
         return *this;
     }
 
-    constexpr bool has_value() const noexcept 
+    constexpr bool has_value() const noexcept
     {
         return has_value_;
     }
@@ -108,7 +81,7 @@ public:
     // Access the contained value
     constexpr T& value()&
     {
-        if (!has_value_) 
+        if (!has_value_)
             throw std::runtime_error("Optional object has no value");
 
         return *reinterpret_cast<T*>(storage_);
@@ -141,7 +114,7 @@ public:
         return has_value_ ? std::move(**this) : static_cast<T>(std::forward<T>(default_value));
     }
 
-    constexpr T* operator->() 
+    constexpr T* operator->()
     {
         return &value();
     }
@@ -178,7 +151,44 @@ public:
 static inline void assertThrow(bool condition, const char* msg)
 {
 #ifndef NDEBUG
-	if(!condition)
-    	throw std::runtime_error(msg);
+    if (!condition)
+        throw std::runtime_error(msg);
 #endif
+}
+
+template<typename T>
+void print(T msg)
+{
+    std::cout << msg;
+}
+
+template<typename T>
+void println(T msg)
+{
+    std::cout << msg << std::endl;
+}
+
+template <typename T>
+void __soul__append_to_stream__(std::ostringstream& oss, T&& arg)
+{
+    oss << std::forward<T>(arg);
+}
+
+template <typename T, typename... Args>
+void __soul__append_to_stream__(std::ostringstream& oss, T&& arg, Args&&... args)
+{
+    oss << std::forward<T>(arg);
+    __soul__append_to_stream__(oss, std::forward<Args>(args)...);
+}
+
+template <typename ...Args>
+const char* __soul_format_string__(Args&&... args)
+{
+    std::ostringstream oss;
+    __soul__append_to_stream__(oss, std::forward<Args>(args)...);
+    std::string str = oss.str();
+    char* buffer = new char[str.size() + 1];
+    copy(str.begin(), str.end(), buffer);
+    buffer[str.size()] = '\0';
+    return (const char*)buffer;
 }

@@ -32,29 +32,29 @@ public:
 	bool hasError = false;
 	ErrorInfo error;
 
-	Result() = default;
-
-	template <typename V>
-	static Result<T> TransfereError(const Result<V>& other)
+	Result()
+		: value_(), hasError(false), error()
 	{
-		return Result<T>(error);
 	}
 
 	Result(T value)
-		: hasError(false), value_(value), error()
+		: value_(value), hasError(false), error()
 	{
 	}
 
 	Result(ErrorInfo error)
-		: hasError(true), value_(), error(error)
+		: value_(), hasError(true), error(error)
 	{
 	}
 
-	T& value()
-	{
-		if (hasError) 
-			throw std::runtime_error("Attempting to access value of an error Result");
-
-		return value_;
-	}
+	T& value();
 };
+
+template<typename T>
+inline T& Result<T>::value()
+{
+	if (hasError)
+		throw std::runtime_error("Attempting to access value of an error Result");
+
+	return value_;
+}

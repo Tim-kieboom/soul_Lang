@@ -27,10 +27,21 @@ static void addInternalFunctions_ToMetaData(/*out*/ MetaData& metaData)
 	}
 }
 
+static void addC_strToGlobalScope(MetaData& metaData)
+{
+	for(const auto& pair : metaData.c_strStore)
+	{
+		VarInfo c_str = VarInfo(string_copyTo_c_str(pair.second.name), Type::str, false);
+		metaData.addToGlobalScope(c_str);
+	}
+}
+
 Result<string> transpileToCpp(const vector<Token> tokens, const TranspilerOptions& option, MetaData& metaData)
 {
 	metaData.addCppInclude("utility", "#include <utility>");
 	metaData.addCppInclude("cstdint", "#include <cstdint>");
+	metaData.addCppInclude("sstream", "#include <sstream>");
+	metaData.addCppInclude("utility", "#include <utility>");
 	metaData.addCppInclude("assert.h", "#include <assert.h>");
 	metaData.addCppInclude("iostream", "#include <iostream>");
 	metaData.addCppInclude("stdexcept", "#include <stdexcept>");
@@ -38,6 +49,7 @@ Result<string> transpileToCpp(const vector<Token> tokens, const TranspilerOption
 
 	stringstream fileStream;
 
+	addC_strToGlobalScope(/*out*/metaData);
 	addConstStrings_ToStream(/*out*/fileStream, metaData);
 
 	bool validEnd = true;

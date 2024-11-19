@@ -17,12 +17,29 @@ bool checkName(const std::string& name)
 	return !string_contains(name, illigalNameSymbols);
 }
 
+DuckType getDuckType_fromValue(const std::string& value)
+{
+	if (checkValue(value, DuckType::character))
+		return DuckType::character;
+
+	if (checkValue(value, DuckType::number))
+		return DuckType::number;
+
+	if (checkValue(value, DuckType::text))
+		return DuckType::text;
+
+	return DuckType::invalid;
+}
+
 bool checkValue(const std::string& value, DuckType type)
 {
 	switch (type)
 	{
 	case DuckType::number:
-		return checkValue(value, TypeCategory::floatingPoint) || checkValue(value, TypeCategory::interger) || checkValue(value, TypeCategory::unsignedInterger) || checkValue(value, TypeCategory::boolean);
+		return checkValue(value, TypeCategory::boolean) ||
+			   checkValue(value, TypeCategory::interger) ||
+			   checkValue(value, TypeCategory::floatingPoint) ||
+			   checkValue(value, TypeCategory::unsignedInterger);
 
 	case DuckType::compile_dynamic:
 		return checkValue(value, TypeCategory::compile_dynamic);
@@ -49,8 +66,9 @@ bool checkValue(const std::string& value, TypeCategory category)
 	switch (category)
 	{
 	case TypeCategory::compile_dynamic:
+		return getDuckType_fromValue(value) != DuckType::invalid;
 	case TypeCategory::text:
-		return true;
+		return false;
 	case TypeCategory::interger:
 	{
 		char* end;
@@ -71,7 +89,18 @@ bool checkValue(const std::string& value, TypeCategory category)
 	}
 	case TypeCategory::character:
 	{
-		return value.length() == 3 && string_count(value, '\'') == 2;
+		if(string_contains(value, '\\'))
+		{
+			if (value.length() > 4)
+				return false;
+		}
+		else
+		{
+			if (value.length() > 3)
+				return false;
+		}
+
+		return string_count(value, '\'') == 2;
 	}
 	case TypeCategory::floatingPoint:
 	{

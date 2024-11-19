@@ -24,7 +24,7 @@ struct TokenIterator
 
 	bool nextToken(std::string& tokenText, int64_t step = 1)
 	{
-		if (i + step > (int64_t)tokens.size())
+		if (i + step >= (int64_t)tokens.size())
 			return false;
 
 		i += step;

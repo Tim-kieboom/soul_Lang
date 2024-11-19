@@ -185,10 +185,16 @@ static inline bool storeRawString_inMap(/*out*/ string& sourceFile, /*out*/ Meta
 
     vector<uint32_t> _inStringIndexes = string_find(sourceFile, "\\\"");
     unordered_set<uint32_t> inStringIndexes(_inStringIndexes.begin(), _inStringIndexes.end());
-    for(uint32_t i = 0; i < indexes.size(); i++)
+    
+    uint64_t size = indexes.size();
+    for(uint32_t i = 0; i < size; i++)
     {
-        if(inStringIndexes.find(indexes.at(i)-1) != inStringIndexes.end())
+        if (inStringIndexes.find(indexes.at(i) - 1) != inStringIndexes.end())
+        {
             indexes.erase(indexes.begin() + i);
+            i--;
+            size--;
+        }
     }
 
     uint64_t c_strCounter = 0;
@@ -245,8 +251,6 @@ vector<Token> tokenize(/*out*/ string& sourceFile, /*out*/ MetaData& metaData)
 {
     vector<Token> tokenizer;
     tokenizer.reserve(string_count(sourceFile, ' '));
-
-    string_replace(sourceFile, '\t', ' ');
     
     if (!removeComment(/*out*/sourceFile))
         return {};
@@ -260,10 +264,22 @@ vector<Token> tokenize(/*out*/ string& sourceFile, /*out*/ MetaData& metaData)
     if (!checkBrackets(sourceFile))
         return {};
 
+    bool isInvis = false;
+
+    string_replace(sourceFile, '\t', ' ');
     vector<string> lines = string_split(sourceFile, '\n');
     for (uint32_t i = 0; i < lines.size(); i += 2)
     {
         string line = lines.at(i);
+        if (string_contains(line, "#invis"))
+            isInvis = true;
+
+        if (string_contains(line, "#endInvis"))
+            isInvis = false;
+
+        if (isInvis)
+            continue;
+
         string rawLineNumber = lines.at(i + 1);
         string_remove(line, '\n');
         string_remove(rawLineNumber, { '\n', ' ' });

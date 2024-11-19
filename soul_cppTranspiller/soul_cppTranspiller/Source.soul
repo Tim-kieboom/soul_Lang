@@ -54,11 +54,18 @@ func handleResult(bool value): str
 }
 
 
+*/
+#invis
+//for syntax highlighting
+func println(string msg);
 struct func;
 struct mut;
 class i32;
-func println(string msg);
-*/
+class str;
+class none;
+class f;
+#endInvis
+
 
 func sum(i32 a, i32 b): i32
 {
@@ -76,15 +83,45 @@ func increment(out i32 a): none
 	a++;
 }
 
+//func testIf(): none
+//{
+//	if (true) 
+//	{
+//		println("if is true");
+//	}
+
+//	if (true)
+//		println("if compact true");
+
+//	if (false)
+//	{ 
+//		println("do not print");
+//	} 
+//	else if (false)
+//	{ 
+//		println("do not print");
+//	} 
+//	else
+//	{	
+//		println("print");
+//	}
+//}
+
 func main(): i32
 {
-	println("------ sum ------\n");
+	const str tokenizeHell = " ()--,./\\;' \t \n \r \\ \' {} !@#$%^&*() \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\" ";
+
+//testIf();
+bool test = (1 == 1);
+println(test);
+
+    println("------ sum ------\n");
 	i32 result = sum(1, 2);
 	println(result); //prints 3
 
 	println("\n\n------ sumPlusOne ------\n");
-	i32 sumPlus = sumPlusOne(1, 2);
-	println(f"sumPlus: {sumPlus}"); //prints 4
+	result = sumPlusOne(1, 2);
+	println(f"sumPlus: {result}"); //prints 4
 
 	println("\n\n------ increment ------\n");
 	i32 value = 1;
@@ -94,5 +131,5 @@ func main(): i32
 
 	//increment(out i32 initInOutValue);
 	//println(f"after increment initInOutValue: {value}"); //prints 1
-
+	//return 0;
 }

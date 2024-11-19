@@ -1,9 +1,11 @@
-
+#include <array>
 #include <string>
 #include <memory>
+#include <fstream>
 #include <sstream>
 #include <iostream>
-#include <fstream>
+#include <stdexcept>
+#include <cstdio>
 
 #include "readFile.h"
 #include "tokenizer.h"
@@ -37,11 +39,60 @@ void printTokenizer(const string& sourceFile, const vector<Token>& tokens, const
     cout << endl;
 }
 
-int main()
+#ifdef _WIN32
+    #define popen _popen
+    #define pclose _pclose
+#elif defined(__APPLE__) || defined(__linux__)
+    #include <cstdio>
+#else
+    #error "Unsupported platform"
+#endif
+
+static string execAndPrint(const char* cmd)
 {
-    const char* path = "Source.soul";
-    const char* hardCodedPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\tkang\\tkang\\hardCodedFunctions.cpp";
-    const char* outputPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soulOutput\\out.cpp";
+    string result;
+
+    try
+    {
+        array<char, 128> buffer;
+        unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+        if (!pipe)
+            throw std::runtime_error("popen() failed!");
+
+        while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+            result += buffer.data();
+    }
+    catch (exception ex)
+    {
+        return "execute: " + string(cmd) + ", failed" + string(ex.what());
+    }
+
+    return result;
+}
+
+constexpr const char* test_Path = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_cppTranspiller\\Source.soul";
+constexpr const char* test_outputPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soulOutput\\out.cpp";
+constexpr const char* test_hardCodedPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_hardCodedFunctions\\soul_hardCodedFunctions.cpp";
+
+
+int main(int argc, char* argv[])
+{
+    const char* path;
+    const char* outputPath = "out.cpp";
+    const char* hardCodedPath = "soul_hardCodedFunctions.cpp";
+
+    if (argc == 1)
+    {
+        path = test_Path;
+        outputPath = test_outputPath;
+        hardCodedPath = test_hardCodedPath;
+    }
+    else
+    {
+        path = argv[1];
+    }
+
+
 
     int64_t lineCount;
     int64_t libLineCount;
@@ -53,7 +104,7 @@ int main()
         exit(1);
     }
 
-    printFile(sourceFile);
+    //printFile(sourceFile);
 
     MetaData metaData;
     vector<Token> tokens = tokenize(/*out*/ sourceFile, /*out*/metaData);
@@ -64,7 +115,7 @@ int main()
         exit(1);
     }
 
-    printTokenizer(sourceFile, tokens, metaData.c_strStore);
+    //printTokenizer(sourceFile, tokens, metaData.c_strStore);
 
     try
     {
@@ -78,8 +129,12 @@ int main()
         }
 
         ofstream fileWriter(outputPath);
-        fileWriter << metaData.getCpptIncludes() << result.value();
+        fileWriter << metaData.getCpptIncludes() << hardCodeLib << result.value();
         fileWriter.close();
+
+        execAndPrint(("g++ " + string(outputPath)).c_str());
+        string output = execAndPrint("a.exe");
+        cout << output << endl;
     }
     catch (exception ex)
     {

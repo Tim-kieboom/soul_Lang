@@ -9,13 +9,13 @@ static const initializer_list<const char*> allConditionOparations = { "<", ">", 
 
 #define ERROR_VarSetter ErrorInfo("var setter incomplete", iterator.currentLine);
 
-static inline Result<void*> convertBoolSetter(/*out*/stringstream& ss, /*out*/string& token, /*out*/TokenIterator& iterator, const FuncInfo& funcInfo)
+static inline Result<void*> convertBoolSetter(/*out*/stringstream& ss, /*out*/string& token, /*out*/TokenIterator& iterator, MetaData& metaData, const FuncInfo& funcInfo)
 {
 	string leftCondition;
 	if (!iterator.peekToken(/*out*/leftCondition, /*step:*/-1))
 		return ERROR_VarSetter;
 
-	Result<VarInfo> leftVarResult = getVarFromScope(funcInfo, leftCondition);
+	Result<VarInfo> leftVarResult = getVarFromScope(funcInfo, metaData, leftCondition);
 	Type leftType = getType(leftCondition);
 
 	ss << token;
@@ -42,7 +42,7 @@ static inline Result<void*> convertBoolSetter(/*out*/stringstream& ss, /*out*/st
 	return {};
 }
 
-Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, const Type& type, const FuncInfo& funcInfo)
+Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, const Type& type, FuncInfo& funcInfo)
 {
 	stringstream ss;
 
@@ -50,7 +50,7 @@ Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, con
 	if (!iterator.nextToken(token, /*step:*/0))
 		return ERROR_VarSetter;
 
-	Result<VarInfo> varResult = getVarFromScope(funcInfo, token);
+	Result<VarInfo> varResult = getVarFromScope(funcInfo, metaData, token);
 	
 	FuncInfo callFunc;
 	if(metaData.TryGetfuncInfo(token, callFunc))
@@ -58,11 +58,13 @@ Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, con
 		if (getDuckType(type) != getDuckType(callFunc.returnType))
 			return ErrorInfo("incompatible type: " + string(toString(type)) + " to returnType of func: \'" + token + ": " + toString(callFunc.returnType) + "\'", iterator.currentLine);
 		
-		Result<string> callResult = convertFuncCall(iterator, metaData, callFunc, funcInfo);
+		Result<string> callResult = convertFuncCall(iterator, metaData, funcInfo.scope, callFunc, funcInfo);
 		if (callResult.hasError)
 			return callResult.error;
 
 		ss << callResult.value();
+		if (!iterator.nextToken(/*out*/token, /*steps:*/0))
+			return ERROR_VarSetter;
 	}
 	else
 	{
@@ -82,13 +84,13 @@ Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, con
 					return ErrorInfo("token: \'" + token + "\' is not valid as a variable", iterator.currentLine);
 			}
 		}
+		ss << token;
 	}
 
-	ss << token;
 
 	while(iterator.nextToken(/*out*/token))
 	{
-		Result<VarInfo> varResult = getVarFromScope(funcInfo, token);
+		Result<VarInfo> varResult = getVarFromScope(funcInfo, metaData, token);
 		if(token == ";")
 		{
 			ss << ";\n";
@@ -108,9 +110,16 @@ Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, con
 		}
 		else if(type == Type::bool_ && initListEquals(allConditionOparations, token))
 		{
-			Result<void*> result = convertBoolSetter(/*out*/ss, /*out*/token, /*out*/iterator, funcInfo);
+			Result<void*> result = convertBoolSetter(/*out*/ss, /*out*/token, /*out*/iterator, metaData, funcInfo);
 			if (result.hasError)
 				return result.error;
+		}
+		else if(metaData.checkC_str(token))
+		{
+			if (getDuckType(type) != DuckType::text)
+				return ErrorInfo("can not use c_str for type: \'" + toString(type) + '\'', iterator.currentLine);
+
+			ss << token;
 		}
 		else
 		{
