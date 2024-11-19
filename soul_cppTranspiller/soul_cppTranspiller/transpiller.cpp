@@ -8,6 +8,8 @@
 
 using namespace std;
 
+#define PASS(type, result, function) type _result_; if ((_result_ = convertFuncDeclaration(/*out*/iterator, /*out*/metaData, /*out*/funcInfo)).hasError) return _result_.error; else result = _result_.value();
+
 static void addConstStrings_ToStream(/*out*/ stringstream& fileStream, const MetaData& metaData)
 {
 	fileStream << "\n";
@@ -38,6 +40,8 @@ static void addC_strToGlobalScope(MetaData& metaData)
 
 Result<string> transpileToCpp(const vector<Token> tokens, const TranspilerOptions& option, MetaData& metaData)
 {
+	stringstream fileStream;
+
 	metaData.addCppInclude("utility", "#include <utility>");
 	metaData.addCppInclude("cstdint", "#include <cstdint>");
 	metaData.addCppInclude("sstream", "#include <sstream>");
@@ -45,18 +49,15 @@ Result<string> transpileToCpp(const vector<Token> tokens, const TranspilerOption
 	metaData.addCppInclude("assert.h", "#include <assert.h>");
 	metaData.addCppInclude("iostream", "#include <iostream>");
 	metaData.addCppInclude("stdexcept", "#include <stdexcept>");
-	addInternalFunctions_ToMetaData(/*out*/metaData);
-
-	stringstream fileStream;
 
 	addC_strToGlobalScope(/*out*/metaData);
+	addInternalFunctions_ToMetaData(/*out*/metaData);
 	addConstStrings_ToStream(/*out*/fileStream, metaData);
 
 	bool validEnd = true;
 
 	string token;
 	TokenIterator iterator(tokens);
-
 	while (iterator.nextToken(/*out*/token))
 	{
 		if (token == "func")
@@ -74,7 +75,7 @@ Result<string> transpileToCpp(const vector<Token> tokens, const TranspilerOption
 			if (funcBody.hasError)
 				return funcBody.error;
 
-			fileStream << "{\n" << funcBody.value();
+			fileStream << funcBody.value();
 			validEnd = true;
 		}
 	}

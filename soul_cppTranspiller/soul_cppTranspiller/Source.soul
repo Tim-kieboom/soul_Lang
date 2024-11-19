@@ -83,39 +83,34 @@ func increment(out i32 a): none
 	a++;
 }
 
-//func testIf(): none
-//{
-//	if (true) 
-//	{
-//		println("if is true");
-//	}
+func testIf(bool condition): none
+{
+	if (condition) 
+	{
+		println("if is true");
+	}
 
-//	if (true)
-//		println("if compact true");
-
-//	if (false)
-//	{ 
-//		println("do not print");
-//	} 
-//	else if (false)
-//	{ 
-//		println("do not print");
-//	} 
-//	else
-//	{	
-//		println("print");
-//	}
-//}
+	if (!condition)
+	{
+		println("do not print");
+	}
+	else if (!condition)
+	{
+		println("do not print");
+	}
+	else
+	{
+		println("print");
+	}
+}
 
 func main(): i32
 {
 	const str tokenizeHell = " ()--,./\\;' \t \n \r \\ \' {} !@#$%^&*() \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\" ";
 
-//testIf();
-bool test = (1 == 1);
-println(test);
+	testIf(true);
 
-    println("------ sum ------\n");
+	println("------ sum ------\n");
 	i32 result = sum(1, 2);
 	println(result); //prints 3
 

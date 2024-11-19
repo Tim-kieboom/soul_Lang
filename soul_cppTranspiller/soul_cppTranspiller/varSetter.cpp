@@ -1,4 +1,6 @@
 #include "varSetter.h"
+#include <sstream>
+
 #include "scope.h"
 #include "callFunc.h"
 #include "soulCheckers.h"
@@ -16,7 +18,7 @@ static inline Result<void*> convertBoolSetter(/*out*/stringstream& ss, /*out*/st
 		return ERROR_VarSetter;
 
 	Result<VarInfo> leftVarResult = getVarFromScope(funcInfo, metaData, leftCondition);
-	Type leftType = getType(leftCondition);
+	DuckType leftType = getDuckType_fromValue(leftCondition);
 
 	ss << token;
 	if (!iterator.nextToken(/*out*/token))
@@ -28,9 +30,9 @@ static inline Result<void*> convertBoolSetter(/*out*/stringstream& ss, /*out*/st
 		if (!checkValue(token, getDuckType(leftVar.type)))
 			return ErrorInfo("condition invalid, left: \'" + leftCondition + "\', right: \'" + token + '\'', iterator.currentLine);
 	}
-	else if (leftType != Type::invalid)
+	else if (leftType != DuckType::invalid)
 	{
-		if (!checkValue(token, getDuckType(leftType)))
+		if (!checkValue(token, leftType))
 			return ErrorInfo("condition invalid, left: \'" + leftCondition + "\', right: \'" + token + '\'', iterator.currentLine);
 	}
 	else
@@ -42,7 +44,58 @@ static inline Result<void*> convertBoolSetter(/*out*/stringstream& ss, /*out*/st
 	return {};
 }
 
-Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, const Type& type, FuncInfo& funcInfo)
+static inline Result<bool> endOfVarSetter(TokenIterator& iterator, stringstream& ss, uint32_t openBracketStack, const varSetter_Option& option)
+{
+	string endOp;
+	if (!iterator.peekToken(/*out*/endOp))
+		return ERROR_VarSetter;
+
+	switch (option)
+	{
+	case varSetter_Option::endComma:
+	{
+		if (endOp == ",")
+		{
+			ss << ", ";
+			return true;
+		}
+	}
+	break;
+
+	case varSetter_Option::endRoundBracket:
+	{
+		if (!iterator.peekToken(/*out*/endOp, /*step:*/0))
+			return ERROR_VarSetter;
+
+		if (endOp == ")" && openBracketStack == 0)
+		{
+			return true;
+		}
+	}
+	break;
+
+	case varSetter_Option::endSemiColon:
+	{
+		if (endOp == ";")
+		{
+			ss << ";\n";
+			if (!iterator.skipToken())
+				return ERROR_VarSetter;
+
+			return true;
+		}
+	}
+	break;
+
+	default:
+		return ErrorInfo("incorrect varSetter_Option", iterator.currentLine);
+		break;
+	}
+
+	return false;
+}
+
+Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, const Type& type, FuncInfo& funcInfo, const varSetter_Option& option)
 {
 	stringstream ss;
 
@@ -50,8 +103,31 @@ Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, con
 	if (!iterator.nextToken(token, /*step:*/0))
 		return ERROR_VarSetter;
 
+	uint32_t openBracketStack = 0;
+
+	while(true)
+	{
+		if (token == "(")
+		{
+			openBracketStack++;
+			ss << '(';
+		}
+		else if (token == ")")
+		{
+			openBracketStack--;
+			ss << ')';
+		}
+		else
+		{
+			break;
+		}
+
+		if (!iterator.nextToken(/*out*/token))
+			return ERROR_VarSetter;
+	}
+
 	Result<VarInfo> varResult = getVarFromScope(funcInfo, metaData, token);
-	
+
 	FuncInfo callFunc;
 	if(metaData.TryGetfuncInfo(token, callFunc))
 	{
@@ -75,13 +151,11 @@ Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, con
 				!((category == TypeCategory::unsignedInterger || category == TypeCategory::interger) && initListEquals({ "++", "--" }, token))
 			)
 		{
-			if (varResult.hasError && !checkValue(token, type))
+			if(varResult.hasError && !checkValue(token, getDuckType(type)))
 			{
-				if (!checkValue(token, type))
-					return ErrorInfo("token: \'" + token + "\' is not valid for type: " + toString(type), iterator.currentLine);
-
-				if (varResult.hasError)
-					return ErrorInfo("token: \'" + token + "\' is not valid as a variable", iterator.currentLine);
+				return (varResult.hasError)
+					? ErrorInfo("token: \'" + token + "\' is not valid as a variable", iterator.currentLine)
+					: ErrorInfo("token: \'" + token + "\' is not valid for type: " + toString(type), iterator.currentLine);
 			}
 		}
 		ss << token;
@@ -91,7 +165,18 @@ Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, con
 	while(iterator.nextToken(/*out*/token))
 	{
 		Result<VarInfo> varResult = getVarFromScope(funcInfo, metaData, token);
-		if(token == ";")
+		
+		if (token == "(")
+		{
+			openBracketStack++;
+			ss << token;
+		}
+		else if (token == ")")
+		{
+			openBracketStack--;
+			ss << token;
+		}
+		else if(token == ";")
 		{
 			ss << ";\n";
 			return ss.str();
@@ -126,22 +211,13 @@ Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, con
 			return ErrorInfo("variable oparation invalid invalidToken: \'" + token + "\'", iterator.currentLine);
 		}
 
-		string endOp;
-		if (!iterator.peekToken(/*out*/endOp))
-			return ERROR_VarSetter;
+		Result<bool> isEndResult = endOfVarSetter(iterator, ss, openBracketStack, option);
+		if (isEndResult.hasError)
+			return isEndResult.error;
 
-		if (endOp == ",")
-		{
+		if (isEndResult.value() == true)
 			return ss.str();
-		}
-		else if (endOp == ";")
-		{
-			if (!iterator.skipToken())
-				return ERROR_VarSetter;
-			ss << ";\n";
-			return ss.str();
-		}
-	}
+	}	
 
 	return ERROR_VarSetter;
 }

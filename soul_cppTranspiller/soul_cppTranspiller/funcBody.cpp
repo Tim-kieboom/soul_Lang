@@ -10,7 +10,7 @@
 
 using namespace std;
 
-initializer_list<const char*> bodiedStatements = { "if", "else", "while", "for"};
+initializer_list<const char*> bodiedStatements = { "if", "else", "while", "for" };
 
 #define ERROR_var ErrorInfo("incomplete functionBody funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine)
 #define ERROR_varInit ErrorInfo("incomplete functionBody funcName: \'" + string(callFunc.funcName) + '\'', iterator.currentLine)
@@ -41,7 +41,7 @@ static inline Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterato
 		return ss.str();
 	}
 
-	Result<string> varSetResult = convertVarSetter(iterator, metaData, varInfo.type, funcInfo);
+	Result<string> varSetResult = convertVarSetter(iterator, metaData, varInfo.type, funcInfo, varSetter_Option::endSemiColon);
 	if (varSetResult.hasError)
 		return varSetResult.error;
 
@@ -81,7 +81,7 @@ static inline Result<string> convertVarInit(Type type, bool isMutable, TokenIter
 	if (!iterator.nextToken(/*out*/token))
 		return ERROR_varInit;
 
-	Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, callFunc);
+	Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, callFunc, varSetter_Option::endSemiColon);
 	if (varSetterResult.hasError)
 		return varSetterResult.error;
 
@@ -89,6 +89,58 @@ static inline Result<string> convertVarInit(Type type, bool isMutable, TokenIter
 	return ss.str();
 }
 
+static inline Result<string> convertBodiedStatement(TokenIterator& iterator, FuncInfo& funcInfo, MetaData& metaData)
+{
+	stringstream ss;
+
+	string token;
+	if (!iterator.peekToken(/*out*/token, /*step:*/0))
+		return ERROR_funcBody;
+
+	string bodiedStatment = token;
+
+	string nextToken;
+	if (!iterator.nextToken(/*out*/nextToken))
+		return ERROR_funcBody;
+
+	if (token == "else" && nextToken == "if")
+	{
+		bodiedStatment = "else if";
+		if (!iterator.nextToken(/*out*/token))
+			return ERROR_funcBody;
+	}
+	else
+	{
+		token = nextToken;
+	}
+
+	bool isConditionalStatement = !initListEquals({ "else" }, bodiedStatment);
+	if (isConditionalStatement)
+	{
+		if (token != "(")
+			return ErrorInfo("bodiedStatement: \'" + token + "\' doesn't start with '('", iterator.currentLine);
+
+		Result<string> varSetterResult = convertVarSetter(iterator, metaData, Type::bool_, funcInfo, varSetter_Option::endRoundBracket);
+		if (varSetterResult.hasError)
+			return varSetterResult.error;
+
+		ss << bodiedStatment << varSetterResult.value();
+	}
+	else
+	{
+		if (!iterator.nextToken(/*out*/token, /*step:*/-1))
+			return ERROR_funcBody;
+	
+		ss << bodiedStatment;
+	}
+
+	Result<string> bodyResult = convertFunctionBody(iterator, funcInfo, metaData);
+	if (bodyResult.hasError)
+		return bodyResult.error;
+
+	ss << bodyResult.value();
+	return ss.str();
+}
 
 Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, MetaData& metaData)
 {
@@ -101,12 +153,15 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 	if (token != "{")
 		return ErrorInfo("no '{' after function declaration, funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine);
 
+	ss << "{\n";
+
 	uint32_t openCurlyBracketCounter = 0;
 
 	while(iterator.nextToken(/*out*/token))
 	{
-		if (iterator.currentLine >= 115)
+		if (iterator.currentLine >= 111)
 			int debug = 0;
+
 
 		if (token == "{")
 		{
@@ -178,7 +233,7 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 			if (!iterator.skipToken())
 				break;
 
-			Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, funcInfo);
+			Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, funcInfo, varSetter_Option::endSemiColon);
 			if (varSetterResult.hasError)
 				return varSetterResult.error;
 
@@ -186,32 +241,11 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 		}
 		else if (initListEquals(bodiedStatements, token))
 		{
-			string bodiedStatment = token;
+			Result<string> statementResult = convertBodiedStatement(iterator, funcInfo, metaData);
+			if (statementResult.hasError)
+				return statementResult.error;
 
-			string nextToken;
-			if (!iterator.peekToken(/*out*/nextToken))
-				return ERROR_funcBody;
-
-			if (token == "else" && nextToken == "if")
-			{
-				if (!iterator.nextToken(/*out*/nextToken, /*step:*/3))
-					return ERROR_funcBody;
-			}
-			else
-			{
-				if (!iterator.nextToken(/*out*/token, /*step:*/2))
-					return ERROR_funcBody;
-			}
-
-			if (nextToken != "(")
-				return ErrorInfo("bodiedStatement: \'" + token + "\' doesn't start with '('", iterator.currentLine);
-
-			Result<string> varSetterResult = convertVarSetter(iterator, metaData, Type::bool_, funcInfo);
-			if (varSetterResult.hasError)
-				return varSetterResult.error;
-
-			ss << bodiedStatment << varSetterResult.value();
-			Result<string> bodyResult = convertFunctionBody(iterator, funcInfo, metaData);
+			ss << statementResult.value();
 		}
 		else
 		{
