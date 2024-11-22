@@ -55,6 +55,8 @@ func handleResult(bool value): str
 
 
 */
+
+//invis till endInvis is removed by tokenizer
 #invis
 //for syntax highlighting
 func println(string msg);
@@ -90,6 +92,29 @@ func testIf(bool condition): none
 		println("if is true");
 	}
 
+	if (condition == true)
+	{
+		println("if is true");
+	}
+
+	if (!condition)
+	{
+		println("do not print");
+	}
+	else
+	{
+		println("if is true");
+	}
+
+	if (!condition)
+	{
+		println("do not print");
+	}
+	else if (condition)
+	{
+		println("print else if");
+	}
+
 	if (!condition)
 	{
 		println("do not print");
@@ -100,7 +125,7 @@ func testIf(bool condition): none
 	}
 	else
 	{
-		println("print");
+		println("print else");
 	}
 }
 

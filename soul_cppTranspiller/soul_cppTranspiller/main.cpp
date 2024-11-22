@@ -1,11 +1,13 @@
 #include <array>
 #include <string>
 #include <memory>
+#include <cstdio>
+#include <chrono>
+#include <thread>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
-#include <cstdio>
 
 #include "readFile.h"
 #include "tokenizer.h"
@@ -50,19 +52,28 @@ void printTokenizer(const string& sourceFile, const vector<Token>& tokens, const
 
 static string execAndPrint(const char* cmd)
 {
+    if (cmd == nullptr)
+        return nullptr;
+
     string result;
 
     try
     {
-        array<char, 128> buffer;
+        vector<char> buffer(128);
         unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
         if (!pipe)
             throw std::runtime_error("popen() failed!");
 
-        while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+        while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr)
+        {
             result += buffer.data();
+            if (result.size() > 1000000) // Arbitrary limit to prevent excessive memory usage
+            {  
+                throw std::runtime_error("Output too large");
+            }
+        }
     }
-    catch (exception ex)
+    catch (const std::exception ex)
     {
         return "execute: " + string(cmd) + ", failed" + string(ex.what());
     }
@@ -104,25 +115,30 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    //printFile(sourceFile);
+    printFile(sourceFile);
 
     MetaData metaData;
-    vector<Token> tokens = tokenize(/*out*/ sourceFile, /*out*/metaData);
-    if (tokens.empty())
+    Result<vector<Token>> tokensResult = tokenize(/*out*/ sourceFile, /*out*/metaData);
+    if (tokensResult.hasError)
     {
-        cout << "\n-------------- Tokens --------------\n\n";
-        cout << "!warning! tokenizer empty\n";
+        int64_t charNumber = tokensResult.error.lineNumber;
+        string str = sourceFile.substr(0, charNumber);
+        vector<uint32_t> lineIndex = string_find(str, "\n");
+        uint32_t lineNumber = lineIndex.size() / 2;
+
+        cout << sourceFile << endl;
+        cout << "tokenizeError: " << tokensResult.error.message << ", charIndex: " << charNumber << ", prediced lineNumber: " << lineNumber;
         exit(1);
     }
+    vector<Token> tokens = tokensResult.value();
 
-    //printTokenizer(sourceFile, tokens, metaData.c_strStore);
-
+    printTokenizer(sourceFile, tokens, metaData.c_strStore);
     try
     {
         Result<string> result = transpileToCpp(tokens, TranspilerOptions(), /*out*/ metaData);
         if (result.hasError)
         {
-            cout << result.error.message << ", onLine: " << result.error.lineNumber;    
+            cout << "transpillerError: " << result.error.message << ", onLine: " << result.error.lineNumber;
         #ifdef NDEBUG
             exit(1);
         #endif
@@ -131,6 +147,8 @@ int main(int argc, char* argv[])
         ofstream fileWriter(outputPath);
         fileWriter << metaData.getCpptIncludes() << hardCodeLib << result.value();
         fileWriter.close();
+
+        this_thread::sleep_for(5ms);
 
         execAndPrint(("g++ " + string(outputPath)).c_str());
         string output = execAndPrint("a.exe");

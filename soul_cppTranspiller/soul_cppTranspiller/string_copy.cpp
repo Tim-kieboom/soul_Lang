@@ -11,6 +11,15 @@ const char* string_copyTo_c_str(const string& str)
 	return buffer;
 }
 
+const char* string_copyTo_c_str(const char* str)
+{
+	uint64_t strlength = strlen(str);
+	char* buffer = new char[strlength + 1];
+	copy(str, str + strlength, buffer);
+	buffer[strlength] = '\0';
+	return buffer;
+}
+
 string concatToString(const vector<string>& vect)
 {
 	stringstream ss;

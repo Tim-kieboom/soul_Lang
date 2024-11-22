@@ -14,63 +14,127 @@ static inline bool hasComments(char ch, char prevCh)
     return ch == '/' && prevCh == '/';
 }
 
-static inline bool removeComment(/*out*/ string& line)
+enum class RemoveComments_States
 {
-    char prevPrevCh = -1;
-    char prevCh = -1;
+    none,
+    inMultiLineComment,
+    inString 
+};
 
-    bool inString = false;
-    int64_t multiLineIndex = -1;
-    int64_t prevEndLine = -1;
+struct CharIterator
+{
+    char& ch;
+    string& str;
+    int64_t index = -1;
 
-    uint64_t size = line.size();
-    for (uint64_t i = 0; i < size; i++)
+    CharIterator(char& refChar, string& str)
+        : str(str), ch(refChar)
     {
-        const char& ch = line.at(i);
-
-        if (prevCh == '/' && ch == '*')
-        {
-            multiLineIndex = i;
-        }
-        else if (prevCh == '*' && ch == '/')
-        {
-            if (multiLineIndex == -1)
-            {
-                cout << "!!error!! '*/' without '/*'";
-                return false;
-            }
-
-            string_removeSpan(line, multiLineIndex - 1, i + 1);
-            uint64_t sizeLoss = size - line.size();
-            size = line.size();
-            i = i - sizeLoss;
-            multiLineIndex = -1;
-        }
-
-        if (ch == '\"')
-            inString = !inString;
-
-        if (inString)
-            continue;
-
-        if (hasComments(ch, prevCh))
-        {
-            int64_t prevIndex = (int64_t)i - 1;
-            uint32_t endOfComment = string_find(line, '\n', prevIndex).at(0);
-            string_replaceAt(line, prevIndex, endOfComment, " \n");
-
-            int64_t sizeLoss = size - line.size();
-            size = line.size();
-            i = (i == 0) ? 1 : endOfComment - sizeLoss;
-            prevCh = ch;
-            prevPrevCh = prevCh;
-        }
-
-        prevCh = ch;
-        prevPrevCh = prevCh;
     }
 
-    return true;
+    bool nextChar(int64_t step = 1)
+    {
+        if (index + step + 1 > (int64_t)str.size())
+            return false;
+
+        index += step;
+        ch = str.at(index);
+        return true;
+    }
+
+    bool setOffset(int64_t offset)
+    {
+        if (index + offset < 0 || index + offset > str.size())
+            return false;
+
+        index = index + offset;
+        ch = str.at(index);
+        return true;
+    }
+};
+
+static inline Result<void*> removeComments(/*out*/ string& file)
+{
+    RemoveComments_States state = RemoveComments_States::none;
+    uint32_t multiCommentStack = 0;
+    int64_t multiLineBeginIndex = -1;
+    int64_t prevEndLine = -1;
+
+    uint64_t size = file.size();
+
+    char it = -1;
+    char prevIt = -1;
+    char prevPrevIt = -1;
+    CharIterator iterator(/*out*/it, file);
+    while(iterator.nextChar())
+    {
+        switch(state)
+        {
+        case RemoveComments_States::none:
+        {
+            if (prevIt == '/' && it == '*')
+            {
+                multiCommentStack++;
+                multiLineBeginIndex = iterator.index;
+                state = RemoveComments_States::inMultiLineComment;
+            }
+            else if (prevIt == '/' && it == '/')
+            {
+                int64_t prevIndex = (int64_t)iterator.index - 1;
+                uint32_t endOfComment = string_find(file, '\n', prevIndex).at(0);
+                string_replaceAt(file, prevIndex, endOfComment, " \n");
+
+                int64_t offset = (iterator.index == 0) ? 1 : endOfComment - size - file.size();
+                iterator.setOffset(offset);
+            }
+            else if (it == '\"')
+            {
+                state = RemoveComments_States::inString;
+            }
+        }
+        break;
+
+        case RemoveComments_States::inString:
+        {
+            if (it == '\"' && prevIt != '\\')
+                state = RemoveComments_States::none;
+        }
+        break;
+
+        case RemoveComments_States::inMultiLineComment:
+        {
+            if (prevIt == '/' && it == '*')
+                multiCommentStack++;
+
+            if (prevIt == '*' && it == '/')
+            {
+                multiCommentStack--;
+                
+                if(multiLineBeginIndex < 0)
+                    return ErrorInfo("!!error!! tokenizer: '*/' without any '/*'", iterator.index);
+
+                if (multiCommentStack != 0)
+                    continue;
+
+                if (!string_removeSpan(file, multiLineBeginIndex - 1, iterator.index + 1))
+                    return ErrorInfo("string_removeSpan failed", iterator.index);
+
+                uint64_t sizeLoss = size - file.size();
+                size = file.size();
+                iterator.index = iterator.index - sizeLoss;
+                multiLineBeginIndex = -1;
+                state = RemoveComments_States::none;
+            }
+        }
+        break;
+
+        }
+
+        prevIt = it;
+        prevPrevIt = prevIt;
+    }
+
+    return {};
 }
 
 static inline int64_t findEndOfStringIndex(const string& str, uint32_t offset)
@@ -90,104 +154,40 @@ static inline int64_t findEndOfStringIndex(const string& str, uint32_t offset)
     return -1;
 }
 
-static inline bool checkBrackets(const string& sourceFile)
+static inline Result<void*> checkBrackets(const string& sourceFile)
 {
+    stringstream ss;
+
     if (string_count(sourceFile, '(') != string_count(sourceFile, ')'))
     {
-        cout << "uneven amount of open/closed round bracket '(' count: " << string_count(sourceFile, '(') << ", ')' count: " << string_count(sourceFile, ')') << endl;
-        return false;
+        ss << "uneven amount of open/closed round bracket '(' count: " << string_count(sourceFile, '(') << ", ')' count: " << string_count(sourceFile, ')');
+        return ErrorInfo(ss.str(), 0);
     }
 
     if (string_count(sourceFile, '{') != string_count(sourceFile, '}'))
     {
-        cout << "uneven amount of open/closed curly bracket '{' count: " << string_count(sourceFile, '{') << ", '}' count: " << string_count(sourceFile, '}') << endl;
-        return false;
+        ss << "uneven amount of open/closed curly bracket '{' count: " << string_count(sourceFile, '{') << ", '}' count: " << string_count(sourceFile, '}');
+        return ErrorInfo(ss.str(), 0);
     }
 
     if (string_count(sourceFile, '[') != string_count(sourceFile, ']'))
     {
-        cout << "uneven amount of open/closed square bracket '[' count: " << string_count(sourceFile, '[') << ", ']' count: " << string_count(sourceFile, ']') << endl;
-        return false;
+        ss << "uneven amount of open/closed square bracket '[' count: " << string_count(sourceFile, '[') << ", ']' count: " << string_count(sourceFile, ']');
+        return ErrorInfo(ss.str(), 0);
     }
 
-    return true;
+    return {};
 }
 
-static inline bool convertFormatStrings(/*out*/ string& sourceFile)
+static inline vector<uint32_t> getStringQoutePositions(const string& sourceFile)
 {
-    uint32_t amountOfqouts = string_count(sourceFile, "\"") - string_count(sourceFile, "\\\"");
-    if (amountOfqouts % 2 == 1)
-    {
-        cout << "\" count is uneven" << endl;
-        return false;
-    }
-
-    const string fromatFuncName = "__soul_format_string__";
-    
-    uint64_t offset = 0;
-    int64_t replaceOffet = 0;
-    uint64_t safetyCounter = 0;
-    while(safetyCounter++ < sourceFile.size())
-    {
-        int64_t index = string_findFirst(sourceFile, "f\"", offset);
-        if (index < 0)
-            break;
-
-        index -= replaceOffet;
-        int64_t endOfStringIndex = findEndOfStringIndex(sourceFile, (uint32_t)index+2);
-        if (endOfStringIndex < 0)
-        {
-            cout << "could not find endOfStringIndex" << endl;
-            return false;
-        }
-
-        string formatStringPart = sourceFile.substr(index, endOfStringIndex - index+1);
-        if(!checkBrackets(formatStringPart))
-        {
-            cout << "in convertFormatString index: " << index << endl;
-            return false;
-        }
-
-        uint64_t oldSize = sourceFile.size();
-
-        string_replaceInSpan(sourceFile, "{", "\", ", (uint32_t)index, (uint32_t)endOfStringIndex);
-        replaceOffet = oldSize - sourceFile.size();
-        
-        index -= replaceOffet;
-        endOfStringIndex -= replaceOffet;
-        string_replaceInSpan(sourceFile, "}", ", \"", (uint32_t)index, (uint32_t)endOfStringIndex);
-        replaceOffet = oldSize - sourceFile.size();
-
-        endOfStringIndex -= replaceOffet;
-        string_replaceAt(sourceFile, endOfStringIndex-2, endOfStringIndex-1, "\")");
-        replaceOffet = oldSize - sourceFile.size();
-
-        offset = endOfStringIndex - replaceOffet;
-    }
-
-    string_replace(sourceFile, "f\"", fromatFuncName + "(\"");
-    return true;
-}
-
-static inline bool storeRawString_inMap(/*out*/ string& sourceFile, /*out*/ MetaData& metaData)
-{
-    unordered_map<string, C_strPair>& constStringStore = metaData.c_strStore;
-    uint64_t amountOfqouts = (uint64_t)string_count(sourceFile, "\"") - (uint64_t)string_count(sourceFile, "\\\"");
-    if (amountOfqouts % 2 == 1)
-    {
-        cout << "\" count is uneven" << endl;
-        return false;
-    }
-
-    int64_t replaceOffset = 0;
-    int64_t oldSize = sourceFile.size();
     vector<uint32_t> indexes = string_find(sourceFile, '\"');
 
     vector<uint32_t> _inStringIndexes = string_find(sourceFile, "\\\"");
     unordered_set<uint32_t> inStringIndexes(_inStringIndexes.begin(), _inStringIndexes.end());
-    
+
     uint64_t size = indexes.size();
-    for(uint32_t i = 0; i < size; i++)
+    for (uint32_t i = 0; i < size; i++)
     {
         if (inStringIndexes.find(indexes.at(i) - 1) != inStringIndexes.end())
         {
@@ -196,6 +196,80 @@ static inline bool storeRawString_inMap(/*out*/ string& sourceFile, /*out*/ Meta
             size--;
         }
     }
+
+    return indexes;
+}
+
+static inline Result<void*> formatString(const string& rawFormatString, /*out*/ string& sourceFile)
+{
+    string formatedString = rawFormatString;
+
+    //remove f from f""
+    formatedString.at(0) = ' ';
+
+    Result<void*> brackerResult = checkBrackets(formatedString);
+    if (brackerResult.hasError)
+        return brackerResult.error;
+
+    uint64_t oldSize = sourceFile.size();
+    string_replace(formatedString, "{", "\", ");
+    string_replace(formatedString, "}", ", \"");
+
+    formatedString = "__soul_format_string__(" + formatedString + ')';
+
+    uint32_t replaceCount = string_replace(sourceFile, rawFormatString, formatedString);
+    if (replaceCount == 0)
+        return ErrorInfo("formatString failed to replace old string to formated string", string_findFirst(sourceFile, formatedString));
+
+    return {};
+}
+
+static inline Result<void*> convertFormatStrings(/*out*/ string& sourceFile)
+{
+    uint32_t amountOfqouts = string_count(sourceFile, "\"") - string_count(sourceFile, "\\\"");
+    if (amountOfqouts % 2 == 1)
+       return ErrorInfo("\" count is uneven", 0);
+    
+    vector<uint32_t> indexes = getStringQoutePositions(sourceFile);
+    unordered_set<string> rawFormatStrings;
+
+    for (uint64_t i = 0; i < indexes.size(); i += 2)
+    {
+        int64_t index = indexes.at(i);
+        if (index <= 0)
+            continue;
+
+        if (sourceFile.at(index - 1) != 'f')
+            continue;
+
+
+        int64_t endOfStringIndex = findEndOfStringIndex(sourceFile, (uint32_t)index + 2);
+        if (endOfStringIndex < 0)
+            return ErrorInfo("could not find endOfStringIndex while tokenizing string format", index);
+
+        string formatString = sourceFile.substr(index - 1, endOfStringIndex - index + 2);
+
+        if(rawFormatStrings.find(formatString) == rawFormatStrings.end())
+            rawFormatStrings.insert(formatString);
+    }
+
+    for(const string& rawString : rawFormatStrings)
+        formatString(rawString, /*out*/sourceFile);
+
+    return {};
+}
+
+static inline Result<void*> storeRawString_inMap(/*out*/ string& sourceFile, /*out*/ MetaData& metaData)
+{
+    unordered_map<string, C_strPair>& constStringStore = metaData.c_strStore;
+    uint64_t amountOfqouts = (uint64_t)string_count(sourceFile, "\"") - (uint64_t)string_count(sourceFile, "\\\"");
+    if (amountOfqouts % 2 == 1)
+        return ErrorInfo("\" count is uneven", 0);
+
+    int64_t replaceOffset = 0;
+    int64_t oldSize = sourceFile.size();
+
+    vector<uint32_t> indexes = getStringQoutePositions(sourceFile);
 
     uint64_t c_strCounter = 0;
 
@@ -209,7 +283,9 @@ static inline bool storeRawString_inMap(/*out*/ string& sourceFile, /*out*/ Meta
         string rawStr = sourceFile.substr(begin, end - begin + 1);
         if (rawStrings.find(rawStr) != rawStrings.end()) //if c_str already exists
         {
-            string_replaceAt(sourceFile, begin, end + 1, rawStrings.at(rawStr));
+            if(!string_replaceAt(sourceFile, begin, end + 1, rawStrings.at(rawStr)))
+                return ErrorInfo("string_replaceAt failed while tokenizer is storing strings", begin);
+
             newSize = sourceFile.size();
             replaceOffset = newSize - oldSize;
             continue;
@@ -220,14 +296,16 @@ static inline bool storeRawString_inMap(/*out*/ string& sourceFile, /*out*/ Meta
         string c_strName = ss.str();
         rawStrings.insert({ rawStr, c_strName });
 
-        string_replaceAt(sourceFile, begin, end + 1, c_strName);
+        if(!string_replaceAt(sourceFile, begin, end + 1, c_strName))
+            return ErrorInfo("string_replaceAt failed while tokenizer is storing strings", begin);
+
         newSize = sourceFile.size();
         replaceOffset = newSize - oldSize;
 
         constStringStore[c_strName] = {string_copyTo_c_str(c_strName), string_copyTo_c_str(rawStr)};
     }
 
-    return true;
+    return {};
 }
 
 static inline void tokenizeLine(const string& line, vector<Token>& tokenizer, uint64_t& lineNumber)
@@ -247,48 +325,63 @@ static inline void tokenizeLine(const string& line, vector<Token>& tokenizer, ui
     }
 }
 
-vector<Token> tokenize(/*out*/ string& sourceFile, /*out*/ MetaData& metaData)
+Result<vector<Token>> tokenize(/*out*/ string& sourceFile, /*out*/ MetaData& metaData)
 {
-    vector<Token> tokenizer;
-    tokenizer.reserve(string_count(sourceFile, ' '));
-    
-    if (!removeComment(/*out*/sourceFile))
-        return {};
-
-    if (!convertFormatStrings(/*out*/ sourceFile))
-        return {};
-
-    if (!storeRawString_inMap(/*out*/ sourceFile, /*out*/ metaData))
-        return {};
-    
-    if (!checkBrackets(sourceFile))
-        return {};
-
-    bool isInvis = false;
-
-    string_replace(sourceFile, '\t', ' ');
-    vector<string> lines = string_split(sourceFile, '\n');
-    for (uint32_t i = 0; i < lines.size(); i += 2)
+    try
     {
-        string line = lines.at(i);
-        if (string_contains(line, "#invis"))
-            isInvis = true;
+        vector<Token> tokenizer;
+        tokenizer.reserve(string_count(sourceFile, ' '));
 
-        if (string_contains(line, "#endInvis"))
-            isInvis = false;
+        Result<void*> result;
+        result = removeComments(/*out*/sourceFile);
+        if (result.hasError)
+            return result.error;
 
-        if (isInvis)
-            continue;
+        result = convertFormatStrings(/*out*/ sourceFile);
+        if (result.hasError)
+            return result.error;
 
-        string rawLineNumber = lines.at(i + 1);
-        string_remove(line, '\n');
-        string_remove(rawLineNumber, { '\n', ' ' });
+        result = storeRawString_inMap(/*out*/ sourceFile, /*out*/ metaData);
+        if (result.hasError)
+            return result.error;
 
-        uint64_t lineNumber = stoul(rawLineNumber);
+        result = checkBrackets(sourceFile);
+        if (result.hasError)
+            return result.error;
 
-        tokenizeLine(line, /*out*/tokenizer, /*out*/lineNumber);
+        bool isInvis = false;
+
+        string_replace(sourceFile, '\t', ' ');
+        vector<string> lines = string_split(sourceFile, '\n');
+        for (uint32_t i = 0; i < lines.size(); i += 2)
+        {
+            string line = lines.at(i);
+            if (string_contains(line, "#invis"))
+                isInvis = true;
+
+            if (string_contains(line, "#endInvis"))
+            {
+                isInvis = false;
+                continue;
+            }
+
+            if (isInvis)
+                continue;
+
+            string rawLineNumber = lines.at(i + 1);
+            string_remove(line, '\n');
+            string_remove(rawLineNumber, { '\n', ' ' });
+
+            uint64_t lineNumber = stoul(rawLineNumber);
+
+            tokenizeLine(line, /*out*/tokenizer, /*out*/lineNumber);
+        }
+
+        tokenizer.resize(tokenizer.size());
+        return tokenizer;
     }
-
-    tokenizer.resize(tokenizer.size());
-    return tokenizer;
+    catch(exception ex)
+    {
+        return ErrorInfo(string("!!exception thrown!! ") + ex.what(), 0);
+    }
 }

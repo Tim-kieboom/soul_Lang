@@ -159,10 +159,6 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 
 	while(iterator.nextToken(/*out*/token))
 	{
-		if (iterator.currentLine >= 111)
-			int debug = 0;
-
-
 		if (token == "{")
 		{
 			openCurlyBracketCounter++;

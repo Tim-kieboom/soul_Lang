@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 
+const char* string_copyTo_c_str(const char* str);
 const char* string_copyTo_c_str(const std::string& str);
 
 std::string concatToString(const std::vector<std::string>& vect);

@@ -44,11 +44,11 @@ uint32_t string_count(const string& str, char findChar)
 
 uint32_t string_count(const string& str, const char* findStr)
 {
-	return string_find(str, findStr).size();
+	return (uint32_t)string_find(str, findStr).size();
 }
 
 
 uint32_t string_count(const string& str, string findStr)
 {
-	return string_find(str, findStr).size();
+	return (uint32_t)string_find(str, findStr).size();
 }

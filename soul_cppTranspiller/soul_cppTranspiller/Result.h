@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <string>
 #include <cstdint>
 #include <stdexcept>
 
@@ -7,17 +8,17 @@
 
 struct ErrorInfo
 {
-	const char* message = nullptr;
+	std::string message;
 	uint64_t lineNumber = 0;
 
 	ErrorInfo() = default;
 	ErrorInfo(const char* message, uint64_t lineNumber)
-		: message(message), lineNumber(lineNumber)
+		: message(std::string(message)), lineNumber(lineNumber)
 	{
 	}
 
 	ErrorInfo(const std::string& message, uint64_t lineNumber)
-		: message(string_copyTo_c_str(message)), lineNumber(lineNumber)
+		: message(message), lineNumber(lineNumber)
 	{
 	}
 };

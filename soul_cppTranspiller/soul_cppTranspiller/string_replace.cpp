@@ -115,12 +115,12 @@ bool string_replaceAt(string& str, int64_t begin, int64_t end, const char* repla
 	if (!string_removeSpan(str, begin, end))
 		return false;
 
+	if (begin < 0)
+		begin = str.size() + begin;
+
 	string endStr = str.substr(begin);
 	if (!string_removeSpan(str, begin, -1))
 		return false;
-
-	if (begin < 0)
-		begin = str.size() + begin;
 
 	str.append(replaceStr);
 	str.append(endStr);
