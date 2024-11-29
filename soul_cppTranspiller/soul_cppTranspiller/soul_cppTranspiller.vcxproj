@@ -164,6 +164,7 @@
     <ClInclude Include="FuncInfo.h" />
     <ClInclude Include="internalFunction.h" />
     <ClInclude Include="metaData.hpp" />
+    <ClInclude Include="nesting.hpp" />
     <ClInclude Include="readFile.h" />
     <ClInclude Include="Result.h" />
     <ClInclude Include="scope.h" />

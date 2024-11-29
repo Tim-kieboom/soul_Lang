@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
         int64_t charNumber = tokensResult.error.lineNumber;
         string str = sourceFile.substr(0, charNumber);
         vector<uint32_t> lineIndex = string_find(str, "\n");
-        uint32_t lineNumber = lineIndex.size() / 2;
+        uint64_t lineNumber = lineIndex.size() / 2;
 
         cout << sourceFile << endl;
         cout << "tokenizeError: " << tokensResult.error.message << ", charIndex: " << charNumber << ", prediced lineNumber: " << lineNumber;

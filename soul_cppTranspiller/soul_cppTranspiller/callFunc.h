@@ -5,4 +5,4 @@
 #include "Result.h"
 #include "TokenIterator.h"
 
-Result<std::string> convertFuncCall(TokenIterator& iterator, MetaData& metaData, const std::vector<VarInfo>& currentScope, FuncInfo& callFunc, FuncInfo& funcInfo);
+Result<std::string> convertFuncCall(TokenIterator& iterator, MetaData& metaData, Nesting& currentScope, FuncInfo& callFunc, FuncInfo& funcInfo);

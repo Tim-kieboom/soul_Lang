@@ -16,7 +16,7 @@ struct StoreArgsInfo
 	string token;
 };
 
-static inline Result<void*> storeArgument(const uint64_t currentline, StoreArgsInfo& storeArgsInfo, /*out*/ FuncInfo& funcInfo, /*out*/ vector<VarInfo>& scope)
+static inline Result<void*> storeArgument(const uint64_t currentline, StoreArgsInfo& storeArgsInfo, /*out*/ FuncInfo& funcInfo, /*out*/ Nesting& scope)
 {
 	string& token = storeArgsInfo.token;
 	if (storeArgsInfo.type == Type::invalid)
@@ -33,7 +33,7 @@ static inline Result<void*> storeArgument(const uint64_t currentline, StoreArgsI
 	auto varInfo = VarInfo(argName, type, argType_isMutable(argType), argType_isOptions(argType));
 
 	funcInfo.args.emplace_back(argInfo);
-	scope.emplace_back(varInfo);
+	scope.addVariable(varInfo);
 
 	storeArgsInfo.argName = "";
 	storeArgsInfo.defaultValue = "";
@@ -44,7 +44,7 @@ static inline Result<void*> storeArgument(const uint64_t currentline, StoreArgsI
 	return {};
 }
 
-static inline Result<void*> storeLastArgument(StoreArgsInfo& storeArgsInfo, /*out*/ TokenIterator& iterator, /*out*/ MetaData& metaData, /*out*/ FuncInfo& funcInfo, /*out*/ vector<VarInfo>& scope)
+static inline Result<void*> storeLastArgument(StoreArgsInfo& storeArgsInfo, /*out*/ TokenIterator& iterator, /*out*/ MetaData& metaData, /*out*/ FuncInfo& funcInfo, /*out*/ Nesting& scope)
 {
 	string& token = storeArgsInfo.token;
 	if (storeArgsInfo.type != Type::invalid)
@@ -74,7 +74,7 @@ static inline Result<void*> storeLastArgument(StoreArgsInfo& storeArgsInfo, /*ou
 	return {};
 }
 
-Result<void*> storeArguments(/*out*/ TokenIterator& iterator, /*out*/ MetaData& metaData, /*out*/ FuncInfo& funcInfo, /*out*/ vector<VarInfo>& scope)
+Result<void*> storeArguments(/*out*/ TokenIterator& iterator, /*out*/ MetaData& metaData, /*out*/ FuncInfo& funcInfo, /*out*/ Nesting& scope)
 {
 	StoreArgsInfo storeArgsInfo;
 	string& token = storeArgsInfo.token;

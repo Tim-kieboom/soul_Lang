@@ -236,5 +236,8 @@
     <ClInclude Include="varSetter.h">
       <Filter>Source Files\transpiller\func\funcBody\varSetter</Filter>
     </ClInclude>
+    <ClInclude Include="nesting.hpp">
+      <Filter>Source Files\transpiller\func\scope</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

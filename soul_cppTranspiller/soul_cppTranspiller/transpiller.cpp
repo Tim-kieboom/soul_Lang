@@ -10,7 +10,7 @@ using namespace std;
 
 #define PASS(type, result, function) type _result_; if ((_result_ = convertFuncDeclaration(/*out*/iterator, /*out*/metaData, /*out*/funcInfo)).hasError) return _result_.error; else result = _result_.value();
 
-static void addConstStrings_ToStream(/*out*/ stringstream& fileStream, const MetaData& metaData)
+static void addConstStrings_ToFile(/*out*/ stringstream& fileStream, const MetaData& metaData)
 {
 	fileStream << "\n";
 	for (const auto& keyValue : metaData.c_strStore)
@@ -24,9 +24,7 @@ static void addConstStrings_ToStream(/*out*/ stringstream& fileStream, const Met
 static void addInternalFunctions_ToMetaData(/*out*/ MetaData& metaData)
 {
 	for(const FuncInfo& funcInfo : internalFunctions)
-	{
 		metaData.addFuncInfo(string(funcInfo.funcName), funcInfo);
-	}
 }
 
 static void addC_strToGlobalScope(MetaData& metaData)
@@ -52,7 +50,7 @@ Result<string> transpileToCpp(const vector<Token> tokens, const TranspilerOption
 
 	addC_strToGlobalScope(/*out*/metaData);
 	addInternalFunctions_ToMetaData(/*out*/metaData);
-	addConstStrings_ToStream(/*out*/fileStream, metaData);
+	addConstStrings_ToFile(/*out*/fileStream, metaData);
 
 	bool validEnd = true;
 
@@ -71,7 +69,7 @@ Result<string> transpileToCpp(const vector<Token> tokens, const TranspilerOption
 				
 			fileStream << funcDecl.value();
 
-			Result<string> funcBody = convertFunctionBody(/*out*/iterator, /*out*/funcInfo, /*out*/metaData);
+			Result<string> funcBody = convertFunctionBody(/*out*/iterator, /*out*/funcInfo, /*out*/metaData, funcInfo.scope.at(0));
 			if (funcBody.hasError)
 				return funcBody.error;
 

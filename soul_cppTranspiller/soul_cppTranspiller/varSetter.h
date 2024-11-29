@@ -11,4 +11,4 @@ enum varSetter_Option
 	endRoundBracket
 };
 
-Result<std::string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, const Type& type, FuncInfo& funcInfo, const varSetter_Option& option);
+Result<std::string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, const Type& type, FuncInfo& funcInfo, Nesting& currentNesting, const varSetter_Option& option);

@@ -13,10 +13,10 @@ static inline Result<string> convertFuncDeclaration_arguments
 		/*out*/TokenIterator& iterator, 
 		/*out*/MetaData& metaData,
 		/*out*/FuncInfo& funcInfo, 
-		/*out*/vector<VarInfo>& scope
+		/*out*/vector<Nesting>& scope
 	)
 {
-	Result<void*> result = storeArguments(/*out*/iterator, /*out*/metaData, /*out*/funcInfo, /*out*/scope);
+	Result<void*> result = storeArguments(/*out*/iterator, /*out*/metaData, /*out*/funcInfo, /*out*/scope.at(0));
 	if (result.hasError)
 		return result.error;
 
@@ -53,8 +53,7 @@ Result<string> convertFuncDeclaration(/*out*/TokenIterator& iterator, /*out*/Met
 	
 		funcInfo = FuncInfo(string_copyTo_c_str(token));
 
-		vector<VarInfo>& scope = funcInfo.scope;
-		scope.reserve(20);
+		vector<Nesting>& scope = funcInfo.scope;
 
 		if (!iterator.nextToken(/*out*/token))
 			break;

@@ -1,18 +1,15 @@
 #include "scope.h"
 
-Result<VarInfo> getVarFromScope(const std::vector<VarInfo>& currentScope, const MetaData& metaData, const std::string& name)
+Result<VarInfo> getVarFromScope(const std::vector<Nesting>& currentScope, const MetaData& metaData, const std::string& name)
 {
-	for (const VarInfo& var : currentScope)
-	{
-		if (name == var.name)
-			return var;
-	}
-
-	for (const VarInfo& var : metaData.globalScope)
-	{
-		if (name == var.name)
-			return var;
-	}
+	//for (const Nesting& nesting : currentScope)
+	//{
+	//	//for (auto& var : nesting.vars)
+	//	//{
+	//	//	if (name == var.name)
+	//	//		return var;
+	//	//}
+	//}
 
 	return ErrorInfo("no varFound", 0);
 }

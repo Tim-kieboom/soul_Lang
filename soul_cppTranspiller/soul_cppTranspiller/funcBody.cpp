@@ -16,7 +16,7 @@ initializer_list<const char*> bodiedStatements = { "if", "else", "while", "for" 
 #define ERROR_varInit ErrorInfo("incomplete functionBody funcName: \'" + string(callFunc.funcName) + '\'', iterator.currentLine)
 #define ERROR_funcBody ErrorInfo("incomplete functionBody funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine);
 
-static inline Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo)
+static inline Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, Nesting& currentNesting)
 {
 	stringstream ss;
 
@@ -41,7 +41,7 @@ static inline Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterato
 		return ss.str();
 	}
 
-	Result<string> varSetResult = convertVarSetter(iterator, metaData, varInfo.type, funcInfo, varSetter_Option::endSemiColon);
+	Result<string> varSetResult = convertVarSetter(iterator, metaData, varInfo.type, funcInfo, currentNesting, varSetter_Option::endSemiColon);
 	if (varSetResult.hasError)
 		return varSetResult.error;
 
@@ -49,7 +49,7 @@ static inline Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterato
 	return ss.str();
 }
 
-static inline Result<string> convertVarInit(Type type, bool isMutable, TokenIterator& iterator, MetaData& metaData, FuncInfo& callFunc, FuncInfo& funcInfo)
+static inline Result<string> convertVarInit(Type type, bool isMutable, TokenIterator& iterator, MetaData& metaData, FuncInfo& callFunc, FuncInfo& funcInfo, Nesting& currentNesting)
 {
 	stringstream ss;
 	string token;
@@ -62,7 +62,8 @@ static inline Result<string> convertVarInit(Type type, bool isMutable, TokenIter
 
 	ss << typeToCppType(type) << ' ' << token;
 
-	funcInfo.scope.emplace_back(string_copyTo_c_str(token), type, isMutable);
+	auto varInfo = VarInfo(string_copyTo_c_str(token), type, isMutable);
+	currentNesting.addVariable(varInfo);
 
 	if (!iterator.nextToken(/*out*/token))
 		return ERROR_varInit;
@@ -81,7 +82,7 @@ static inline Result<string> convertVarInit(Type type, bool isMutable, TokenIter
 	if (!iterator.nextToken(/*out*/token))
 		return ERROR_varInit;
 
-	Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, callFunc, varSetter_Option::endSemiColon);
+	Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, callFunc, currentNesting, varSetter_Option::endSemiColon);
 	if (varSetterResult.hasError)
 		return varSetterResult.error;
 
@@ -89,7 +90,7 @@ static inline Result<string> convertVarInit(Type type, bool isMutable, TokenIter
 	return ss.str();
 }
 
-static inline Result<string> convertBodiedStatement(TokenIterator& iterator, FuncInfo& funcInfo, MetaData& metaData)
+static inline Result<string> convertBodiedStatement(TokenIterator& iterator, FuncInfo& funcInfo, MetaData& metaData, Nesting& currentNesting)
 {
 	stringstream ss;
 
@@ -120,7 +121,7 @@ static inline Result<string> convertBodiedStatement(TokenIterator& iterator, Fun
 		if (token != "(")
 			return ErrorInfo("bodiedStatement: \'" + token + "\' doesn't start with '('", iterator.currentLine);
 
-		Result<string> varSetterResult = convertVarSetter(iterator, metaData, Type::bool_, funcInfo, varSetter_Option::endRoundBracket);
+		Result<string> varSetterResult = convertVarSetter(iterator, metaData, Type::bool_, funcInfo, currentNesting, varSetter_Option::endRoundBracket);
 		if (varSetterResult.hasError)
 			return varSetterResult.error;
 
@@ -134,7 +135,7 @@ static inline Result<string> convertBodiedStatement(TokenIterator& iterator, Fun
 		ss << bodiedStatment;
 	}
 
-	Result<string> bodyResult = convertFunctionBody(iterator, funcInfo, metaData);
+	Result<string> bodyResult = convertFunctionBody(iterator, funcInfo, metaData, currentNesting);
 	if (bodyResult.hasError)
 		return bodyResult.error;
 
@@ -142,7 +143,7 @@ static inline Result<string> convertBodiedStatement(TokenIterator& iterator, Fun
 	return ss.str();
 }
 
-Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, MetaData& metaData)
+Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, MetaData& metaData, Nesting& currentNesting)
 {
 	stringstream ss;
 
@@ -159,6 +160,9 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 
 	while(iterator.nextToken(/*out*/token))
 	{
+		if (iterator.currentLine == 139)
+			int debug = 0;
+
 		if (token == "{")
 		{
 			openCurlyBracketCounter++;
@@ -179,11 +183,10 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 
 		FuncInfo callFunc;
 		Type type = getType(token);
-		Result<VarInfo> varResult = getVarFromScope(funcInfo, metaData, token);
 
 		if (metaData.TryGetfuncInfo(token, /*out*/callFunc))
 		{
-			Result<string> funcCallResult = convertFuncCall(iterator, metaData, funcInfo.scope, callFunc, funcInfo);
+			Result<string> funcCallResult = convertFuncCall(iterator, metaData, currentNesting, callFunc, funcInfo);
 			if (funcCallResult.hasError)
 				return funcCallResult.error;
 
@@ -196,14 +199,7 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 				return ErrorInfo("invalid symbol in argument, symbool: \'" + token + '\'', iterator.currentLine);
 
 			ss << ";\n";
-		}
-		else if (!varResult.hasError)
-		{
-			Result<string> result = convertVar(varResult.value(), iterator, metaData, funcInfo);
-			if (result.hasError)
-				return result.error;
-
-			ss << result.value();
+			continue;
 		}
 		else if(type != Type::invalid || token == "const")
 		{
@@ -218,30 +214,43 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 				type = getType(token);
 			}
 
-			Result<string> result = convertVarInit(type, isMutable, iterator, metaData, callFunc, /*out*/funcInfo);
+			Result<string> result = convertVarInit(type, isMutable, iterator, metaData, callFunc, /*out*/funcInfo, currentNesting);
 			if (result.hasError)
 				return result.error;
 
 			ss << result.value();
+			continue;
 		}
 		else if(token == "return")
 		{
 			if (!iterator.skipToken())
 				break;
 
-			Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, funcInfo, varSetter_Option::endSemiColon);
+			Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, funcInfo, currentNesting, varSetter_Option::endSemiColon);
 			if (varSetterResult.hasError)
 				return varSetterResult.error;
 
 			ss << "return " << varSetterResult.value();
+			continue;
 		}
 		else if (initListEquals(bodiedStatements, token))
 		{
-			Result<string> statementResult = convertBodiedStatement(iterator, funcInfo, metaData);
+			Result<string> statementResult = convertBodiedStatement(iterator, funcInfo, metaData, currentNesting);
 			if (statementResult.hasError)
 				return statementResult.error;
 
 			ss << statementResult.value();
+			continue;
+		}
+
+		Result<VarInfo> varResult = currentNesting.tryGetVariable(token, metaData.globalScope);
+		if (!varResult.hasError)
+		{
+			Result<string> result = convertVar(varResult.value(), iterator, metaData, funcInfo, currentNesting);
+			if (result.hasError)
+				return result.error;
+
+			ss << result.value();
 		}
 		else
 		{
