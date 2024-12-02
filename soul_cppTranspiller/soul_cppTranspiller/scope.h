@@ -3,5 +3,26 @@
 
 #include "MetaData.hpp"
 
-//Result<VarInfo> getVarFromScope(const FuncInfo& funcInfo, const MetaData& metaData, const std::string& name);
-//Result<VarInfo> getVarFromScope(const std::vector<Nesting>& currentScope, const MetaData& metaData, const std::string& name);
+struct ScopeIterator
+{
+	std::vector<Nesting>& scope;
+	uint64_t currentNestingIndex = 0;
+
+	ScopeIterator(std::vector<Nesting>& scope)
+		: scope(scope)
+	{
+	}
+
+	ScopeIterator(std::vector<Nesting>& scope, uint64_t currentNestingIndex)
+		: scope(scope), currentNestingIndex(currentNestingIndex)
+	{
+	}
+
+	Nesting& getCurrentNesting()
+	{
+		if (currentNestingIndex+1 > scope.size())
+			throw std::exception("currentNestingIndex is bigger then scope");
+
+		return scope.at(currentNestingIndex);
+	}
+};

@@ -10,25 +10,26 @@ struct FuncInfo
 	std::vector<ArgumentInfo> args;
 	std::vector<Nesting> scope;
 	Type returnType = Type::invalid;
+	uint32_t currentNestingIndex = 0;
 
 	FuncInfo() = default;
 
 	FuncInfo(const char* funcName)
 		: funcName(funcName)
 	{
-		scope.emplace_back();
+		scope.emplace_back(Nesting(&scope, 0));
 	}
 
 	FuncInfo(const char* funcName, Type returnType)
 		: funcName(funcName), returnType(returnType)
 	{
-		scope.emplace_back();
+		scope.emplace_back(Nesting(&scope, 0));
 	}
 
 	FuncInfo(const char* funcName, Type returnType, std::initializer_list<ArgumentInfo> args)
 		: funcName(funcName), returnType(returnType)
 	{
-		scope.emplace_back();
+		scope.emplace_back(Nesting(&scope, 0));
 		
 		this->args.reserve(args.size());
 		for (const ArgumentInfo& arg : args)
@@ -51,11 +52,5 @@ struct FuncInfo
 			this->args.push_back(arg);
 			this->scope.at(0).addVariable(varInfo);
 		}
-	}
-
-	Nesting& addChildScope(Nesting* parent)
-	{
-		scope.emplace_back(Nesting::makeChild(parent));
-		return scope.back();
 	}
 };

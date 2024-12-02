@@ -1,6 +1,7 @@
 #include "transpiller.h"
 #include <sstream>
 
+#include "scope.h"
 #include "funcBody.h"
 #include "TokenIterator.h"
 #include "funcDecleration.h"
@@ -69,7 +70,8 @@ Result<string> transpileToCpp(const vector<Token> tokens, const TranspilerOption
 				
 			fileStream << funcDecl.value();
 
-			Result<string> funcBody = convertFunctionBody(/*out*/iterator, /*out*/funcInfo, /*out*/metaData, funcInfo.scope.at(0));
+			ScopeIterator scope = ScopeIterator(funcInfo.scope);
+			Result<string> funcBody = convertFunctionBody(/*out*/iterator, /*out*/funcInfo, /*out*/metaData, scope);
 			if (funcBody.hasError)
 				return funcBody.error;
 

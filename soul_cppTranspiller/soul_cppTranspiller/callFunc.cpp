@@ -17,7 +17,7 @@ static inline Result<ArgumentInfo> getArgInfo(uint32_t argPosition, const FuncIn
 	return callFunc.args.at(argPosition);
 }
 
-static inline Result<vector<pair<string, uint32_t>>> getCallArgument(TokenIterator& iterator, MetaData& metaData, FuncInfo& inCurrentFunc, FuncInfo& callFunc, Nesting& currentNesting, uint32_t& currentArgument, bool& lastArgument)
+static inline Result<vector<pair<string, uint32_t>>> getCallArgument(TokenIterator& iterator, MetaData& metaData, FuncInfo& inCurrentFunc, FuncInfo& callFunc, ScopeIterator& scope, uint32_t& currentArgument, bool& lastArgument)
 {
 	stringstream ss;
 	string token;
@@ -67,13 +67,13 @@ static inline Result<vector<pair<string, uint32_t>>> getCallArgument(TokenIterat
 			}
 
 			FuncInfo argCallFunc;
-			Result<VarInfo> varResult = currentNesting.tryGetVariable(token, metaData.globalScope);
+			Result<VarInfo> varResult = scope.getCurrentNesting().tryGetVariable(token, metaData.globalScope);
 			if(metaData.TryGetfuncInfo(token, argCallFunc))
 			{
 				if(getDuckType(argInfo.valueType) != getDuckType(argCallFunc.returnType) && getDuckType(argInfo.valueType) != DuckType::compile_dynamic)
 					return ErrorInfo("type given incorrect for argument: \'" + string(argInfo.name) + "\', typeGiven: \'" + toString(argCallFunc.returnType) + "\', argType: \'" + toString(argInfo.valueType) + '\'', iterator.currentLine);
 
-				Result<string> callResult = convertFuncCall(iterator, metaData, currentNesting, argCallFunc, callFunc);
+				Result<string> callResult = convertFuncCall(iterator, metaData, scope, argCallFunc, callFunc);
 				if (callResult.hasError)
 					return callResult.error;
 
@@ -134,7 +134,7 @@ static inline Result<vector<pair<string, uint32_t>>> getCallArgument(TokenIterat
 }
 
 
-Result<string> convertFuncCall(TokenIterator& iterator, MetaData& metaData, Nesting& currentNesting, FuncInfo& callFunc, FuncInfo& funcInfo)
+Result<string> convertFuncCall(TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, FuncInfo& callFunc, FuncInfo& funcInfo)
 {
 	stringstream ss;
 	string token;
@@ -163,7 +163,7 @@ Result<string> convertFuncCall(TokenIterator& iterator, MetaData& metaData, Nest
 	bool lastArgument = false;
 	while(!lastArgument)
 	{
-		Result<vector<pair<string, uint32_t>>> argResult = getCallArgument(iterator, metaData, funcInfo, callFunc, currentNesting, /*out*/currentArgument, /*out*/lastArgument);
+		Result<vector<pair<string, uint32_t>>> argResult = getCallArgument(iterator, metaData, funcInfo, callFunc, scope, /*out*/currentArgument, /*out*/lastArgument);
 		if (argResult.hasError)
 			return argResult.error;
 

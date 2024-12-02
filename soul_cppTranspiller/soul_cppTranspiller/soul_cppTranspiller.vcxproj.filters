@@ -74,6 +74,9 @@
     <Filter Include="Source Files\transpiller\func\funcBody\varSetter">
       <UniqueIdentifier>{2868b7bb-0466-48e4-a5a3-b56544ac050a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\transpiller\func\funcBody\convertForloop">
+      <UniqueIdentifier>{74f91aba-76cc-46a0-8fec-6fe3cbaf4820}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -133,14 +136,14 @@
     <ClCompile Include="funcBody.cpp">
       <Filter>Source Files\transpiller\func\funcBody</Filter>
     </ClCompile>
-    <ClCompile Include="scope.cpp">
-      <Filter>Source Files\transpiller\func\scope</Filter>
-    </ClCompile>
     <ClCompile Include="callFunc.cpp">
       <Filter>Source Files\transpiller\func\funcBody\callFunc</Filter>
     </ClCompile>
     <ClCompile Include="varSetter.cpp">
       <Filter>Source Files\transpiller\func\funcBody\varSetter</Filter>
+    </ClCompile>
+    <ClCompile Include="convertForLoop.cpp">
+      <Filter>Source Files\transpiller\func\funcBody\convertForloop</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -238,6 +241,9 @@
     </ClInclude>
     <ClInclude Include="nesting.hpp">
       <Filter>Source Files\transpiller\func\scope</Filter>
+    </ClInclude>
+    <ClInclude Include="convertForLoop.h">
+      <Filter>Source Files\transpiller\func\funcBody\convertForloop</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -129,11 +129,11 @@
   <ItemGroup>
     <ClCompile Include="ArgumentType.cpp" />
     <ClCompile Include="callFunc.cpp" />
+    <ClCompile Include="convertForLoop.cpp" />
     <ClCompile Include="cppConverter.cpp" />
     <ClCompile Include="funcBody.cpp" />
     <ClCompile Include="funcDecleration.cpp" />
     <ClCompile Include="readFile.cpp" />
-    <ClCompile Include="scope.cpp" />
     <ClCompile Include="soulCheckers.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="storeArguments.cpp" />
@@ -157,6 +157,7 @@
     <ClInclude Include="ArgumentInfo.h" />
     <ClInclude Include="ArgumentType.h" />
     <ClInclude Include="callFunc.h" />
+    <ClInclude Include="convertForLoop.h" />
     <ClInclude Include="cppConverter.h" />
     <ClInclude Include="C_strPair.h" />
     <ClInclude Include="funcBody.h" />

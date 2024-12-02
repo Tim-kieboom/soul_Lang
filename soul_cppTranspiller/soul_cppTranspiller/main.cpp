@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    printFile(sourceFile);
+    //printFile(sourceFile);
 
     MetaData metaData;
     Result<vector<Token>> tokensResult = tokenize(/*out*/ sourceFile, /*out*/metaData);
@@ -132,16 +132,16 @@ int main(int argc, char* argv[])
     }
     vector<Token> tokens = tokensResult.value();
 
-    printTokenizer(sourceFile, tokens, metaData.c_strStore);
-    try
-    {
+    //printTokenizer(sourceFile, tokens, metaData.c_strStore);
+    //try
+    //{
         Result<string> result = transpileToCpp(tokens, TranspilerOptions(), /*out*/ metaData);
         if (result.hasError)
         {
             cout << "transpillerError: " << result.error.message << ", onLine: " << result.error.lineNumber;
-        #ifdef NDEBUG
+        //#ifdef NDEBUG
             exit(1);
-        #endif
+        //#endif
         }
 
         ofstream fileWriter(outputPath);
@@ -153,10 +153,10 @@ int main(int argc, char* argv[])
         execAndPrint(("g++ " + string(outputPath)).c_str());
         string output = execAndPrint("a.exe");
         cout << output << endl;
-    }
-    catch (exception ex)
-    {
-        cout << "\nexeption from transpiller: " << ex.what() << endl;
-        exit(1);
-    }
+    //}
+    //catch (exception ex)
+    //{
+    //    cout << "\nexeption from transpiller: " << ex.what() << endl;
+    //    exit(1);
+    //}
 }
