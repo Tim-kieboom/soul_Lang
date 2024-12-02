@@ -17,19 +17,19 @@ struct FuncInfo
 	FuncInfo(const char* funcName)
 		: funcName(funcName)
 	{
-		scope.emplace_back(Nesting(&scope, 0));
+		scope.emplace_back(Nesting(0));
 	}
 
 	FuncInfo(const char* funcName, Type returnType)
 		: funcName(funcName), returnType(returnType)
 	{
-		scope.emplace_back(Nesting(&scope, 0));
+		scope.emplace_back(Nesting(0));
 	}
 
 	FuncInfo(const char* funcName, Type returnType, std::initializer_list<ArgumentInfo> args)
 		: funcName(funcName), returnType(returnType)
 	{
-		scope.emplace_back(Nesting(&scope, 0));
+		scope.emplace_back(Nesting(0));
 		
 		this->args.reserve(args.size());
 		for (const ArgumentInfo& arg : args)
@@ -43,7 +43,7 @@ struct FuncInfo
 	FuncInfo(Type returnType, std::initializer_list<ArgumentInfo> args)
 		: returnType(returnType)
 	{
-		scope.emplace_back();
+		scope.emplace_back(Nesting(0));
 		
 		this->args.reserve(args.size());
 		for (const ArgumentInfo& arg : args)

@@ -44,7 +44,7 @@ struct CharIterator
 
     bool setOffset(int64_t offset)
     {
-        if (index + offset < 0 || index + offset > str.size())
+        if (index + offset < 0 || index + offset > (int64_t)str.size())
             return false;
 
         index = index + offset;

@@ -133,30 +133,32 @@ int main(int argc, char* argv[])
     vector<Token> tokens = tokensResult.value();
 
     //printTokenizer(sourceFile, tokens, metaData.c_strStore);
-    //try
-    //{
+#ifdef NDEBUG
+    try
+    {
+#endif
         Result<string> result = transpileToCpp(tokens, TranspilerOptions(), /*out*/ metaData);
         if (result.hasError)
         {
             cout << "transpillerError: " << result.error.message << ", onLine: " << result.error.lineNumber;
-        //#ifdef NDEBUG
             exit(1);
-        //#endif
         }
 
         ofstream fileWriter(outputPath);
         fileWriter << metaData.getCpptIncludes() << hardCodeLib << result.value();
         fileWriter.close();
 
-        this_thread::sleep_for(5ms);
-
-        execAndPrint(("g++ " + string(outputPath)).c_str());
+        string execCppCodeCommand = "g++ " + string(outputPath);
+        execAndPrint(execCppCodeCommand.c_str());
         string output = execAndPrint("a.exe");
         cout << output << endl;
-    //}
-    //catch (exception ex)
-    //{
-    //    cout << "\nexeption from transpiller: " << ex.what() << endl;
-    //    exit(1);
-    //}
+
+#ifdef NDEBUG
+    }
+    catch (exception ex)
+    {
+        cout << "\nexeption from transpiller: " << ex.what() << endl;
+        exit(1);
+    }
+#endif
 }

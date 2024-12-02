@@ -82,7 +82,7 @@ static inline Result<string> convertVarInit(Type type, bool isMutable, TokenIter
 	if (!iterator.nextToken(/*out*/token))
 		return ERROR_varInit;
 
-	Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, callFunc, scope, varSetter_Option::endSemiColon);
+	Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, funcInfo, scope, varSetter_Option::endSemiColon);
 	if (varSetterResult.hasError)
 		return varSetterResult.error;
 
@@ -167,7 +167,7 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 
 	while(iterator.nextToken(/*out*/token))
 	{
-		if (iterator.currentLine == 139)
+		if (iterator.currentLine == 95)
 			int debug = 0;
 
 		if (token == "{")
@@ -250,7 +250,7 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 			continue;
 		}
 
-		Result<VarInfo> varResult = scope.getCurrentNesting().tryGetVariable(token, metaData.globalScope);
+		Result<VarInfo> varResult = scope.getCurrentNesting().tryGetVariable(token, funcInfo.scope, metaData.globalScope);
 		if (!varResult.hasError)
 		{
 			Result<string> result = convertVar(varResult.value(), iterator, metaData, funcInfo, scope);

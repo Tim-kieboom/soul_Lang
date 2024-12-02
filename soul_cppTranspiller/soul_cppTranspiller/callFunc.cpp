@@ -67,7 +67,7 @@ static inline Result<vector<pair<string, uint32_t>>> getCallArgument(TokenIterat
 			}
 
 			FuncInfo argCallFunc;
-			Result<VarInfo> varResult = scope.getCurrentNesting().tryGetVariable(token, metaData.globalScope);
+			Result<VarInfo> varResult = scope.getCurrentNesting().tryGetVariable(token, inCurrentFunc.scope, metaData.globalScope);
 			if(metaData.TryGetfuncInfo(token, argCallFunc))
 			{
 				if(getDuckType(argInfo.valueType) != getDuckType(argCallFunc.returnType) && getDuckType(argInfo.valueType) != DuckType::compile_dynamic)

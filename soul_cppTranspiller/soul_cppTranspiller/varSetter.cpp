@@ -17,7 +17,7 @@ static inline Result<void*> convertBoolSetter(/*out*/stringstream& ss, /*out*/st
 	if (!iterator.peekToken(/*out*/leftCondition, /*step:*/-1))
 		return ERROR_VarSetter;
 
-	Result<VarInfo> leftVarResult = scope.getCurrentNesting().tryGetVariable(leftCondition, metaData.globalScope);
+	Result<VarInfo> leftVarResult = scope.getCurrentNesting().tryGetVariable(leftCondition, funcInfo.scope, metaData.globalScope);
 	DuckType leftType = getDuckType_fromValue(leftCondition);
 
 	ss << token;
@@ -126,7 +126,7 @@ Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, con
 			return ERROR_VarSetter;
 	}
 
-	Result<VarInfo> varResult = scope.getCurrentNesting().tryGetVariable(token, metaData.globalScope);
+	Result<VarInfo> varResult = scope.getCurrentNesting().tryGetVariable(token, funcInfo.scope, metaData.globalScope);
 
 	FuncInfo callFunc;
 	if(metaData.TryGetfuncInfo(token, callFunc))
@@ -164,7 +164,7 @@ Result<string> convertVarSetter(TokenIterator& iterator, MetaData& metaData, con
 
 	while(iterator.nextToken(/*out*/token))
 	{
-		Result<VarInfo> varResult = scope.getCurrentNesting().tryGetVariable(token, metaData.globalScope);
+		Result<VarInfo> varResult = scope.getCurrentNesting().tryGetVariable(token, funcInfo.scope, metaData.globalScope);
 		
 		if (token == "(")
 		{
