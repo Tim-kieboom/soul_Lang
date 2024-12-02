@@ -148,6 +148,8 @@ int main(int argc, char* argv[])
         fileWriter << metaData.getCpptIncludes() << hardCodeLib << result.value();
         fileWriter.close();
 
+        this_thread::sleep_for(100ms);
+
         string execCppCodeCommand = "g++ " + string(outputPath);
         execAndPrint(execCppCodeCommand.c_str());
         string output = execAndPrint("a.exe");

@@ -201,18 +201,21 @@ const char* __soul_format_string__(Args&&... args)
  
 
 constexpr const char* __0c_str__ = "if is true";
-constexpr const char* __1c_str__ = "testNesting: ";
-constexpr const char* __2c_str__ = "";
-constexpr const char* __3c_str__ = "do not print";
-constexpr const char* __4c_str__ = "print else if";
-constexpr const char* __5c_str__ = "print else";
-constexpr const char* __6c_str__ = " ()--,./\\;' \t \n \r \\ \' {} !@#$%^&*() \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\" ";
-constexpr const char* __7c_str__ = "------ sum ------\n";
-constexpr const char* __8c_str__ = "\n\n------ sumPlusOne ------\n";
-constexpr const char* __9c_str__ = "sumPlus: ";
-constexpr const char* __10c_str__ = "\n\n------ increment ------\n";
-constexpr const char* __11c_str__ = "first value: ";
-constexpr const char* __12c_str__ = "after increment value: ";
+constexpr const char* __1c_str__ = "true";
+constexpr const char* __2c_str__ = "false";
+constexpr const char* __3c_str__ = "testNesting: ";
+constexpr const char* __4c_str__ = "";
+constexpr const char* __5c_str__ = "do not print";
+constexpr const char* __6c_str__ = "print else if";
+constexpr const char* __7c_str__ = "print else";
+constexpr const char* __8c_str__ = " ()--,./\\;' \t \n \r \\ \' {} !@#$%^&*() \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\" ";
+constexpr const char* __9c_str__ = "------ sum ------\n";
+constexpr const char* __10c_str__ = "\n\n------ sumPlusOne ------\n";
+constexpr const char* __11c_str__ = "sumPlus: ";
+constexpr const char* __12c_str__ = "\n\n------ increment ------\n";
+constexpr const char* __13c_str__ = "first value: ";
+constexpr const char* __14c_str__ = "after increment value: ";
+constexpr const char* __15c_str__ = ", ";
 
 int32_t sum (/*default*/ const int32_t& a, /*default*/ const int32_t& b)
 {
@@ -232,46 +235,59 @@ void testIf (/*default*/ const bool& condition)
 	if(condition){
 	println(__0c_str__);
 	int32_t testNesting = 1;
-	println(__soul_format_string__(__1c_str__, testNesting, __2c_str__));
+	const char* boolString;	if(testNesting){
+	boolString = __1c_str__;
+}
+	else{
+	boolString = __2c_str__;
+}
+	println(__soul_format_string__(__3c_str__, boolString, __4c_str__));
 }
 	if(condition==true){
 	println(__0c_str__);
 }
 	if(!condition){
-	println(__3c_str__);
+	println(__5c_str__);
 }
 	else{
 	println(__0c_str__);
 }
 	if(!condition){
-	println(__3c_str__);
+	println(__5c_str__);
 }
 	else if(condition){
-	println(__4c_str__);
+	println(__6c_str__);
 }
 	if(!condition){
-	println(__3c_str__);
+	println(__5c_str__);
 }
 	else if(!condition){
-	println(__3c_str__);
+	println(__5c_str__);
 }
 	else{
-	println(__5c_str__);
+	println(__7c_str__);
 }
 }
 int32_t main ()
 {
-	const char* tokenizeHell = __6c_str__;
+	const char* tokenizeHell = __8c_str__;
 	testIf(true);
-	println(__7c_str__);
+	println(__9c_str__);
 	int32_t result = sum(1, 2);
 	println(result);
-	println(__8c_str__);
-	result = sumPlusOne(1, 2);
-	println(__soul_format_string__(__9c_str__, result, __2c_str__));
 	println(__10c_str__);
+	result = sumPlusOne(1, 2);
+	println(__soul_format_string__(__11c_str__, result, __4c_str__));
+	println(__12c_str__);
 	int32_t value = 1;
-	println(__soul_format_string__(__11c_str__, value, __2c_str__));
+	println(__soul_format_string__(__13c_str__, value, __4c_str__));
 	increment(/*out*/value);
-	println(__soul_format_string__(__12c_str__, value, __2c_str__));
+	println(__soul_format_string__(__14c_str__, value, __4c_str__));
+	int32_t i = 0;
+	for(;i<10;
+i++)
+{
+	print(__soul_format_string__(__4c_str__, i, __15c_str__));
+}
+	println(__4c_str__);
 }

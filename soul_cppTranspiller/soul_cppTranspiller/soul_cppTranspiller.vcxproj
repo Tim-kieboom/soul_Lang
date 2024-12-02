@@ -130,6 +130,7 @@
     <ClCompile Include="ArgumentType.cpp" />
     <ClCompile Include="callFunc.cpp" />
     <ClCompile Include="convertForLoop.cpp" />
+    <ClCompile Include="convertVar.cpp" />
     <ClCompile Include="cppConverter.cpp" />
     <ClCompile Include="funcBody.cpp" />
     <ClCompile Include="funcDecleration.cpp" />
@@ -148,6 +149,7 @@
     <ClCompile Include="Tokens.h" />
     <ClCompile Include="transpiller.cpp" />
     <ClCompile Include="Type.cpp" />
+    <ClCompile Include="VarInit.cpp" />
     <ClCompile Include="varSetter.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -158,6 +160,7 @@
     <ClInclude Include="ArgumentType.h" />
     <ClInclude Include="callFunc.h" />
     <ClInclude Include="convertForLoop.h" />
+    <ClInclude Include="convertVar.h" />
     <ClInclude Include="cppConverter.h" />
     <ClInclude Include="C_strPair.h" />
     <ClInclude Include="funcBody.h" />
@@ -184,6 +187,7 @@
     <ClInclude Include="transpiller.h" />
     <ClInclude Include="Type.h" />
     <ClInclude Include="VarInfo.h" />
+    <ClInclude Include="VarInit.h" />
     <ClInclude Include="varSetter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

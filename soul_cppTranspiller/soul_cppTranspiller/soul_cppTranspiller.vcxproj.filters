@@ -71,11 +71,17 @@
     <Filter Include="Source Files\transpiller\func\funcBody\callFunc">
       <UniqueIdentifier>{d22fab18-9a76-4155-9713-3a73d3b68d49}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\funcBody\varSetter">
-      <UniqueIdentifier>{2868b7bb-0466-48e4-a5a3-b56544ac050a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\transpiller\func\funcBody\convertForloop">
       <UniqueIdentifier>{74f91aba-76cc-46a0-8fec-6fe3cbaf4820}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\funcBody\convertVar">
+      <UniqueIdentifier>{26e4e2ec-9235-4acd-815f-414d8d30136d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\funcBody\convertVar\varSetter">
+      <UniqueIdentifier>{2868b7bb-0466-48e4-a5a3-b56544ac050a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\funcBody\convertVar\VarInit">
+      <UniqueIdentifier>{5f3464b2-a2b3-401b-83fd-eae81d08ddec}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -140,10 +146,16 @@
       <Filter>Source Files\transpiller\func\funcBody\callFunc</Filter>
     </ClCompile>
     <ClCompile Include="varSetter.cpp">
-      <Filter>Source Files\transpiller\func\funcBody\varSetter</Filter>
+      <Filter>Source Files\transpiller\func\funcBody\convertVar\varSetter</Filter>
     </ClCompile>
     <ClCompile Include="convertForLoop.cpp">
       <Filter>Source Files\transpiller\func\funcBody\convertForloop</Filter>
+    </ClCompile>
+    <ClCompile Include="convertVar.cpp">
+      <Filter>Source Files\transpiller\func\funcBody\convertVar</Filter>
+    </ClCompile>
+    <ClCompile Include="VarInit.cpp">
+      <Filter>Source Files\transpiller\func\funcBody\convertVar\VarInit</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -237,13 +249,19 @@
       <Filter>Source Files\transpiller\func\funcBody\callFunc</Filter>
     </ClInclude>
     <ClInclude Include="varSetter.h">
-      <Filter>Source Files\transpiller\func\funcBody\varSetter</Filter>
+      <Filter>Source Files\transpiller\func\funcBody\convertVar\varSetter</Filter>
     </ClInclude>
     <ClInclude Include="nesting.hpp">
       <Filter>Source Files\transpiller\func\scope</Filter>
     </ClInclude>
     <ClInclude Include="convertForLoop.h">
       <Filter>Source Files\transpiller\func\funcBody\convertForloop</Filter>
+    </ClInclude>
+    <ClInclude Include="convertVar.h">
+      <Filter>Source Files\transpiller\func\funcBody\convertVar</Filter>
+    </ClInclude>
+    <ClInclude Include="VarInit.h">
+      <Filter>Source Files\transpiller\func\funcBody\convertVar\VarInit</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

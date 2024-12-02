@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 
+#include "Result.h"
 #include "MetaData.hpp"
 
 struct ScopeIterator
@@ -16,6 +17,11 @@ struct ScopeIterator
 	ScopeIterator(std::vector<Nesting>& scope, uint64_t currentNestingIndex)
 		: scope(scope), currentNestingIndex(currentNestingIndex)
 	{
+	}
+
+	Result<VarInfo> tryGetVariable_fromCurrent(const std::string& name, const std::vector<VarInfo>& globalScope)
+	{
+		return getCurrentNesting().tryGetVariable(name, this->scope, globalScope);
 	}
 
 	Nesting& getCurrentNesting()

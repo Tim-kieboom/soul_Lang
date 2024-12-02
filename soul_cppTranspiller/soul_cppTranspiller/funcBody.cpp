@@ -3,92 +3,20 @@
 #include <algorithm>
 
 #include "scope.h"
+#include "VarInit.h"
+#include "callFunc.h"
 #include "varSetter.h"
+#include "varSetter.h"
+#include "convertVar.h"
 #include "soulCheckers.h"
 #include "cppConverter.h"
-#include "callFunc.h"
+#include "convertForLoop.h"
 
 using namespace std;
 
 initializer_list<const char*> bodiedStatements = { "if", "else", "while", "for" };
 
-#define ERROR_var ErrorInfo("incomplete functionBody funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine)
-#define ERROR_varInit ErrorInfo("incomplete functionBody funcName: \'" + string(callFunc.funcName) + '\'', iterator.currentLine)
-#define ERROR_funcBody ErrorInfo("incomplete functionBody funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine);
-
-static inline Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, ScopeIterator& scope)
-{
-	stringstream ss;
-
-	string token;
-	string symbool;
-
-	if (!iterator.nextToken(/*out*/symbool))
-		return ERROR_var;
-
-	if (!initListEquals({ "+=", "-=", "*=", "/=", "=", "++", "--" }, symbool))
-		return ErrorInfo("invalid symbol after variable symbool: \'" + symbool + "\'", iterator.currentLine);
-
-	if (!iterator.nextToken(/*out*/token))
-		return ERROR_var;
-
-	if (initListEquals({ "++", "--" }, symbool))
-	{
-		if (token != ";")
-			return ErrorInfo("variable incomplete atfer \'" + symbool + "\' need ';' but has: " + token, iterator.currentLine);
-
-		ss << varInfo.name << symbool << ";\n";
-		return ss.str();
-	}
-
-	Result<string> varSetResult = convertVarSetter(iterator, metaData, varInfo.type, funcInfo, scope, varSetter_Option::endSemiColon);
-	if (varSetResult.hasError)
-		return varSetResult.error;
-
-	ss << varInfo.name << ' ' << symbool << ' ' << varSetResult.value();
-	return ss.str();
-}
-
-static inline Result<string> convertVarInit(Type type, bool isMutable, TokenIterator& iterator, MetaData& metaData, FuncInfo& callFunc, FuncInfo& funcInfo, ScopeIterator& scope)
-{
-	stringstream ss;
-	string token;
-
-	if (!iterator.nextToken(/*out*/token))
-		return ERROR_varInit;
-
-	if (!checkName(token))
-		return ErrorInfo("name invalid name: " + token, iterator.currentLine);
-
-	ss << typeToCppType(type) << ' ' << token;
-
-	auto varInfo = VarInfo(string_copyTo_c_str(token), type, isMutable);
-	scope.getCurrentNesting().addVariable(varInfo);
-
-	if (!iterator.nextToken(/*out*/token))
-		return ERROR_varInit;
-
-	if (token == ";")
-	{
-		ss << ';';
-		return ss.str();
-	}
-
-	if (token != "=")
-		return ErrorInfo("invalid symbool in argument, symbool: \'" + token + '\'', iterator.currentLine);
-
-	ss << " = ";
-
-	if (!iterator.nextToken(/*out*/token))
-		return ERROR_varInit;
-
-	Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, funcInfo, scope, varSetter_Option::endSemiColon);
-	if (varSetterResult.hasError)
-		return varSetterResult.error;
-
-	ss << varSetterResult.value();
-	return ss.str();
-}
+#define ERROR_funcBody ErrorInfo("incomplete functionBody funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine)
 
 static inline Result<string> convertBodiedStatement(TokenIterator& iterator, FuncInfo& funcInfo, MetaData& metaData, ScopeIterator& scope)
 {
@@ -120,6 +48,7 @@ static inline Result<string> convertBodiedStatement(TokenIterator& iterator, Fun
 	(
 		Nesting::makeChild(&scope.getCurrentNesting(), funcInfo.scope)
 	);
+	ScopeIterator statementScope = ScopeIterator(funcInfo.scope, statementNestingIndex);
 
 	bool isConditionalStatement = !initListEquals({ "else" }, bodiedStatment);
 	if (isConditionalStatement)
@@ -127,11 +56,20 @@ static inline Result<string> convertBodiedStatement(TokenIterator& iterator, Fun
 		if (token != "(")
 			return ErrorInfo("bodiedStatement: \'" + token + "\' doesn't start with '('", iterator.currentLine);
 
-		Result<string> varSetterResult = convertVarSetter(iterator, metaData, Type::bool_, funcInfo, scope, varSetter_Option::endRoundBracket);
-		if (varSetterResult.hasError)
-			return varSetterResult.error;
 
-		ss << bodiedStatment << varSetterResult.value();
+		Result<string> conditionResult;
+		if (bodiedStatment == "for")
+		{
+			conditionResult = convertForLoop(iterator, metaData, funcInfo, statementScope);
+		}
+		else
+		{
+			conditionResult = convertVarSetter(iterator, metaData, Type::bool_, funcInfo, statementScope, varSetter_Option::endRoundBracket);
+		}
+
+		if (conditionResult.hasError)
+			return conditionResult.error;
+		ss << bodiedStatment << conditionResult.value();
 	}
 	else
 	{
@@ -141,7 +79,6 @@ static inline Result<string> convertBodiedStatement(TokenIterator& iterator, Fun
 		ss << bodiedStatment;
 	}
 
-	ScopeIterator statementScope = ScopeIterator(funcInfo.scope, statementNestingIndex);
 	Result<string> bodyResult = convertFunctionBody(iterator, funcInfo, metaData, statementScope);
 	if (bodyResult.hasError)
 		return bodyResult.error;
@@ -167,7 +104,7 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 
 	while(iterator.nextToken(/*out*/token))
 	{
-		if (iterator.currentLine == 95)
+		if (iterator.currentLine == 169)
 			int debug = 0;
 
 		if (token == "{")
@@ -250,7 +187,7 @@ Result<string> convertFunctionBody(TokenIterator& iterator, FuncInfo& funcInfo, 
 			continue;
 		}
 
-		Result<VarInfo> varResult = scope.getCurrentNesting().tryGetVariable(token, funcInfo.scope, metaData.globalScope);
+		Result<VarInfo> varResult = scope.tryGetVariable_fromCurrent(token, metaData.globalScope);
 		if (!varResult.hasError)
 		{
 			Result<string> result = convertVar(varResult.value(), iterator, metaData, funcInfo, scope);
