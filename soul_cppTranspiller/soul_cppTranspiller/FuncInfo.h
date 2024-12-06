@@ -1,54 +1,70 @@
 #pragma once
+#include <string>
 #include <vector>
 
-#include "nesting.hpp"
+#include "Nesting.h"
+#include "TypeInfo.h"
 #include "ArgumentInfo.h"
 
 struct FuncInfo
 {
-	const char* funcName = "";
+	std::string funcName;
 	std::vector<ArgumentInfo> args;
 	std::vector<Nesting> scope;
-	Type returnType = Type::invalid;
+	TypeInfo returnType;
 	uint32_t currentNestingIndex = 0;
 
 	FuncInfo() = default;
 
-	FuncInfo(const char* funcName)
+	FuncInfo(const std::string& funcName)
 		: funcName(funcName)
 	{
 		scope.emplace_back(Nesting(0));
 	}
 
-	FuncInfo(const char* funcName, Type returnType)
+	FuncInfo(const char* funcName, TypeInfo& returnType)
 		: funcName(funcName), returnType(returnType)
 	{
 		scope.emplace_back(Nesting(0));
 	}
 
-	FuncInfo(const char* funcName, Type returnType, std::initializer_list<ArgumentInfo> args)
+	FuncInfo(const char* funcName, TypeInfo& returnType, std::initializer_list<ArgumentInfo> args)
 		: funcName(funcName), returnType(returnType)
 	{
 		scope.emplace_back(Nesting(0));
-		
+
 		this->args.reserve(args.size());
 		for (const ArgumentInfo& arg : args)
 		{
-			auto varInfo = VarInfo(arg.name, arg.valueType, argType_isMutable(arg.argType), argType_isOptions(arg.argType));
+			VarInfo varInfo = VarInfo(arg.name, arg.valueType, argType_isMutable(arg.argType));
 			this->args.push_back(arg);
 			this->scope.at(0).addVariable(varInfo);
 		}
 	}
 
-	FuncInfo(Type returnType, std::initializer_list<ArgumentInfo> args)
-		: returnType(returnType)
+	FuncInfo(const char* funcName, TypeInfo&& returnType, std::initializer_list<ArgumentInfo> args)
+		: funcName(funcName), returnType(returnType)
 	{
 		scope.emplace_back(Nesting(0));
-		
+
 		this->args.reserve(args.size());
 		for (const ArgumentInfo& arg : args)
 		{
-			auto varInfo = VarInfo(arg.name, arg.valueType, argType_isMutable(arg.argType), argType_isOptions(arg.argType));
+			VarInfo varInfo = VarInfo(arg.name, arg.valueType, argType_isMutable(arg.argType));
+			this->args.push_back(arg);
+			this->scope.at(0).addVariable(varInfo);
+		}
+	}
+
+	FuncInfo(TypeInfo& returnType, std::initializer_list<ArgumentInfo> args)
+		: returnType(returnType)
+	{
+		scope.emplace_back(Nesting(0));
+
+		this->args.reserve(args.size());
+		for (const ArgumentInfo& arg : args)
+		{
+			VarInfo varInfo = VarInfo(arg.name, arg.valueType, argType_isMutable(arg.argType));
 			this->args.push_back(arg);
 			this->scope.at(0).addVariable(varInfo);
 		}

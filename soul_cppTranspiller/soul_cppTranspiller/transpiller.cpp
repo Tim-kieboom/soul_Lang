@@ -1,45 +1,50 @@
 #include "transpiller.h"
 #include <sstream>
 
-#include "scope.h"
-#include "funcBody.h"
-#include "TokenIterator.h"
-#include "funcDecleration.h"
 #include "internalFunction.h"
+#include "convertFuncDecleration.h"
 
 using namespace std;
 
-#define PASS(type, result, function) type _result_; if ((_result_ = convertFuncDeclaration(/*out*/iterator, /*out*/metaData, /*out*/funcInfo)).hasError) return _result_.error; else result = _result_.value();
-
-static void addConstStrings_ToFile(/*out*/ stringstream& fileStream, const MetaData& metaData)
-{
-	fileStream << "\n";
-	for (const auto& keyValue : metaData.c_strStore)
-	{
-		const C_strPair& c_str = keyValue.second;
-		fileStream << "constexpr const char* " << c_str.name << " = " << c_str.value << ";\n";
-	}
-	fileStream << "\n";
-}
-
-static void addInternalFunctions_ToMetaData(/*out*/ MetaData& metaData)
-{
-	for(const FuncInfo& funcInfo : internalFunctions)
-		metaData.addFuncInfo(string(funcInfo.funcName), funcInfo);
-}
-
 static void addC_strToGlobalScope(MetaData& metaData)
 {
-	for(const auto& pair : metaData.c_strStore)
+	for (const auto& pair : metaData.c_strStore)
 	{
-		VarInfo c_str = VarInfo(string_copyTo_c_str(pair.second.name), Type::str, false);
+		VarInfo c_str = VarInfo
+		(
+			pair.second.name, 
+			TypeInfo(PrimitiveType::str, /*isMutable:*/false), 
+			/*isOpional:*/false
+		);
 		metaData.addToGlobalScope(c_str);
 	}
 }
 
-Result<string> transpileToCpp(const vector<Token> tokens, const TranspilerOptions& option, MetaData& metaData)
+static void addInternalFunctions_ToMetaData(/*out*/ MetaData& metaData)
 {
-	stringstream fileStream;
+	for (const FuncInfo& funcInfo : internalFunctions)
+		metaData.addFuncInfo(string(funcInfo.funcName), funcInfo);
+}
+
+static void addConstStrings_ToFile(/*out*/ stringstream& ss, const MetaData& metaData)
+{
+	const TranspilerOptions& option = metaData.transpillerOption;
+	if (option.addEndLines)
+		ss << "\n";
+
+	for (const auto& keyValue : metaData.c_strStore)
+	{
+		const C_strPair& c_str = keyValue.second;
+		ss << "constexpr const char* " << c_str.name << " = " << c_str.value << ";";
+	}
+
+	if(option.addEndLines)
+		ss << "\n\n";
+}
+
+Result<std::string> transpileToCpp(const std::vector<Token> tokens, MetaData& metaData)
+{
+	stringstream ss;
 
 	metaData.addCppInclude("utility", "#include <utility>");
 	metaData.addCppInclude("cstdint", "#include <cstdint>");
@@ -51,37 +56,28 @@ Result<string> transpileToCpp(const vector<Token> tokens, const TranspilerOption
 
 	addC_strToGlobalScope(/*out*/metaData);
 	addInternalFunctions_ToMetaData(/*out*/metaData);
-	addConstStrings_ToFile(/*out*/fileStream, metaData);
+	addConstStrings_ToFile(/*out*/ss, metaData);
 
-	bool validEnd = true;
-
-	string token;
 	TokenIterator iterator(tokens);
-	while (iterator.nextToken(/*out*/token))
+	string& token = iterator.currentToken;
+	while(iterator.nextToken())
 	{
-		if (token == "func")
+		if(token == "func")
 		{
-			validEnd = false;
-
 			FuncInfo funcInfo;
 			Result<string> funcDecl = convertFuncDeclaration(/*out*/iterator, /*out*/metaData, /*out*/funcInfo);
 			if (funcDecl.hasError)
 				return funcDecl.error;
-				
-			fileStream << funcDecl.value();
 
-			ScopeIterator scope = ScopeIterator(funcInfo.scope);
-			Result<string> funcBody = convertFunctionBody(/*out*/iterator, /*out*/funcInfo, /*out*/metaData, scope);
-			if (funcBody.hasError)
-				return funcBody.error;
+			ss << funcDecl.value();
 
-			fileStream << funcBody.value();
-			validEnd = true;
+
+		}
+		else
+		{
+			return ErrorInfo("unexpected token in global, token: \'" + token + "\'", iterator.currentLine);
 		}
 	}
 
-	if (!validEnd)
-		return ErrorInfo("unexpected end of line", iterator.currentLine);
-
-	return fileStream.str();
+	return ss.str();
 }

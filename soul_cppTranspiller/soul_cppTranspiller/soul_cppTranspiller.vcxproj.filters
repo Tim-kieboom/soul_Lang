@@ -41,47 +41,41 @@
     <Filter Include="Source Files\transpiller">
       <UniqueIdentifier>{64e4a780-8136-4eaf-bd60-7c85a84b95f7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\metaData\types">
-      <UniqueIdentifier>{388187d7-51b9-4fcd-b121-71b339324082}</UniqueIdentifier>
+    <Filter Include="Source Files\metaData\token">
+      <UniqueIdentifier>{7c574999-f010-47de-ae70-e47d657a3028}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\metaData\var">
-      <UniqueIdentifier>{d44b7eeb-1162-4ada-aa19-8ba1191b3068}</UniqueIdentifier>
+    <Filter Include="Source Files\metaData\Type">
+      <UniqueIdentifier>{c912eee9-b2de-4b87-a819-2249aca51e3b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\soulCheckers">
-      <UniqueIdentifier>{dd06883d-5be9-48b0-959f-b6b05bc08e4b}</UniqueIdentifier>
+    <Filter Include="Source Files\metaData\Type\PrimTypesAndCategorys">
+      <UniqueIdentifier>{f1efbf2d-e9f1-4ffc-a557-50bbdd139a55}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\cppConverter">
-      <UniqueIdentifier>{d7ce423b-4b22-427f-a70e-14f586ee5811}</UniqueIdentifier>
+    <Filter Include="Source Files\metaData\Type\ComplexType">
+      <UniqueIdentifier>{2342041a-6ed3-4725-8ea0-2b698412c14f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\transpiller\func">
-      <UniqueIdentifier>{23e74551-d281-4d9b-910f-58b034fba510}</UniqueIdentifier>
+      <UniqueIdentifier>{d3464079-38d0-4692-8c9f-255824edaaec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\funcBody">
-      <UniqueIdentifier>{1174d11f-cd99-4b76-ba3d-13d0e2f39623}</UniqueIdentifier>
+    <Filter Include="Source Files\transpiller\func\convertFuncDecleration">
+      <UniqueIdentifier>{6867cbb3-be0d-4da8-a663-0dfd1a1c6fbc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\funcDecleration">
-      <UniqueIdentifier>{3527d4e5-1027-4031-a4c6-7d1151a42a68}</UniqueIdentifier>
+    <Filter Include="Source Files\transpiller\soulCheckers">
+      <UniqueIdentifier>{f3ba28b1-9197-42eb-bc64-7d06b98e1ee9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\funcDecleration\storeArguments">
-      <UniqueIdentifier>{5468ee91-88f4-4068-9c0a-fe5155fc6afe}</UniqueIdentifier>
+    <Filter Include="Source Files\metaData\scope">
+      <UniqueIdentifier>{f383063b-4e18-4155-8774-ff93868ae579}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\scope">
-      <UniqueIdentifier>{7a75fab2-0608-4ee1-b94e-99b0b5123de7}</UniqueIdentifier>
+    <Filter Include="Source Files\metaData\Type\ArgumentType">
+      <UniqueIdentifier>{cf5365b5-f0b2-4545-b3a0-7e70c7a9aa9e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\funcBody\callFunc">
-      <UniqueIdentifier>{d22fab18-9a76-4155-9713-3a73d3b68d49}</UniqueIdentifier>
+    <Filter Include="Source Files\transpiller\func\convertFuncDecleration\storeArgument">
+      <UniqueIdentifier>{cb52364b-9017-47d9-a516-71b6ccc95bf7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\funcBody\convertForloop">
-      <UniqueIdentifier>{74f91aba-76cc-46a0-8fec-6fe3cbaf4820}</UniqueIdentifier>
+    <Filter Include="Source Files\transpiller\cppConverter">
+      <UniqueIdentifier>{cee8ac1a-34ad-40d6-bd3d-650c6c03d3df}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\funcBody\convertVar">
-      <UniqueIdentifier>{26e4e2ec-9235-4acd-815f-414d8d30136d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\transpiller\func\funcBody\convertVar\varSetter">
-      <UniqueIdentifier>{2868b7bb-0466-48e4-a5a3-b56544ac050a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\transpiller\func\funcBody\convertVar\VarInit">
-      <UniqueIdentifier>{5f3464b2-a2b3-401b-83fd-eae81d08ddec}</UniqueIdentifier>
+    <Filter Include="Source Files\metaData\func">
+      <UniqueIdentifier>{a4269725-c48c-4190-8c3e-c31c7ba3876f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -93,9 +87,6 @@
     </ClCompile>
     <ClCompile Include="tokenizer.cpp">
       <Filter>Source Files\tokenizer</Filter>
-    </ClCompile>
-    <ClCompile Include="Tokens.h">
-      <Filter>Source Files\metaData</Filter>
     </ClCompile>
     <ClCompile Include="string_remove.cpp">
       <Filter>Source Files\stringTools\string_remove</Filter>
@@ -121,41 +112,35 @@
     <ClCompile Include="transpiller.cpp">
       <Filter>Source Files\transpiller</Filter>
     </ClCompile>
-    <ClCompile Include="funcDecleration.cpp">
-      <Filter>Source Files\transpiller\func\funcDecleration</Filter>
+    <ClCompile Include="PrimitiveType.cpp">
+      <Filter>Source Files\metaData\Type\PrimTypesAndCategorys</Filter>
     </ClCompile>
-    <ClCompile Include="Type.cpp">
-      <Filter>Source Files\metaData\types</Filter>
+    <ClCompile Include="DuckType.cpp">
+      <Filter>Source Files\metaData\Type\PrimTypesAndCategorys</Filter>
     </ClCompile>
-    <ClCompile Include="ArgumentType.cpp">
-      <Filter>Source Files\metaData\types</Filter>
+    <ClCompile Include="TypeCategory.cpp">
+      <Filter>Source Files\metaData\Type\PrimTypesAndCategorys</Filter>
+    </ClCompile>
+    <ClCompile Include="convertFuncDecleration.cpp">
+      <Filter>Source Files\transpiller\func\convertFuncDecleration</Filter>
     </ClCompile>
     <ClCompile Include="soulCheckers.cpp">
       <Filter>Source Files\transpiller\soulCheckers</Filter>
     </ClCompile>
+    <ClCompile Include="ArgumentType.cpp">
+      <Filter>Source Files\metaData\Type\ArgumentType</Filter>
+    </ClCompile>
     <ClCompile Include="storeArguments.cpp">
-      <Filter>Source Files\transpiller\func\funcDecleration\storeArguments</Filter>
+      <Filter>Source Files\transpiller\func\convertFuncDecleration\storeArgument</Filter>
+    </ClCompile>
+    <ClCompile Include="TypeInfo.cpp">
+      <Filter>Source Files\metaData\Type</Filter>
     </ClCompile>
     <ClCompile Include="cppConverter.cpp">
       <Filter>Source Files\transpiller\cppConverter</Filter>
     </ClCompile>
-    <ClCompile Include="funcBody.cpp">
-      <Filter>Source Files\transpiller\func\funcBody</Filter>
-    </ClCompile>
-    <ClCompile Include="callFunc.cpp">
-      <Filter>Source Files\transpiller\func\funcBody\callFunc</Filter>
-    </ClCompile>
-    <ClCompile Include="varSetter.cpp">
-      <Filter>Source Files\transpiller\func\funcBody\convertVar\varSetter</Filter>
-    </ClCompile>
-    <ClCompile Include="convertForLoop.cpp">
-      <Filter>Source Files\transpiller\func\funcBody\convertForloop</Filter>
-    </ClCompile>
-    <ClCompile Include="convertVar.cpp">
-      <Filter>Source Files\transpiller\func\funcBody\convertVar</Filter>
-    </ClCompile>
-    <ClCompile Include="VarInit.cpp">
-      <Filter>Source Files\transpiller\func\funcBody\convertVar\VarInit</Filter>
+    <ClCompile Include="TypeWrapper.cpp">
+      <Filter>Source Files\metaData\Type</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -194,74 +179,77 @@
     <ClInclude Include="string_copy.h">
       <Filter>Source Files\stringTools\string_copy</Filter>
     </ClInclude>
-    <ClInclude Include="C_strPair.h">
-      <Filter>Source Files\metaData</Filter>
-    </ClInclude>
-    <ClInclude Include="metaData.hpp">
-      <Filter>Source Files\metaData</Filter>
-    </ClInclude>
     <ClInclude Include="transpiller.h">
       <Filter>Source Files\transpiller</Filter>
     </ClInclude>
-    <ClInclude Include="funcDecleration.h">
-      <Filter>Source Files\transpiller\func\funcDecleration</Filter>
+    <ClInclude Include="Token.h">
+      <Filter>Source Files\metaData\token</Filter>
     </ClInclude>
-    <ClInclude Include="FuncInfo.h">
+    <ClInclude Include="MetaData.hpp">
       <Filter>Source Files\metaData</Filter>
     </ClInclude>
-    <ClInclude Include="Type.h">
-      <Filter>Source Files\metaData\types</Filter>
-    </ClInclude>
-    <ClInclude Include="ArgumentInfo.h">
+    <ClInclude Include="C_strPair.h">
       <Filter>Source Files\metaData</Filter>
     </ClInclude>
-    <ClInclude Include="ArgumentType.h">
-      <Filter>Source Files\metaData\types</Filter>
+    <ClInclude Include="TokenIterator.hpp">
+      <Filter>Source Files\metaData\token</Filter>
     </ClInclude>
-    <ClInclude Include="VarInfo.h">
-      <Filter>Source Files\metaData\var</Filter>
+    <ClInclude Include="TypeInfo.h">
+      <Filter>Source Files\metaData\Type</Filter>
     </ClInclude>
-    <ClInclude Include="internalFunction.h">
-      <Filter>Source Files\metaData</Filter>
+    <ClInclude Include="TypeCategory.h">
+      <Filter>Source Files\metaData\Type\PrimTypesAndCategorys</Filter>
     </ClInclude>
-    <ClInclude Include="TokenIterator.h">
-      <Filter>Source Files\metaData</Filter>
+    <ClInclude Include="PrimitiveType.h">
+      <Filter>Source Files\metaData\Type\PrimTypesAndCategorys</Filter>
     </ClInclude>
-    <ClInclude Include="Result.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="DuckType.h">
+      <Filter>Source Files\metaData\Type\PrimTypesAndCategorys</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeWrapper.h">
+      <Filter>Source Files\metaData\Type</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassInfo.h">
+      <Filter>Source Files\metaData\Type\ComplexType</Filter>
+    </ClInclude>
+    <ClInclude Include="ComplexType.h">
+      <Filter>Source Files\metaData\Type\ComplexType</Filter>
+    </ClInclude>
+    <ClInclude Include="convertFuncDecleration.h">
+      <Filter>Source Files\transpiller\func\convertFuncDecleration</Filter>
     </ClInclude>
     <ClInclude Include="soulCheckers.h">
       <Filter>Source Files\transpiller\soulCheckers</Filter>
     </ClInclude>
+    <ClInclude Include="varInfo.h">
+      <Filter>Source Files\metaData</Filter>
+    </ClInclude>
+    <ClInclude Include="Nesting.h">
+      <Filter>Source Files\metaData\scope</Filter>
+    </ClInclude>
+    <ClInclude Include="Result.h">
+      <Filter>Source Files\metaData</Filter>
+    </ClInclude>
+    <ClInclude Include="TranspillerOption.h">
+      <Filter>Source Files\metaData</Filter>
+    </ClInclude>
+    <ClInclude Include="ArgumentType.h">
+      <Filter>Source Files\metaData\Type\ArgumentType</Filter>
+    </ClInclude>
     <ClInclude Include="storeArguments.h">
-      <Filter>Source Files\transpiller\func\funcDecleration\storeArguments</Filter>
+      <Filter>Source Files\transpiller\func\convertFuncDecleration\storeArgument</Filter>
     </ClInclude>
     <ClInclude Include="cppConverter.h">
       <Filter>Source Files\transpiller\cppConverter</Filter>
     </ClInclude>
-    <ClInclude Include="funcBody.h">
-      <Filter>Source Files\transpiller\func\funcBody</Filter>
+    <ClInclude Include="FuncInfo.h">
+      <Filter>Source Files\metaData\func</Filter>
     </ClInclude>
-    <ClInclude Include="scope.h">
-      <Filter>Source Files\transpiller\func\scope</Filter>
+    <ClInclude Include="ArgumentInfo.h">
+      <Filter>Source Files\metaData\func</Filter>
     </ClInclude>
-    <ClInclude Include="callFunc.h">
-      <Filter>Source Files\transpiller\func\funcBody\callFunc</Filter>
-    </ClInclude>
-    <ClInclude Include="varSetter.h">
-      <Filter>Source Files\transpiller\func\funcBody\convertVar\varSetter</Filter>
-    </ClInclude>
-    <ClInclude Include="nesting.hpp">
-      <Filter>Source Files\transpiller\func\scope</Filter>
-    </ClInclude>
-    <ClInclude Include="convertForLoop.h">
-      <Filter>Source Files\transpiller\func\funcBody\convertForloop</Filter>
-    </ClInclude>
-    <ClInclude Include="convertVar.h">
-      <Filter>Source Files\transpiller\func\funcBody\convertVar</Filter>
-    </ClInclude>
-    <ClInclude Include="VarInit.h">
-      <Filter>Source Files\transpiller\func\funcBody\convertVar\VarInit</Filter>
+    <ClInclude Include="internalFunction.h">
+      <Filter>Source Files\metaData\func</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

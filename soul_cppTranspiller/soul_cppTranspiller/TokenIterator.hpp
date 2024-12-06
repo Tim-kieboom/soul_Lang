@@ -1,35 +1,39 @@
 #pragma once
-#include <cstdint>
-#include "tokenizer.h"
+#include <string>
+#include <vector>
+
+#include "Token.h"
 
 struct TokenIterator
 {
+	std::string currentToken;
+
 	int64_t i = -1;
 	int64_t currentLine = -1;
 	const std::vector<Token>& tokens;
-
+	
 	TokenIterator(const std::vector<Token>& tokens)
 		: tokens(tokens)
 	{
 	}
 
-	bool peekToken(std::string& tokenText, int64_t step = 1)
+	bool peekToken(std::string& token, int64_t step = 1)
 	{
 		if (i + step > (int64_t)tokens.size())
 			return false;
 
-		tokenText = tokens.at(i + step).text;
+		token = tokens.at(i + step).text;
 		return true;
 	}
 
-	bool nextToken(std::string& tokenText, int64_t step = 1)
+	bool nextToken(int64_t step = 1)
 	{
 		if (i + step >= (int64_t)tokens.size())
 			return false;
 
 		i += step;
 		const Token& token = tokens.at(i);
-		tokenText = token.text;
+		currentToken = token.text;
 		currentLine = token.lineNumber;
 		return true;
 	}
@@ -49,4 +53,5 @@ struct TokenIterator
 	{
 		return tokens.size();
 	}
+
 };

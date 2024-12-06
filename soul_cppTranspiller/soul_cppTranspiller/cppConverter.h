@@ -1,7 +1,6 @@
 #pragma once
-#include "Type.h"
+#include "MetaData.hpp"
 #include "ArgumentType.h"
 
-const char* typeToCppType(const Type type);
-const char* ArgToCppArg(const ArgumentType argType, const Type type);
-
+std::string typeToCppType(const TypeInfo& type);
+std::string ArgToCppArg(const ArgumentType argType, const TypeInfo& type);

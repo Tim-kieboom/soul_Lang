@@ -85,7 +85,6 @@ constexpr const char* test_Path = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHu
 constexpr const char* test_outputPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soulOutput\\out.cpp";
 constexpr const char* test_hardCodedPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_hardCodedFunctions\\soul_hardCodedFunctions.cpp";
 
-
 int main(int argc, char* argv[])
 {
     const char* path;
@@ -115,7 +114,7 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    //printFile(sourceFile);
+    printFile(sourceFile);
 
     MetaData metaData;
     Result<vector<Token>> tokensResult = tokenize(/*out*/ sourceFile, /*out*/metaData);
@@ -132,12 +131,13 @@ int main(int argc, char* argv[])
     }
     vector<Token> tokens = tokensResult.value();
 
-    //printTokenizer(sourceFile, tokens, metaData.c_strStore);
+    printTokenizer(sourceFile, tokens, metaData.c_strStore);
 #ifdef NDEBUG
     try
     {
 #endif
-        Result<string> result = transpileToCpp(tokens, TranspilerOptions(), /*out*/ metaData);
+        metaData.transpillerOption = TranspilerOptions();
+        Result<string> result = transpileToCpp(tokens, /*out*/ metaData);
         if (result.hasError)
         {
             cout << "transpillerError: " << result.error.message << ", onLine: " << result.error.lineNumber;
@@ -148,7 +148,9 @@ int main(int argc, char* argv[])
         fileWriter << metaData.getCpptIncludes() << hardCodeLib << result.value();
         fileWriter.close();
 
+#ifdef NDEBUG
         this_thread::sleep_for(100ms);
+#endif
 
         string execCppCodeCommand = "g++ " + string(outputPath);
         execAndPrint(execCppCodeCommand.c_str());

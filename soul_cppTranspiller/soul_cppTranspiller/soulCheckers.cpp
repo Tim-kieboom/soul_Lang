@@ -37,9 +37,9 @@ bool checkValue(const std::string& value, DuckType type)
 	{
 	case DuckType::number:
 		return checkValue(value, TypeCategory::boolean) ||
-			   checkValue(value, TypeCategory::interger) ||
-			   checkValue(value, TypeCategory::floatingPoint) ||
-			   checkValue(value, TypeCategory::unsignedInterger);
+			checkValue(value, TypeCategory::interger) ||
+			checkValue(value, TypeCategory::floatingPoint) ||
+			checkValue(value, TypeCategory::unsignedInterger);
 
 	case DuckType::compile_dynamic:
 		return checkValue(value, TypeCategory::compile_dynamic);
@@ -50,12 +50,13 @@ bool checkValue(const std::string& value, DuckType type)
 	case DuckType::character:
 		return checkValue(value, TypeCategory::character);
 
+	default:
 	case DuckType::invalid:
 		return false;
 	}
 }
 
-bool checkValue(const std::string& value, Type type)
+bool checkValue(const std::string& value, PrimitiveType type)
 {
 	TypeCategory category = getTypeCategory(type);
 	return checkValue(value, category);
@@ -89,7 +90,7 @@ bool checkValue(const std::string& value, TypeCategory category)
 	}
 	case TypeCategory::character:
 	{
-		if(string_contains(value, '\\'))
+		if (string_contains(value, '\\'))
 		{
 			if (value.length() > 4)
 				return false;
