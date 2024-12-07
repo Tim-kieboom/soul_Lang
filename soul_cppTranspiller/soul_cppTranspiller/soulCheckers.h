@@ -19,8 +19,10 @@ static const std::initializer_list<const char*> illigalNames =
 
 bool checkName(const std::string& name);
 
-bool checkValue(const std::string& value, PrimitiveType type);
+bool checkValue(const std::string& value, const TypeInfo& type);
+
 bool checkValue(const std::string& value, DuckType type);
+bool checkValue(const std::string& value, PrimitiveType type);
 bool checkValue(const std::string& value, TypeCategory category);
 
 DuckType getDuckType_fromValue(const std::string& value);

@@ -152,7 +152,16 @@ public:
     }
 };
  
-#define assertFail(condition, msg) assert((msg, condition))
+static inline void assertFail(bool condition, const char* msg)
+{
+#ifndef NDEBUG
+    if (!condition)
+    {  
+        std::cout << msg << std::endl;
+        assert(("assertFail failed (read last console message)", false));
+    }
+#endif
+}
  
 static inline void assertThrow(bool condition, const char* msg)
 {
@@ -218,56 +227,68 @@ constexpr const char* __14c_str__ = "\n\n------ increment ------\n";
 constexpr const char* __15c_str__ = "first value: ";
 constexpr const char* __16c_str__ = "after increment value: ";
 
-int32_t sum (/*default*/ const int32_t& a, /*default*/ const int32_t& b)
+int32_t sum (/*default*/const int32_t& a, /*default*/const int32_t& b)
 {
 	return a+b;
 }
-int32_t sumPlusOne (/*default*/ const int32_t& a, /*mut*/ int32_t b)
+int32_t sumPlusOne (/*default*/const int32_t& a, /*mut*/int32_t b)
 {
 	b++;
 	return a+b;
 }
-void increment (/*out*/ int32_t& a)
+void increment (/*out*/int32_t& a)
 {
 	a++;
 }
-void testIf (/*default*/ const bool& condition)
+void testIf (/*default*/const bool& condition)
 {
-	if(condition){
-	println(__0c_str__);
-	int32_t testNesting = 1;
-	const char* boolString;	if(testNesting){
-	boolString = __1c_str__;
-}
-	else{
-	boolString = __2c_str__;
-}
-	println(__soul_format_string__(__3c_str__, boolString, __4c_str__));
-}
-	if(condition==true){
-	println(__0c_str__);
-}
-	if(!condition){
-	println(__5c_str__);
-}
-	else{
-	println(__0c_str__);
-}
-	if(!condition){
-	println(__5c_str__);
-}
-	else if(condition){
-	println(__6c_str__);
-}
-	if(!condition){
-	println(__5c_str__);
-}
-	else if(!condition){
-	println(__5c_str__);
-}
-	else{
-	println(__7c_str__);
-}
+	if(condition)
+	{
+		println(__0c_str__);
+		int32_t testNesting = 1;
+		const char* boolString;
+		if(testNesting)
+		{
+			boolString = __1c_str__;
+		}
+		else
+		{
+			boolString = __2c_str__;
+		}
+		println(__soul_format_string__(__3c_str__, boolString, __4c_str__));
+	}
+	if(condition==true)
+	{
+		println(__0c_str__);
+	}
+	if(!condition)
+	{
+		println(__5c_str__);
+	}
+	else
+	{
+		println(__0c_str__);
+	}
+	if(!condition)
+	{
+		println(__5c_str__);
+	}
+	else if(condition)
+	{
+		println(__6c_str__);
+	}
+	if(!condition)
+	{
+		println(__5c_str__);
+	}
+	else if(!condition)
+	{
+		println(__5c_str__);
+	}
+	else
+	{
+		println(__7c_str__);
+	}
 }
 void testForLoop ()
 {
@@ -275,9 +296,10 @@ void testForLoop ()
 	int32_t i = 0;
 	for(;i<10;
 i++)
-{
-	print(__soul_format_string__(__4c_str__, i, __9c_str__));
-}
+
+	{
+		print(__soul_format_string__(__4c_str__, i, __9c_str__));
+	}
 	println(__4c_str__);
 }
 int32_t main ()

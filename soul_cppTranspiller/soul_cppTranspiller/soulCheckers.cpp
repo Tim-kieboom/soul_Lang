@@ -31,6 +31,14 @@ DuckType getDuckType_fromValue(const std::string& value)
 	return DuckType::invalid;
 }
 
+bool checkValue(const std::string& value, const TypeInfo& type)
+{
+	if (type.isComplexType)
+		return false;
+
+	return checkValue(value, type.primType);
+}
+
 bool checkValue(const std::string& value, DuckType type)
 {
 	switch (type)

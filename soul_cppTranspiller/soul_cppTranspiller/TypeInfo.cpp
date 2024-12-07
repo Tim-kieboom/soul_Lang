@@ -2,7 +2,7 @@
 #include <sstream>
 using namespace std;
 
-string toString(TypeInfo& type)
+string toString(const TypeInfo& type)
 {
     if (!type.isValid())
         return "<invalid-type>";
@@ -13,7 +13,21 @@ string toString(TypeInfo& type)
 
     if(type.isComplexType)
     {
-        ss << type.complexType.info.classInfo->className;
+        string name;
+        const ComplexType_Info& info = type.complexType.info;
+        switch(type.complexType.complexType_type)
+        {
+        case ComplexType_Type::classInfo:
+            name = info.classInfo->className;
+            break;
+
+        default:
+        case ComplexType_Type::invalid:
+            name = "<invalid-ComplexType>";
+            break;
+        }
+
+        ss << name;
     }
     else
     {
@@ -30,6 +44,7 @@ string toString(TypeInfo& type)
 
 Result<TypeInfo> getTypeInfo(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore)
 {
+    const uint64_t beginIndex = iterator.i;
     string& token = iterator.currentToken;
     TypeInfo typeInfo;
     bool isMutable = true;
@@ -38,7 +53,10 @@ Result<TypeInfo> getTypeInfo(TokenIterator& iterator, std::unordered_map<std::st
     {
         isMutable = false;
         if (!iterator.nextToken())
+        {
+            iterator.at(beginIndex);
             return ErrorInfo("unexpected end while trying to get TypeInfo", iterator.currentLine);
+        }
     }
 
     PrimitiveType primType = getType(token);
@@ -52,6 +70,7 @@ Result<TypeInfo> getTypeInfo(TokenIterator& iterator, std::unordered_map<std::st
     }
     else
     {
+        iterator.at(beginIndex);
         return ErrorInfo("type: \'" + token + "\', is not a reconized Type", iterator.currentLine);
     }
 
@@ -79,5 +98,7 @@ Result<TypeInfo> getTypeInfo(TokenIterator& iterator, std::unordered_map<std::st
             return typeInfo;
         }
     }
+
+    iterator.at(beginIndex);
     return ErrorInfo("unexpected end while trying to get TypeInfo", iterator.currentLine);
 }

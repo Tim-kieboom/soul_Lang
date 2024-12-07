@@ -61,6 +61,8 @@ func handleResult(bool value): str
 //for syntax highlighting
 func println(str msg);
 func print(str msg);
+func assertThrow(str msg, bool condition);
+func assertFail(str msg, bool condition);
 struct func;
 struct mut;
 class i32;
@@ -175,11 +177,11 @@ func main(): i32
 	testIf(true);
 	testForLoop();
 
-//i32[] array = new i32[2];
-//array[0] = 0;
-//array[1] = 1;
+	//i32[] array = new i32[2];
+	//array[0] = 0;
+	//array[1] = 1;
 
-//	println(f"array[0]:{array[0]} shouldBe 0, array[1]:{array[1]} shouldBe 1");
+	//println(f"array[0]:{array[0]} shouldBe 0, array[1]:{array[1]} shouldBe 1");
 
 	//increment(out i32 initInOutValue);
 	//println(f"after increment initInOutValue: {value}"); //prints 1

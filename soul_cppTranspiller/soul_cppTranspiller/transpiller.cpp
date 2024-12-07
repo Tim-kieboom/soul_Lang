@@ -1,8 +1,10 @@
 #include "transpiller.h"
 #include <sstream>
 
+#include "ScopeIterator.h"
 #include "internalFunction.h"
 #include "convertFuncDecleration.h"
+#include "convertBody.h"
 
 using namespace std;
 
@@ -36,10 +38,11 @@ static void addConstStrings_ToFile(/*out*/ stringstream& ss, const MetaData& met
 	{
 		const C_strPair& c_str = keyValue.second;
 		ss << "constexpr const char* " << c_str.name << " = " << c_str.value << ";";
+		if(option.addEndLines)
+			ss << "\n";
 	}
-
-	if(option.addEndLines)
-		ss << "\n\n";
+	if (option.addEndLines)
+		ss << "\n";
 }
 
 Result<std::string> transpileToCpp(const std::vector<Token> tokens, MetaData& metaData)
@@ -71,7 +74,12 @@ Result<std::string> transpileToCpp(const std::vector<Token> tokens, MetaData& me
 
 			ss << funcDecl.value();
 
+			ScopeIterator scope(funcInfo.scope);
+			Result<string> funcBody = convertBody(iterator, funcInfo, metaData, scope, 1);
+			if (funcBody.hasError)
+				return funcBody.error;
 
+			ss << funcBody.value();
 		}
 		else
 		{

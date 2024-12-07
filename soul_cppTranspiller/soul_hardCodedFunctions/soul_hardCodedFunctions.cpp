@@ -146,7 +146,16 @@ public:
     }
 };
 
-#define assertFail(condition, msg) assert((msg, condition))
+static inline void assertFail(bool condition, const char* msg)
+{
+#ifndef NDEBUG
+    if (!condition)
+    {  
+        std::cout << msg << std::endl;
+        assert(("assertFail failed (read last console message)", false));
+    }
+#endif
+}
 
 static inline void assertThrow(bool condition, const char* msg)
 {

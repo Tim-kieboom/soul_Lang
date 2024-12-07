@@ -43,7 +43,7 @@ static const FuncInfo interalFunc_assert = FuncInfo
 static const FuncInfo interalFunc_assertThrow = FuncInfo
 (
 	"assertThrow",
-	PrimitiveType::none,
+	TypeInfo(PrimitiveType::none),
 	{
 		ArgumentInfo(ArgumentType::tk_default, PrimitiveType::bool_, "condition", 1),
 		ArgumentInfo(ArgumentType::tk_default, PrimitiveType::str, "msg", 2)

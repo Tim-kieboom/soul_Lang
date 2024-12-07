@@ -8,6 +8,8 @@
 #include "ComplexType.h"
 #include "TokenIterator.hpp"
 
+std::string toString(const TypeInfo& type);
+
 struct TypeInfo
 {
 	bool isArray = false;
@@ -24,6 +26,8 @@ struct TypeInfo
 	TypeInfo(PrimitiveType type, bool isMutable = true)
 		: isMutable(isMutable), isComplexType(false), primType(type)
 	{
+		if (getDuckType(type) == DuckType::text)
+			this->isMutable = false;
 	}
 
 	TypeInfo(ClassInfo* classInfo, bool isMutable = true)
@@ -54,11 +58,41 @@ struct TypeInfo
 		return {};
 	}
 
+	Result<void> areTypesCompatiple(const TypeInfo& type, uint64_t currentLine) const
+	{
+		if (!isValid() || !type.isValid())
+			return ErrorInfo("<invalid-type>: \'" + toString(*this) + "\'", currentLine);
+
+		if (this->isComplexType != type.isComplexType)
+			return ERROR_areTypesCompatiple_typeNotCompatiple(type, currentLine);
+
+		if(type.isComplexType)
+		{
+			if(this->complexType.info.classInfo->className != type.complexType.info.classInfo->className)
+				return ERROR_areTypesCompatiple_typeNotCompatiple(type, currentLine);
+		}
+		else
+		{
+			if (this->primType == PrimitiveType::compile_dynamic || type.primType == PrimitiveType::compile_dynamic)
+				return {};
+
+			if (getDuckType(this->primType) != getDuckType(type.primType))
+				return ERROR_areTypesCompatiple_typeNotCompatiple(type, currentLine);
+		}
+
+		return {};
+	}
+
 	bool isValid() const
 	{
 		return !(primType == PrimitiveType::invalid && complexType.complexType_type == ComplexType_Type::invalid);
 	}
+
+private:
+	ErrorInfo ERROR_areTypesCompatiple_typeNotCompatiple(const TypeInfo& type, uint64_t currentLine) const
+	{
+		return ErrorInfo("Type incompadible type1: \'" + toString(*this) + "\', type2 \'" + toString(type) + "\'", currentLine);
+	}
 };
 
-std::string toString(TypeInfo& type);
 Result<TypeInfo> getTypeInfo(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore);

@@ -128,7 +128,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ArgumentType.cpp" />
+    <ClCompile Include="convertBody.cpp" />
+    <ClCompile Include="convertForLoop.cpp" />
     <ClCompile Include="convertFuncDecleration.cpp" />
+    <ClCompile Include="convertFunctionCall.cpp" />
+    <ClCompile Include="convertVar.cpp" />
+    <ClCompile Include="convertVarInit.cpp" />
+    <ClCompile Include="convertVarSetter.cpp" />
     <ClCompile Include="cppConverter.cpp" />
     <ClCompile Include="DuckType.cpp" />
     <ClCompile Include="PrimitiveType.cpp" />
@@ -157,7 +163,13 @@
     <ClInclude Include="ArgumentType.h" />
     <ClInclude Include="ClassInfo.h" />
     <ClInclude Include="ComplexType.h" />
+    <ClInclude Include="convertBody.h" />
+    <ClInclude Include="convertForLoop.h" />
     <ClInclude Include="convertFuncDecleration.h" />
+    <ClInclude Include="convertFunctionCall.h" />
+    <ClInclude Include="convertVar.h" />
+    <ClInclude Include="convertVarInit.h" />
+    <ClInclude Include="convertVarSetter.h" />
     <ClInclude Include="cppConverter.h" />
     <ClInclude Include="C_strPair.h" />
     <ClInclude Include="DuckType.h" />
@@ -166,6 +178,7 @@
     <ClInclude Include="MetaData.hpp" />
     <ClInclude Include="Nesting.h" />
     <ClInclude Include="PrimitiveType.h" />
+    <ClInclude Include="ScopeIterator.h" />
     <ClInclude Include="soulCheckers.h" />
     <ClInclude Include="storeArguments.h" />
     <ClInclude Include="Token.h" />

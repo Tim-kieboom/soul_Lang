@@ -77,6 +77,24 @@
     <Filter Include="Source Files\metaData\func">
       <UniqueIdentifier>{a4269725-c48c-4190-8c3e-c31c7ba3876f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\transpiller\func\convertBody">
+      <UniqueIdentifier>{ef22404e-9a45-4e6d-9eee-5aa9657cf3f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\convertBody\convertVar">
+      <UniqueIdentifier>{ccea0a23-07e9-40b7-a067-3a642cc81360}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\convertBody\convertVar\convertFunctionCall">
+      <UniqueIdentifier>{0679eb79-79c5-44f4-88b6-3aa3fadfcfd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\convertBody\convertVar\convertVarInit">
+      <UniqueIdentifier>{1858fdee-c8d3-43ac-9973-5155f17ea5e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\convertBody\convertVar\convertVarSetter">
+      <UniqueIdentifier>{88869148-285a-438f-9ab8-80910f919b8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transpiller\func\convertForLoop">
+      <UniqueIdentifier>{8b8a88bc-44bb-4ebe-b0df-33133161b6b0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -141,6 +159,24 @@
     </ClCompile>
     <ClCompile Include="TypeWrapper.cpp">
       <Filter>Source Files\metaData\Type</Filter>
+    </ClCompile>
+    <ClCompile Include="convertBody.cpp">
+      <Filter>Source Files\transpiller\func\convertBody</Filter>
+    </ClCompile>
+    <ClCompile Include="convertFunctionCall.cpp">
+      <Filter>Source Files\transpiller\func\convertBody\convertVar\convertFunctionCall</Filter>
+    </ClCompile>
+    <ClCompile Include="convertVarInit.cpp">
+      <Filter>Source Files\transpiller\func\convertBody\convertVar\convertVarInit</Filter>
+    </ClCompile>
+    <ClCompile Include="convertVarSetter.cpp">
+      <Filter>Source Files\transpiller\func\convertBody\convertVar\convertVarSetter</Filter>
+    </ClCompile>
+    <ClCompile Include="convertVar.cpp">
+      <Filter>Source Files\transpiller\func\convertBody\convertVar</Filter>
+    </ClCompile>
+    <ClCompile Include="convertForLoop.cpp">
+      <Filter>Source Files\transpiller\func\convertForLoop</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -250,6 +286,27 @@
     </ClInclude>
     <ClInclude Include="internalFunction.h">
       <Filter>Source Files\metaData\func</Filter>
+    </ClInclude>
+    <ClInclude Include="ScopeIterator.h">
+      <Filter>Source Files\metaData\scope</Filter>
+    </ClInclude>
+    <ClInclude Include="convertBody.h">
+      <Filter>Source Files\transpiller\func\convertBody</Filter>
+    </ClInclude>
+    <ClInclude Include="convertFunctionCall.h">
+      <Filter>Source Files\transpiller\func\convertBody\convertVar\convertFunctionCall</Filter>
+    </ClInclude>
+    <ClInclude Include="convertVarInit.h">
+      <Filter>Source Files\transpiller\func\convertBody\convertVar\convertVarInit</Filter>
+    </ClInclude>
+    <ClInclude Include="convertVarSetter.h">
+      <Filter>Source Files\transpiller\func\convertBody\convertVar\convertVarSetter</Filter>
+    </ClInclude>
+    <ClInclude Include="convertVar.h">
+      <Filter>Source Files\transpiller\func\convertBody\convertVar</Filter>
+    </ClInclude>
+    <ClInclude Include="convertForLoop.h">
+      <Filter>Source Files\transpiller\func\convertForLoop</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

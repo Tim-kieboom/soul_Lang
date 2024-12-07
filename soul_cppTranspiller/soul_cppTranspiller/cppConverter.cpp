@@ -16,7 +16,7 @@ static inline const char* PrimTypeToCppType(PrimitiveType type)
 
 	case PrimitiveType::c_str:
 	case PrimitiveType::str:
-		return "const char*";
+		return "char*";
 
 	case PrimitiveType::bool_:
 		return "bool";
