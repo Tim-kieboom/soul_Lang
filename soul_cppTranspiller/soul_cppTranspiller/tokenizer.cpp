@@ -310,7 +310,7 @@ static inline Result<void*> storeRawString_inMap(/*out*/ string& sourceFile, /*o
 
 static inline void tokenizeLine(const string& line, vector<Token>& tokenizer, uint64_t& lineNumber)
 {
-    vector<string> splitArgs = string_splitOn(line, { "!", "(", ")", "{", "}", ":", ";", "++", "--", "==", "!=", "+=", "-=", "/=", "*=", "+", "-", "/", "*", "=" });
+    vector<string> splitArgs = string_splitOn(line, { "!", "[]", "[", "]", "(", ")", "{", "}", ":", ";", "++", "--", "==", "!=", "+=", "-=", "/=", "*=", "+", "-", "/", "*", "=" });
     string argsLine = concatToString(splitArgs, " ");
     string_replace(/*out*/argsLine, ",", " ,");
 

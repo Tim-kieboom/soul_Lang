@@ -26,4 +26,4 @@ bool checkValue(const std::string& value, PrimitiveType type);
 bool checkValue(const std::string& value, TypeCategory category);
 
 DuckType getDuckType_fromValue(const std::string& value);
-
+TypeCategory getTypeCategory_fromValue(const std::string& value);

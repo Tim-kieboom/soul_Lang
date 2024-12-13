@@ -31,6 +31,29 @@ DuckType getDuckType_fromValue(const std::string& value)
 	return DuckType::invalid;
 }
 
+TypeCategory getTypeCategory_fromValue(const std::string& value)
+{
+	if (checkValue(value, TypeCategory::boolean))
+		return TypeCategory::boolean;
+
+	if (checkValue(value, TypeCategory::character))
+		return TypeCategory::character;
+
+	if (checkValue(value, TypeCategory::floatingPoint))
+		return TypeCategory::floatingPoint;
+
+	if (checkValue(value, TypeCategory::interger))
+		return TypeCategory::interger;
+
+	if (checkValue(value, TypeCategory::unsignedInterger))
+		return TypeCategory::unsignedInterger;
+
+	if (checkValue(value, TypeCategory::text))
+		return TypeCategory::text;
+
+	return TypeCategory::invalid;
+}
+
 bool checkValue(const std::string& value, const TypeInfo& type)
 {
 	if (type.isComplexType)

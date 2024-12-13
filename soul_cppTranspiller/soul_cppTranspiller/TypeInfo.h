@@ -13,6 +13,7 @@ std::string toString(const TypeInfo& type);
 struct TypeInfo
 {
 	bool isArray = false;
+	bool isPointer = false;
 	bool isMutable = true;
 	bool isComplexType = true;
 
@@ -26,8 +27,8 @@ struct TypeInfo
 	TypeInfo(PrimitiveType type, bool isMutable = true)
 		: isMutable(isMutable), isComplexType(false), primType(type)
 	{
-		if (getDuckType(type) == DuckType::text)
-			this->isMutable = false;
+		//if (getDuckType(type) == DuckType::text)
+		//	this->isMutable = false;
 	}
 
 	TypeInfo(ClassInfo* classInfo, bool isMutable = true)
@@ -38,6 +39,7 @@ struct TypeInfo
 	Result<void> addTypeWrapper(TypeWrapper type, const uint64_t currentLine)
 	{
 		isArray = (type == TypeWrapper::array_);
+		isPointer = (type == TypeWrapper::pointer);
 
 		if (type == TypeWrapper::array_ || type == TypeWrapper::pointer)
 		{
@@ -56,6 +58,29 @@ struct TypeInfo
 
 		typeWrappers.push_back(type);
 		return {};
+	}
+
+	Result<TypeInfo> getTypeChild(uint64_t currentLine)
+	{
+		const uint64_t wrapSize = typeWrappers.size();
+		if
+		(
+			(wrapSize == 0) ||
+			(wrapSize == 1 && typeWrappers.at(wrapSize - 1) == TypeWrapper::refrence) ||
+			(wrapSize == 2 && typeWrappers.at(wrapSize - 1) == TypeWrapper::refrence && typeWrappers.at(wrapSize - 2) == TypeWrapper::refrence)
+		)
+		{
+			return ErrorInfo("can not get childType from type: \'" + toString(*this) + "\'", currentLine);
+		}
+
+		TypeInfo child = *this;
+		child.typeWrappers.pop_back();
+
+		TypeWrapper lastWrap = child.typeWrappers.back();
+		child.isArray = (lastWrap == TypeWrapper::array_);
+		child.isPointer = (lastWrap == TypeWrapper::pointer);
+
+		return child;
 	}
 
 	Result<void> areTypesCompatiple(const TypeInfo& type, uint64_t currentLine) const
@@ -79,6 +104,8 @@ struct TypeInfo
 			if (getDuckType(this->primType) != getDuckType(type.primType))
 				return ERROR_areTypesCompatiple_typeNotCompatiple(type, currentLine);
 		}
+
+
 
 		return {};
 	}

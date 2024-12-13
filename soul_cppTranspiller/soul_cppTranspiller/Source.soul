@@ -177,11 +177,13 @@ func main(): i32
 	testIf(true);
 	testForLoop();
 
-	//i32[] array = new i32[2];
-	//array[0] = 0;
-	//array[1] = 1;
+	i32[] array = new i32[2];
+	array[0] = 0;
+	array[1] = 1;
 
-	//println(f"array[0]:{array[0]} shouldBe 0, array[1]:{array[1]} shouldBe 1");
+	println(f"array[0]:{array[0]} shouldBe 0, array[1]:{array[1]} shouldBe 1");
+
+	//delete array;
 
 	//increment(out i32 initInOutValue);
 	//println(f"after increment initInOutValue: {value}"); //prints 1

@@ -47,7 +47,7 @@ Result<string> convertFuncDeclaration(/*out*/TokenIterator& iterator, /*out*/Met
 			return ErrorInfo("function name is illigal, name: " + token, iterator.currentLine);
 
 		if (metaData.TryGetfuncInfo(token, _))
-			return ErrorInfo("function already exsists, name: " + token, iterator.currentLine);
+			return ErrorInfo("function already exists, name: " + token, iterator.currentLine);
 
 		funcInfo = FuncInfo(token);
 		vector<Nesting>& scope = funcInfo.scope;
@@ -65,7 +65,7 @@ Result<string> convertFuncDeclaration(/*out*/TokenIterator& iterator, /*out*/Met
 		string returnType = typeToCppType(funcInfo.returnType);
 
 		metaData.addFuncInfo(funcInfo.funcName, funcInfo);
-		ss << returnType << ' ' << funcInfo.funcName << ' ' << argsResult.value();
+		ss << returnType << ' ' << funcInfo.funcName << argsResult.value();
 		if (metaData.transpillerOption.addEndLines)
 			ss << '\n';
 

@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "Nesting.h"
-#include "TypeInfo.h"
 #include "ArgumentInfo.h"
 
 struct FuncInfo

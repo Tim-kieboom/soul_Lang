@@ -1,5 +1,6 @@
 #include "convertFunctionCall.h"
 #include "soulCheckers.h"
+#include "convertVarSetter.h"
 
 using namespace std;
 
@@ -108,7 +109,9 @@ static inline Result< vector<ArgumentPair> > getCallArgument
 				if (isCompatible.hasError)
 					return isCompatible.error;
 
+
 				ss << token;
+				//ss << varSetResult.value();
 			}
 			else
 			{

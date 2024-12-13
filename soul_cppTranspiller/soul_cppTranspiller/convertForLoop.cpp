@@ -64,7 +64,7 @@ static inline Result<void> convertForLoop_secondCondition(stringstream& ss, Toke
         return ErrorInfo("second condition of forLoop can't be empty", iterator.currentLine);
 
     static const TypeInfo boolType = TypeInfo(PrimitiveType::bool_);
-    Result<string> varSetterResult = convertVarSetter(iterator, metaData, boolType, funcInfo, scope, varSetter_Option::endSemiColon);
+    Result<string> varSetterResult = convertVarSetter(iterator, metaData, boolType, funcInfo, scope, varSetter_Option::endSemiColon, false);
     if (varSetterResult.hasError)
         return varSetterResult.error;
 

@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    //printFile(sourceFile);
+    printFile(sourceFile);
 
     MetaData metaData;
     Result<vector<Token>> tokensResult = tokenize(/*out*/ sourceFile, /*out*/metaData);
@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
     }
     vector<Token> tokens = tokensResult.value();
 
-    //printTokenizer(sourceFile, tokens, metaData.c_strStore);
+    printTokenizer(sourceFile, tokens, metaData.c_strStore);
 #ifdef NDEBUG
     try
     {

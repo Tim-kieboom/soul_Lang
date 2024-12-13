@@ -52,4 +52,15 @@ struct MetaData
 
 		return false;
 	}
+
+	void addMethode(ClassInfo& classInfo, const FuncInfo& funcInfo, /*out*/MetaData& metaData)
+	{
+		std::stringstream ss;
+		ss << classInfo.className << '#' << funcInfo.funcName;
+
+		std::string methodeName = ss.str();
+		classInfo.methodesNames.push_back(methodeName);
+		metaData.addFuncInfo(methodeName, funcInfo);
+		return;
+	}
 };

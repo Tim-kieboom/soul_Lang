@@ -1,8 +1,9 @@
 #include "convertVar.h"
+#include "soulCheckers.h"
 
 using namespace std;
 
-static inline ErrorInfo ERROR_convertVer_outOfBounds(FuncInfo& funcInfo, TokenIterator& iterator)
+static inline ErrorInfo ERROR_convertVar_outOfBounds(FuncInfo& funcInfo, TokenIterator& iterator)
 {
 	return ErrorInfo("incomplete functionBody funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine);
 }
@@ -25,24 +26,86 @@ static inline string toString(varSetter_Option& option)
 	}
 }
 
+static inline Result<string> convertIndexer(TokenIterator& iterator, FuncInfo& funcInfo)
+{
+	stringstream ss;
+	ss << '[';
+
+	string& token = iterator.currentToken;
+	if (!iterator.nextToken())
+		return ERROR_convertVar_outOfBounds(funcInfo, iterator);
+
+	if (getDuckType_fromValue(token) != DuckType::number)
+		return ErrorInfo("invalid token in indexer token: \'" + token + "\'", iterator.currentLine);
+
+	ss << token;
+
+	if (!iterator.nextToken())
+		return ERROR_convertVar_outOfBounds(funcInfo, iterator);
+
+	if(token != "]")
+		return ErrorInfo("indexer doesn't end with \']\', token: \'" + token + "\'", iterator.currentLine);
+
+	ss << ']';
+	return ss.str();
+}
+
+static inline Result<void> isSymboolAllowed(string& symbool, const VarInfo& varInfo, const TokenIterator& iterator)
+{
+	static const initializer_list<const char*> allowed_ArraySymbols = { "[", "=" };
+	static const initializer_list<const char*> allowed_PointerSymbols = { ".", "=" };
+	static const initializer_list<const char*> allowed_DefaultSymbols = { "+=", "-=", "*=", "/=", "=", "++", "--", "." };
+	static const initializer_list<const char*> allowed_ConstSymbols = { ".", "[" };
+
+	initializer_list<const char*> allowedSymbols;
+	if (varInfo.type.isArray)
+	{
+		allowedSymbols = allowed_ArraySymbols;
+	}
+	else if (varInfo.type.isPointer)
+	{
+		allowedSymbols = allowed_PointerSymbols;
+	}
+	else
+	{
+		allowedSymbols = allowed_DefaultSymbols;
+	}
+
+	if (!varInfo.type.isMutable && !initListEquals(allowed_ConstSymbols, symbool))
+		return ErrorInfo("can not change a const value, var: \'" + varInfo.name + "\', type: \'" + toString(varInfo.type) + "\'", iterator.currentLine);
+
+	if (!initListEquals(allowedSymbols, symbool))
+		return ErrorInfo("invalid symbol after variable symbool: \'" + symbool + "\'", iterator.currentLine);
+
+	if (varInfo.type.isComplexType && symbool != "=")
+		return ErrorInfo("invalid symbol after variable symbool: \'" + symbool + "\'", iterator.currentLine);
+
+	return {};
+}
+
 Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, ScopeIterator& scope, varSetter_Option option)
 {
 	stringstream ss;
-
 	string& token = iterator.currentToken;
-
 	if (!iterator.nextToken())
-		return ERROR_convertVer_outOfBounds(funcInfo, iterator);
+		return ERROR_convertVar_outOfBounds(funcInfo, iterator);
 
 	string symbool = token;
-	if (!initListEquals({ "+=", "-=", "*=", "/=", "=", "++", "--" }, symbool))
-		return ErrorInfo("invalid symbol after variable symbool: \'" + symbool + "\'", iterator.currentLine);
+	Result<void> isAllowed = isSymboolAllowed(symbool, varInfo, iterator);
+	if (isAllowed.hasError)
+		return isAllowed.error;
 
-	if(varInfo.type.isComplexType && symbool != "=")
-		return ErrorInfo("invalid symbol after variable symbool: \'" + symbool + "\'", iterator.currentLine);
+	if (symbool == "[")
+	{
+		Result<string> indexResult = convertIndexer(iterator, funcInfo);
+		if (indexResult.hasError)
+			return indexResult.error;
+
+		symbool = indexResult.value();
+	}
 
 	if (!iterator.nextToken())
-		return ERROR_convertVer_outOfBounds(funcInfo, iterator);
+		return ERROR_convertVar_outOfBounds(funcInfo, iterator);
 
 	if (initListEquals({ "++", "--" }, symbool))
 	{

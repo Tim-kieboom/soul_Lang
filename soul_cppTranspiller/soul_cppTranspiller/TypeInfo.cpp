@@ -90,10 +90,33 @@ Result<TypeInfo> getTypeInfo(TokenIterator& iterator, std::unordered_map<std::st
             if (result.hasError)
                 return result.error;
         }
+        else if (token == "[]")
+        {
+            result = typeInfo.addTypeWrapper(TypeWrapper::array_, iterator.currentLine);
+            if (result.hasError)
+                return result.error;
+        }
         else
         {
             if (!iterator.nextToken(/*step:*/-1))
                 break;
+
+            TypeWrapper lastWrapping = (typeInfo.typeWrappers.size() == 0) ? TypeWrapper::default_ : typeInfo.typeWrappers.back();
+            switch(lastWrapping)
+            {
+            case TypeWrapper::array_:
+                typeInfo.isArray = true;
+                break;
+            case TypeWrapper::pointer:
+                typeInfo.isPointer = true;
+                break;
+
+            default:
+            case TypeWrapper::invalid:
+            case TypeWrapper::refrence:
+            case TypeWrapper::default_:
+                break;
+            }
 
             return typeInfo;
         }

@@ -65,7 +65,7 @@ static inline Result<string> convertBodiedStetement(TokenIterator& iterator, Fun
 		ss << bodiedStatment;
 	}
 
-	if (metaData.transpillerOption.addEndLines)
+	if (metaData.transpillerOption.addEndLines && bodiedStatment != "for")
 		ss << '\n';
 
 	Result<string> bodyResult = convertBody(iterator, funcInfo, metaData, statementScope, depth+1);
@@ -109,10 +109,8 @@ Result<string> convertBody
 	uint32_t openCurlyBracketCounter = 0;
 	while(iterator.nextToken())
 	{
-
-		if (iterator.currentLine == 152)
+		if (iterator.currentLine == 184)
 			int debug = 0;
-
 		if (token == "{")
 		{
 			openCurlyBracketCounter++;
@@ -132,7 +130,7 @@ Result<string> convertBody
 			}
 			ss << '}';
 			if (metaData.transpillerOption.addEndLines)
-				ss << '\n';
+				ss << "\n\n";
 
 			return ss.str();
 		}
