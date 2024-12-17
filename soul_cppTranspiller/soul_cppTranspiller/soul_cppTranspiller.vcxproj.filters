@@ -178,6 +178,9 @@
     <ClCompile Include="convertForLoop.cpp">
       <Filter>Source Files\transpiller\func\convertForLoop</Filter>
     </ClCompile>
+    <ClCompile Include="convertIndexer.cpp">
+      <Filter>Source Files\transpiller\func\convertBody\convertVar</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.soul">
@@ -307,6 +310,9 @@
     </ClInclude>
     <ClInclude Include="convertForLoop.h">
       <Filter>Source Files\transpiller\func\convertForLoop</Filter>
+    </ClInclude>
+    <ClInclude Include="convertIndexer.h">
+      <Filter>Source Files\transpiller\func\convertBody\convertVar</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

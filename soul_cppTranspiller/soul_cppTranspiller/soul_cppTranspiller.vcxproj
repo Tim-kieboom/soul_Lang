@@ -132,6 +132,7 @@
     <ClCompile Include="convertForLoop.cpp" />
     <ClCompile Include="convertFuncDecleration.cpp" />
     <ClCompile Include="convertFunctionCall.cpp" />
+    <ClCompile Include="convertIndexer.cpp" />
     <ClCompile Include="convertVar.cpp" />
     <ClCompile Include="convertVarInit.cpp" />
     <ClCompile Include="convertVarSetter.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="convertForLoop.h" />
     <ClInclude Include="convertFuncDecleration.h" />
     <ClInclude Include="convertFunctionCall.h" />
+    <ClInclude Include="convertIndexer.h" />
     <ClInclude Include="convertVar.h" />
     <ClInclude Include="convertVarInit.h" />
     <ClInclude Include="convertVarSetter.h" />

@@ -31,9 +31,9 @@ void printTokenizer(const string& sourceFile, const vector<Token>& tokens, const
     for (uint32_t i = 0; i < lines.size(); i += 2)
         cout << lines.at(i) << '\n';
 
-    cout << "\n-------------- Tokens --------------\n\n";
-    for (const Token& token : tokens)
-        cout << token.text << '\n';
+    //cout << "\n-------------- Tokens --------------\n\n";
+    //for (const Token& token : tokens)
+    //    cout << token.text << '\n';
 
     cout << "\n-------------- strStore --------------\n\n";
     for (const auto& pair : constStringStore)

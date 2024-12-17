@@ -1,5 +1,6 @@
 #include "convertVar.h"
 #include "soulCheckers.h"
+#include "convertIndexer.h"
 
 using namespace std;
 
@@ -26,31 +27,7 @@ static inline string toString(varSetter_Option& option)
 	}
 }
 
-static inline Result<string> convertIndexer(TokenIterator& iterator, FuncInfo& funcInfo)
-{
-	stringstream ss;
-	ss << '[';
-
-	string& token = iterator.currentToken;
-	if (!iterator.nextToken())
-		return ERROR_convertVar_outOfBounds(funcInfo, iterator);
-
-	if (getDuckType_fromValue(token) != DuckType::number)
-		return ErrorInfo("invalid token in indexer token: \'" + token + "\'", iterator.currentLine);
-
-	ss << token;
-
-	if (!iterator.nextToken())
-		return ERROR_convertVar_outOfBounds(funcInfo, iterator);
-
-	if(token != "]")
-		return ErrorInfo("indexer doesn't end with \']\', token: \'" + token + "\'", iterator.currentLine);
-
-	ss << ']';
-	return ss.str();
-}
-
-static inline Result<void> isSymboolAllowed(string& symbool, const VarInfo& varInfo, const TokenIterator& iterator)
+static inline Result<void> _isSymboolAllowed(string& symbool, const VarInfo& varInfo, const TokenIterator& iterator)
 {
 	static const initializer_list<const char*> allowed_ArraySymbols = { "[", "=" };
 	static const initializer_list<const char*> allowed_PointerSymbols = { ".", "=" };
@@ -91,13 +68,13 @@ Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterator, MetaData& m
 		return ERROR_convertVar_outOfBounds(funcInfo, iterator);
 
 	string symbool = token;
-	Result<void> isAllowed = isSymboolAllowed(symbool, varInfo, iterator);
+	Result<void> isAllowed = _isSymboolAllowed(symbool, varInfo, iterator);
 	if (isAllowed.hasError)
 		return isAllowed.error;
 
 	if (symbool == "[")
 	{
-		Result<string> indexResult = convertIndexer(iterator, funcInfo);
+		Result<string> indexResult = convertIndexer(/*out*/iterator, /*out*/funcInfo);
 		if (indexResult.hasError)
 			return indexResult.error;
 

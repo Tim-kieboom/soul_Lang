@@ -1,7 +1,8 @@
 #include "convertVarSetter.h"
-#include "convertFunctionCall.h"
 #include "soulCheckers.h"
 #include "cppConverter.h"
+#include "convertIndexer.h"
+#include "convertFunctionCall.h"
 
 using namespace std;
 
@@ -13,7 +14,7 @@ static inline ErrorInfo ERROR_convertVarSetter_outOfBounds(TokenIterator& iterat
 	return ErrorInfo("var setter incomplete", iterator.currentLine);
 }
 
-static inline Result<void> checkTypeOrVar(const TypeInfo& type, const std::string& token, TokenIterator& iterator, Result<VarInfo>& varResult)
+static inline Result<void> _checkTypeOrVar(const TypeInfo& type, const std::string& token, TokenIterator& iterator, Result<VarInfo>& varResult)
 {
 	TypeCategory category = getTypeCategory(type.primType);
 	if
@@ -33,7 +34,7 @@ static inline Result<void> checkTypeOrVar(const TypeInfo& type, const std::strin
 	return {};
 }
 
-static inline Result<void> convertBoolSetter(stringstream& ss, TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, const FuncInfo& funcInfo)
+static inline Result<void> _convertBoolSetter(stringstream& ss, TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, const FuncInfo& funcInfo)
 {
 	string leftCondition;
 	string& token = iterator.currentToken;
@@ -66,17 +67,12 @@ static inline Result<void> convertBoolSetter(stringstream& ss, TokenIterator& it
 	return {};
 }
 
-static inline Result<void> convertConstructor(stringstream& ss, TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, const FuncInfo& funcInfo)
-{
-
-}
-
-static inline Result<bool> endOfVarSetter
+static inline Result<bool> _endOfVarSetter
 (
 	TokenIterator& iterator, 
 	MetaData& metaData, 
 	stringstream& ss, 
-	uint32_t openBracketStack, 
+	int64_t openBracketStack, 
 	const varSetter_Option& option,
 	bool addEndl
 )
@@ -136,7 +132,7 @@ static inline Result<bool> endOfVarSetter
 		if (!iterator.peekToken(/*out*/endOp, /*step:*/0))
 			return ERROR_convertVarSetter_outOfBounds(iterator);
 
-		if (endOp == ")" && openBracketStack == 0)
+		if (endOp == ")" && openBracketStack <= 0)
 		{
 			return true;
 		}
@@ -151,23 +147,8 @@ static inline Result<bool> endOfVarSetter
 	return false;
 }
 
-Result<string> convertVarSetter
-(
-	TokenIterator& iterator,
-	MetaData& metaData,
-	const TypeInfo& type,
-	FuncInfo& funcInfo,
-	ScopeIterator& scope,
-	EndVarSetter endVarFunc,
-	const varSetter_Option& option,
-	bool addEndl
-)
+static inline Result<void> _goToFirstNonBracketToken(stringstream& ss, TokenIterator& iterator, string& token, int64_t& openBracketStack)
 {
-    stringstream ss;
-    string& token = iterator.currentToken;
-
-	uint32_t openBracketStack = 0;
-
 	while (true)
 	{
 		if (token == "(")
@@ -177,7 +158,7 @@ Result<string> convertVarSetter
 		}
 		else if (token == ")")
 		{
-			if (openBracketStack == 0)
+			if (openBracketStack <= 0)
 				return ErrorInfo("')' without '('", iterator.currentLine);
 
 			openBracketStack--;
@@ -192,11 +173,71 @@ Result<string> convertVarSetter
 			return ERROR_convertVarSetter_outOfBounds(iterator);
 	}
 
+	return {};
+}
+
+static inline Result<void> _convertNew(stringstream& ss, TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, const TypeInfo& type, const FuncInfo& funcInfo)
+{
+	string& token = iterator.currentToken;
+
+	if (!(type.isArray || type.isPointer))
+		return ErrorInfo("can not use \'new\' while type is not pointer or array type: \'" + toString(type) + "\'", iterator.currentLine);
+
+	if (!iterator.nextToken())
+		return ERROR_convertVarSetter_outOfBounds(iterator);
+
+	Result<TypeInfo> typeResult = getTypeInfo(iterator, metaData.classStore);
+	if (typeResult.hasError)
+		return typeResult.error;
+
+	TypeInfo newType = typeResult.value();
+	ss << ' ' << typeToCppType(newType);
+
+	Result<void> isComparable = type.areTypesCompatiple(newType, iterator.currentLine);
+	if (isComparable.hasError)
+		return isComparable.error;
+
+	if (!iterator.nextToken())
+		return ERROR_convertVarSetter_outOfBounds(iterator);
+
+	if (token == "[")
+	{
+		ss << '[';
+		if (!iterator.nextToken())
+			return ERROR_convertVarSetter_outOfBounds(iterator);
+
+		if (getDuckType_fromValue(token) != DuckType::number)
+			return ErrorInfo("array constructor only takes a number, token: \'" + token + "\'", iterator.currentLine);
+
+		ss << token;
+
+		if (!iterator.nextToken())
+			return ERROR_convertVarSetter_outOfBounds(iterator);
+
+		if (token != "]")
+			return ErrorInfo("unexpected end of array constructor, token: \'" + token + "\', should be \']\'", iterator.currentLine);
+
+		ss << ']';
+	}
+	else if (token == "(")
+	{
+		throw std::exception("not yet implemented");
+	}
+	else
+	{
+		return ErrorInfo("token: \'" + token + "\' not a valid constructors", iterator.currentLine);
+	}
+
+	return {};
+}
+
+static inline Result<void> _checkFirstToken(stringstream& ss, TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, const TypeInfo& type, FuncInfo& funcInfo)
+{
+	string& token = iterator.currentToken;
 	Result<VarInfo> varResult = scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 
 	FuncInfo callFunc;
-
-	if(metaData.TryGetfuncInfo(token, callFunc))
+	if (metaData.TryGetfuncInfo(token, callFunc))
 	{
 		Result<void> isCompatible = type.areTypesCompatiple(callFunc.returnType, iterator.currentLine);
 		if (isCompatible.hasError)
@@ -208,9 +249,9 @@ Result<string> convertVarSetter
 
 		ss << callResult.value();
 	}
-	else if(!type.isComplexType)
+	else if (!type.isComplexType)
 	{
-		Result<void> result = checkTypeOrVar(type, token, iterator, varResult);
+		Result<void> result = _checkTypeOrVar(type, token, iterator, varResult);
 		if (result.hasError)
 			return result.error;
 
@@ -223,7 +264,55 @@ Result<string> convertVarSetter
 			return ERROR_convertVarSetter_outOfBounds(iterator);
 	}
 
-	while(iterator.nextToken())
+	return {};
+}
+
+Result<string> convertVarSetter
+(
+	TokenIterator& iterator,
+	MetaData& metaData,
+	const TypeInfo& type,
+	FuncInfo& funcInfo,
+	ScopeIterator& scope,
+	const varSetter_Option& option,
+	bool addEndl
+)
+{
+	int64_t openBracketStack = 0;
+	return convertVarSetter(iterator, metaData, type, funcInfo, scope, option, openBracketStack, addEndl);
+}
+
+Result<string> convertVarSetter
+(
+	TokenIterator& iterator,
+	MetaData& metaData,
+	const TypeInfo& type,
+	FuncInfo& funcInfo,
+	ScopeIterator& scope,
+	const varSetter_Option& option,
+	int64_t& openBracketStack,
+	bool addEndl
+)
+{
+	stringstream ss;
+	string& token = iterator.currentToken;
+
+	Result<void> result = _goToFirstNonBracketToken(/*out*/ss, /*out*/iterator, /*out*/token, /*out*/openBracketStack);
+	if (result.hasError)
+		return result.error;
+
+	result = _checkFirstToken(/*out*/ss, /*out*/iterator, /*out*/metaData, /*out*/scope, type, /*out*/funcInfo);
+	if (result.hasError)
+		return result.error;
+
+	Result<bool> isEndResult = _endOfVarSetter(iterator, metaData, ss, openBracketStack, option, addEndl);
+	if (isEndResult.hasError)
+		return isEndResult.error;
+
+	if (isEndResult.value() == true)
+		return ss.str();
+
+	while (iterator.nextToken())
 	{
 		Result<VarInfo> varResult = scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 
@@ -236,6 +325,14 @@ Result<string> convertVarSetter
 		{
 			openBracketStack--;
 			ss << token;
+		}
+		else if (token == "[")
+		{
+			Result<string> indexResult = convertIndexer(/*out*/iterator, /*out*/funcInfo);
+			if (indexResult.hasError)
+				return indexResult.error;
+
+			ss << indexResult.value();
 		}
 		else if (token == ";")
 		{
@@ -256,69 +353,20 @@ Result<string> convertVarSetter
 		{
 			ss << token;
 		}
-		else if(token == "new")
+		else if (token == "new")
 		{
-			if (!(type.isArray || type.isPointer))
-				return ErrorInfo("can not use \'new\' while type is not pointer or array type: \'" + toString(type) + "\'", iterator.currentLine);
-			
-			if (!iterator.nextToken())
-				break;
-
-			Result<TypeInfo> typeResult = getTypeInfo(iterator, metaData.classStore);
-			if (typeResult.hasError)
-				return typeResult.error;
-
-			TypeInfo newType = typeResult.value();
-			ss << ' ' << typeToCppType(newType);
-
-			Result<void> isComparable = type.areTypesCompatiple(newType, iterator.currentLine);
-			if (isComparable.hasError)
-				return isComparable.error;
-
-			if (!iterator.nextToken())
-				break;
-
-			if(token == "[")
-			{
-				ss << '[';
-				if (!iterator.nextToken())
-					break;
-
-				if (getDuckType_fromValue(token) != DuckType::number)
-					return ErrorInfo("array constructor only takes a number, token: \'" + token + "\'", iterator.currentLine);
-				
-				ss << token;
-
-				if (!iterator.nextToken())
-					break;
-
-				if (token != "]")
-					return ErrorInfo("unexpected end of array constructor, token: \'" + token + "\', should be \']\'", iterator.currentLine);
-				
-				ss << ']';
-			}
-			else if (token == "(")
-			{
-				throw std::exception("not yet implemented");
-			}
-			else
-			{
-				return ErrorInfo("token: \'" + token + "\' not a valid constructors", iterator.currentLine);
-			}
-
-		}
-		else if (type.primType == PrimitiveType::bool_ && initListEquals(allConditionOparations, token))
-		{
-			Result<void> result = convertBoolSetter(/*out*/ss, /*out*/iterator, metaData, scope, funcInfo);
+			Result<void> result = _convertNew(/*out*/ss, /*out*/iterator, /*out*/metaData, /*out*/scope, type, funcInfo);
 			if (result.hasError)
 				return result.error;
 		}
-		else
+		else if (type.primType == PrimitiveType::bool_ && initListEquals(allConditionOparations, token))
 		{
-			return ErrorInfo("variable oparation invalid invalidToken: \'" + token + "\'", iterator.currentLine);
+			Result<void> result = _convertBoolSetter(/*out*/ss, /*out*/iterator, metaData, scope, funcInfo);
+			if (result.hasError)
+				return result.error;
 		}
 
-		Result<bool> isEndResult = endOfVarSetter(iterator, metaData, ss, openBracketStack, option, addEndl);
+		Result<bool> isEndResult = _endOfVarSetter(iterator, metaData, ss, openBracketStack, option, addEndl);
 		if (isEndResult.hasError)
 			return isEndResult.error;
 
@@ -327,18 +375,4 @@ Result<string> convertVarSetter
 	}
 
 	return ERROR_convertVarSetter_outOfBounds(iterator);
-}
-
-Result<string> convertVarSetter
-(
-	TokenIterator& iterator,
-	MetaData& metaData,
-	const TypeInfo& type,
-	FuncInfo& funcInfo,
-	ScopeIterator& scope,
-	const varSetter_Option& option,
-	bool addEndl
-)
-{
-	return convertVarSetter(iterator, metaData, type, funcInfo, scope, &endOfVarSetter, option, addEndl);
 }

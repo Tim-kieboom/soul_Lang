@@ -109,8 +109,9 @@ Result<string> convertBody
 	uint32_t openCurlyBracketCounter = 0;
 	while(iterator.nextToken())
 	{
-		if (iterator.currentLine == 184)
+		if (iterator.currentLine == 185)
 			int debug = 0;
+
 		if (token == "{")
 		{
 			openCurlyBracketCounter++;

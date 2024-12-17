@@ -21,7 +21,7 @@ static inline ErrorInfo ERROR_convertFunctionCall_outOfBounds(FuncInfo& callFunc
     return ErrorInfo("incomplete functionBody funcName: \'" + callFunc.funcName + "\'", iterator.currentLine);
 }
 
-static inline Result<ArgumentInfo> getArgInfo(uint32_t argPosition, const FuncInfo& callFunc)
+static inline Result<ArgumentInfo> _getArgInfo(uint32_t argPosition, const FuncInfo& callFunc)
 {
 	if (argPosition > callFunc.args.size())
 		return ErrorInfo("not found", 0);
@@ -29,7 +29,7 @@ static inline Result<ArgumentInfo> getArgInfo(uint32_t argPosition, const FuncIn
 	return callFunc.args.at(argPosition);
 }
 
-static inline Result< vector<ArgumentPair> > getCallArgument
+static inline Result< vector<ArgumentPair> > _getCallArgument
 (
 	TokenIterator& iterator, 
 	MetaData& metaData, 
@@ -46,7 +46,7 @@ static inline Result< vector<ArgumentPair> > getCallArgument
 	vector<ArgumentPair> args;
 	args.reserve(callFunc.args.size());
 
-	uint32_t openBracketStack = 1;
+	int64_t openBracketStack = 1;
 	lastArgument = false;
 
 	while (iterator.nextToken())
@@ -61,7 +61,7 @@ static inline Result< vector<ArgumentPair> > getCallArgument
 		{
 			openBracketStack--;
 			ss << ')';
-			if (openBracketStack == 0)
+			if (openBracketStack <= 0)
 			{
 				lastArgument = true;
 				args.emplace_back(ArgumentPair(ss.str(), currentArgument++));
@@ -70,10 +70,11 @@ static inline Result< vector<ArgumentPair> > getCallArgument
 			continue;
 		}
 
-		Result<ArgumentInfo> argResult = getArgInfo(currentArgument, callFunc);
+		Result<ArgumentInfo> argResult = _getArgInfo(currentArgument, callFunc);
 		if (argResult.hasError)
 			return ErrorInfo("to many arguments", iterator.currentLine);
 
+		string prevToken;
 		ArgumentInfo argInfo = argResult.value();
 		while(true)
 		{
@@ -87,62 +88,32 @@ static inline Result< vector<ArgumentPair> > getCallArgument
 					break;
 			}
 
-			FuncInfo argCallFunc;
-			Result<VarInfo> varResult = scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
-			if(metaData.TryGetfuncInfo(token, /*out*/argCallFunc))
-			{
-				TypeInfo& argumentType = argInfo.valueType;
-				Result<void> isCompatible = argumentType.areTypesCompatiple(argCallFunc.returnType, iterator.currentLine);
-				if (isCompatible.hasError)
-					return isCompatible.error;
+			Result<string> varSetResult = convertVarSetter(iterator, metaData, argInfo.valueType, callFunc, scope, varSetter_Option::endComma_or_RoundBrasket, openBracketStack, /*addEndl:*/false);
+			if (varSetResult.hasError)
+				return varSetResult.error;
+			ss << varSetResult.value();
 
-				Result<string> callResult = convertFunctionCall(iterator, metaData, scope, argCallFunc, inCurrentFunc);
-				if (callResult.hasError)
-					return callResult.error;
-
-				ss << callResult.value();
-			}
-			else if(!varResult.hasError)
-			{
-				TypeInfo type = varResult.value().type;
-				Result<void> isCompatible = type.areTypesCompatiple(argInfo.valueType, iterator.currentLine);
-				if (isCompatible.hasError)
-					return isCompatible.error;
-
-
-				ss << token;
-				//ss << varSetResult.value();
-			}
-			else
-			{
-				if(!checkValue(token, argInfo.valueType))
-					return ErrorInfo("type given incorrect for argument: \'" + string(argInfo.name) + "\', givenArgument: \'" + token + "\', argType: \'" + toString(argInfo.valueType) + '\'', iterator.currentLine);
-
-				ss << token;
-			}
-
+			prevToken = token;
 			if (!iterator.nextToken())
 				break;
 
-			if (token == ")")
+			if(prevToken == ")")
 			{
-				ss << ")";
 				openBracketStack--;
 				if (openBracketStack <= 0)
 				{
+					if (!iterator.nextToken(/*step:*/-1))
+						break;
+
 					lastArgument = true;
 					args.emplace_back(ArgumentPair(ss.str(), currentArgument++));
 					return args;
 				}
-
-				if (!iterator.skipToken())
-					break;
+				continue;
 			}
-
-			if (token == ",")
+			else if (token == ",")
 			{
-				ss << ", ";
-				args.emplace_back(ArgumentPair(ss.str(), currentArgument++));
+				args.emplace_back(ArgumentPair(ss.str(), currentArgument));
 				ss.str("");
 			}
 			else
@@ -178,7 +149,6 @@ Result<std::string> convertFunctionCall(TokenIterator& iterator, MetaData& metaD
 
     ss << '(';
 
-	uint32_t openBracketStack = 1;
 	uint32_t argCounter = 1;
 	vector<ArgumentPair> argsStrings;
 	argsStrings.reserve(callFunc.args.size());
@@ -187,7 +157,7 @@ Result<std::string> convertFunctionCall(TokenIterator& iterator, MetaData& metaD
 	bool lastArgument = false;
 	while (!lastArgument)
 	{
-		Result< vector<ArgumentPair> > argResult = getCallArgument(iterator, metaData, funcInfo, callFunc, scope, /*out*/currentArgument, /*out*/lastArgument);
+		Result< vector<ArgumentPair> > argResult = _getCallArgument(iterator, metaData, funcInfo, callFunc, scope, /*out*/currentArgument, /*out*/lastArgument);
 		if (argResult.hasError)
 			return argResult.error;
 

@@ -209,6 +209,7 @@ const char* __soul_format_string__(Args&&... args)
 }
  
 
+constexpr const char* __20c_str__ = " shouldBe=1";
 constexpr const char* __0c_str__ = "if is true";
 constexpr const char* __1c_str__ = "true";
 constexpr const char* __2c_str__ = "false";
@@ -226,6 +227,9 @@ constexpr const char* __13c_str__ = "sumPlus: ";
 constexpr const char* __14c_str__ = "\n\n------ increment ------\n";
 constexpr const char* __15c_str__ = "first value: ";
 constexpr const char* __16c_str__ = "after increment value: ";
+constexpr const char* __17c_str__ = "\n\n------ testArray ------\n";
+constexpr const char* __18c_str__ = "array[0]=";
+constexpr const char* __19c_str__ = " shouldBe=0, array[1]=";
 
 int32_t sum(/*default*/const int32_t& a, /*default*/const int32_t& b)
 {
@@ -234,6 +238,7 @@ int32_t sum(/*default*/const int32_t& a, /*default*/const int32_t& b)
 
 int32_t sumPlusOne(/*default*/const int32_t& a, /*mut*/int32_t b)
 {
+	sum(1, 2);
 	b++;
 	return a+b;
 }
@@ -249,7 +254,7 @@ void testIf(/*default*/const bool& condition)
 	{
 		println(__0c_str__);
 		int32_t testNesting = 1;
-		const char* boolString;
+		std::string boolString;
 		if(testNesting)
 		{
 			boolString = __1c_str__;
@@ -319,7 +324,7 @@ void testForLoop()
 
 int32_t main()
 {
-	const char* tokenizeHell = __10c_str__;
+	const std::string tokenizeHell = __10c_str__;
 	println(__11c_str__);
 	int32_t result = sum(1, 2);
 	println(result);
@@ -333,5 +338,11 @@ int32_t main()
 	println(__soul_format_string__(__16c_str__, value, __4c_str__));
 	testIf(true);
 	testForLoop();
+	int32_t* array = new int32_t[2];
+	array [0] =0;
+	array [1] =1;
+	int32_t el = array[0];
+	println(__17c_str__);
+	println(__soul_format_string__(__18c_str__, array[0], __19c_str__, array[1], __20c_str__));
 }
 

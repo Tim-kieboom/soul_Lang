@@ -79,6 +79,7 @@ func sum(i32 a, i32 b): i32
 
 func sumPlusOne(i32 a, mut i32 b): i32
 {
+	sum(1, 2);
 	b++;
 	return a + b;
 }
@@ -180,8 +181,10 @@ func main(): i32
 	i32[] array = new i32[2];
 	array[0] = 0;
 	array[1] = 1;
+	i32 el = array[0];
 
-	println(f"array[0]:{array[0]} shouldBe 0, array[1]:{array[1]} shouldBe 1");
+	println("\n\n------ testArray ------\n");
+	println(f"array[0]={array[0]} shouldBe=0, array[1]={array[1]} shouldBe=1");
 
 	//delete array;
 
