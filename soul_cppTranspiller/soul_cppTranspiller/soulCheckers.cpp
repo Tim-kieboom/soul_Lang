@@ -31,15 +31,46 @@ DuckType getDuckType_fromValue(const std::string& value)
 	return DuckType::invalid;
 }
 
+TypeCategory getTypeCategory_fromValue(const std::string& value)
+{
+	if (checkValue(value, TypeCategory::boolean))
+		return TypeCategory::boolean;
+
+	if (checkValue(value, TypeCategory::character))
+		return TypeCategory::character;
+
+	if (checkValue(value, TypeCategory::floatingPoint))
+		return TypeCategory::floatingPoint;
+
+	if (checkValue(value, TypeCategory::interger))
+		return TypeCategory::interger;
+
+	if (checkValue(value, TypeCategory::unsignedInterger))
+		return TypeCategory::unsignedInterger;
+
+	if (checkValue(value, TypeCategory::text))
+		return TypeCategory::text;
+
+	return TypeCategory::invalid;
+}
+
+bool checkValue(const std::string& value, const TypeInfo& type)
+{
+	if (type.isComplexType)
+		return false;
+
+	return checkValue(value, type.primType);
+}
+
 bool checkValue(const std::string& value, DuckType type)
 {
 	switch (type)
 	{
 	case DuckType::number:
 		return checkValue(value, TypeCategory::boolean) ||
-			   checkValue(value, TypeCategory::interger) ||
-			   checkValue(value, TypeCategory::floatingPoint) ||
-			   checkValue(value, TypeCategory::unsignedInterger);
+			checkValue(value, TypeCategory::interger) ||
+			checkValue(value, TypeCategory::floatingPoint) ||
+			checkValue(value, TypeCategory::unsignedInterger);
 
 	case DuckType::compile_dynamic:
 		return checkValue(value, TypeCategory::compile_dynamic);
@@ -50,12 +81,13 @@ bool checkValue(const std::string& value, DuckType type)
 	case DuckType::character:
 		return checkValue(value, TypeCategory::character);
 
+	default:
 	case DuckType::invalid:
 		return false;
 	}
 }
 
-bool checkValue(const std::string& value, Type type)
+bool checkValue(const std::string& value, PrimitiveType type)
 {
 	TypeCategory category = getTypeCategory(type);
 	return checkValue(value, category);
@@ -89,7 +121,7 @@ bool checkValue(const std::string& value, TypeCategory category)
 	}
 	case TypeCategory::character:
 	{
-		if(string_contains(value, '\\'))
+		if (string_contains(value, '\\'))
 		{
 			if (value.length() > 4)
 				return false;

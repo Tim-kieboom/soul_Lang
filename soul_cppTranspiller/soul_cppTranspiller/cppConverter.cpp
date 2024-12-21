@@ -1,70 +1,118 @@
 #include "cppConverter.h"
+
 #include <sstream>
 
 using namespace std;
 
-const char* typeToCppType(const Type type)
+static inline const char* PrimTypeToCppType(PrimitiveType type)
 {
 	switch (type)
 	{
-	case Type::invalid:
+	case PrimitiveType::invalid:
 		return nullptr;
 
-	case Type::none:
+	case PrimitiveType::none:
 		return "void";
 
-	case Type::c_str:
-	case Type::str:
-		return "const char*";
+	case PrimitiveType::c_str:
+	case PrimitiveType::str:
+		return "std::string";
 
-	case Type::bool_:
+	case PrimitiveType::bool_:
 		return "bool";
 
-	case Type::char_:
+	case PrimitiveType::char_:
 		return "char";
 
-	case Type::i8:
+	case PrimitiveType::i8:
 		return "int8_t";
 
-	case Type::i16:
+	case PrimitiveType::i16:
 		return "int16_t";
 
-	case Type::i32:
+	case PrimitiveType::i32:
 		return "int32_t";
 
-	case Type::i64:
+	case PrimitiveType::i64:
 		return "int64_t";
 
-	case Type::ui8:
+	case PrimitiveType::ui8:
 		return "uint8_t";
 
-	case Type::ui16:
+	case PrimitiveType::ui16:
 		return "uint16_t";
 
-	case Type::ui32:
+	case PrimitiveType::ui32:
 		return "uint32_t";
 
-	case Type::ui64:
+	case PrimitiveType::ui64:
 		return "uint64_t";
 
-	case Type::f32:
+	case PrimitiveType::f32:
 		return "float";
 
-	case Type::f64:
+	case PrimitiveType::f64:
 		return "double";
 	}
 	return nullptr;
 }
 
-const char* ArgToCppArg(const ArgumentType argType, const Type type)
+const char* TypeWrapperToCppTypeWrapper(TypeWrapper type)
+{
+	switch(type)
+	{
+	case TypeWrapper::array_:
+	case TypeWrapper::pointer:
+		return "*";
+
+	case TypeWrapper::refrence:
+		return "&";
+
+	default:
+	case TypeWrapper::invalid:
+	case TypeWrapper::default_:
+		return "";
+	}
+}
+
+string typeToCppType(const TypeInfo& type)
+{
+	stringstream ss;
+	if (!type.isMutable)
+		ss << "const ";
+
+	if(type.isComplexType)
+	{
+		const ComplexType_Info complexTypeInfo = type.complexType.info;
+		ss << complexTypeInfo.classInfo->className;
+	}
+	else
+	{
+		ss << PrimTypeToCppType(type.primType);
+	}
+
+	for(TypeWrapper wrap : type.typeWrappers)
+	{
+		ss << TypeWrapperToCppTypeWrapper(wrap);
+	}
+
+	return ss.str();
+}
+
+string ArgToCppArg(const ArgumentType argType, const TypeInfo& type)
 {
 	stringstream ss;
 
 	switch (argType)
 	{
 	case ArgumentType::tk_default:
-		ss << "const " << typeToCppType(type) << "&";
-		break;
+	{
+		ss << "const " << typeToCppType(type);
+		
+		if(type.isComplexType)
+			ss << "&";
+	}
+	break;
 	case ArgumentType::tk_mut:
 		ss << typeToCppType(type);
 		break;
@@ -82,10 +130,5 @@ const char* ArgToCppArg(const ArgumentType argType, const Type type)
 		break;
 	}
 
-	string str = ss.str();
-	char* buffer = new char(str.size() + 1);
-	copy(str.begin(), str.end(), buffer);
-	buffer[str.size()] = '\0';
-
-	return buffer;
+	return ss.str();
 }

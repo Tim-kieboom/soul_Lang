@@ -4,8 +4,6 @@ const char* toString(ArgumentType argType)
 {
 	switch (argType)
 	{
-	case ArgumentType::invalid:
-		return "invalid";
 	case ArgumentType::tk_default:
 		return "default";
 	case ArgumentType::tk_mut:
@@ -18,7 +16,9 @@ const char* toString(ArgumentType argType)
 		return "optional_mut";
 	case ArgumentType::tk_optional_out:
 		return "optional_out";
+
 	default:
+	case ArgumentType::invalid:
 		return "invalid";
 	}
 }

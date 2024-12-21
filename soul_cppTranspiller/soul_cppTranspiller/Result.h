@@ -51,6 +51,27 @@ public:
 	T& value();
 };
 
+// Specialization for void
+template <>
+struct Result<void>
+{
+public:
+	bool hasError = false;
+	ErrorInfo error;
+
+	Result()
+		: hasError(false), error()
+	{
+	}
+
+	Result(ErrorInfo error)
+		: hasError(true), error(error)
+	{
+	}
+
+	void value() {} // No-op function for void specialization
+};
+
 template<typename T>
 inline T& Result<T>::value()
 {

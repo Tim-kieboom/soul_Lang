@@ -1,55 +1,52 @@
 #pragma once
 #include <string>
 
-#include "Result.h"
-#include "FuncInfo.h"
 #include "metaData.hpp"
-#include "TokenIterator.h"
 
 static const FuncInfo interalFunc_print = FuncInfo
 (
-	"print", 
-	Type::none,
-	{ 
-		ArgumentInfo(ArgumentType::tk_default, Type::compile_dynamic, "msg", 1)
+	"print",
+	TypeInfo(PrimitiveType::none),
+	{
+		ArgumentInfo(ArgumentType::tk_default, TypeInfo(PrimitiveType::compile_dynamic), "msg", 1)
 	}
 );
 
 static const FuncInfo interalFunc_println = FuncInfo
 (
-	"println", 
-	Type::none,
+	"println",
+	TypeInfo(PrimitiveType::none),
 	{
-		ArgumentInfo(ArgumentType::tk_default, Type::compile_dynamic, "msg", 1)
+		ArgumentInfo(ArgumentType::tk_default, TypeInfo(PrimitiveType::compile_dynamic), "msg", 1)
 	}
 );
 
 static const FuncInfo interalFunc__soul_format_string__ = FuncInfo
 (
-	"__soul_format_string__", 
-	Type::str,
+	"__soul_format_string__",
+	TypeInfo(PrimitiveType::str),
 	{
-		ArgumentInfo(ArgumentType::tk_default, Type::compile_dynamic, "args", 1, /*canBeMultiple:*/true)
+		ArgumentInfo(ArgumentType::tk_default, TypeInfo(PrimitiveType::compile_dynamic), "args", 1, /*canBeMultiple:*/true)
 	}
 );
 
 static const FuncInfo interalFunc_assert = FuncInfo
 (
-	"assertFail", 
-	Type::none,
+	"assertFail",
+	TypeInfo(PrimitiveType::none),
 	{
-		ArgumentInfo(ArgumentType::tk_default, Type::bool_, "condition", 1), 
-		ArgumentInfo(ArgumentType::tk_default, Type::str, "msg", 2) 
+		ArgumentInfo(ArgumentType::tk_default, TypeInfo(PrimitiveType::bool_), "condition", 1),
+		ArgumentInfo(ArgumentType::tk_default,TypeInfo(PrimitiveType::str), "msg", 2)
 	}
 );
 
 static const FuncInfo interalFunc_assertThrow = FuncInfo
 (
-	"assertThrow", 
-	Type::none,
+	"assertThrow",
+	TypeInfo(PrimitiveType::none),
 	{
-		ArgumentInfo(ArgumentType::tk_default, Type::bool_, "condition", 1), 
-		ArgumentInfo(ArgumentType::tk_default, Type::str, "msg", 2) 
+		ArgumentInfo(ArgumentType::tk_default, TypeInfo(PrimitiveType::bool_), "condition", 1),
+		ArgumentInfo(ArgumentType::tk_default, TypeInfo(PrimitiveType::str), "msg", 2)
 	}
 );
 

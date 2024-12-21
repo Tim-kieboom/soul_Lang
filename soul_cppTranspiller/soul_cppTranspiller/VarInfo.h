@@ -1,23 +1,17 @@
 #pragma once
-#include "Type.h"
+#include <string>
+#include "TypeInfo.h"
 
 struct VarInfo
 {
-	const char* name = "__foof__";
-	Type type = Type::invalid;
-	bool isMutable = true;
+	std::string name;
+	TypeInfo type;
 	bool isOption = false;
 
 	VarInfo() = default;
 
-	VarInfo(const char* name, Type type, bool isMutable)
-		: name(name), type(type), isMutable(isMutable)
-	{
-	}
-
-	VarInfo(const char* name, Type type, bool isMutable, bool isOption)
-		: name(name), type(type), isMutable(isMutable), isOption(isOption)
+	VarInfo(const std::string& name, const TypeInfo& type, bool isOption = false)
+		: name(name), type(type), isOption(isOption)
 	{
 	}
 };
-

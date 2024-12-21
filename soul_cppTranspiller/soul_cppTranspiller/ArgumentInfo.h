@@ -1,21 +1,27 @@
 #pragma once
-#include <string>
-
-#include "Type.h"
-#include "Result.h"
+#include "TypeInfo.h"
 #include "ArgumentType.h"
 
 struct ArgumentInfo
 {
 	ArgumentType argType = ArgumentType::tk_default;
-	Type valueType = Type::invalid;
-	const char* name = "foo";
-	bool canBeMultiple = false;
-	const char* optionalValue = nullptr;
+	TypeInfo valueType;
+
+	std::string name;
 	uint64_t argPosition = 0;
+	std::string optionalValue;
+	bool canBeMultiple = false;
 
 	ArgumentInfo() = default;
-	ArgumentInfo(ArgumentType argType, Type valueType, const char* name, uint64_t argPosition)
+	ArgumentInfo(ArgumentType argType, TypeInfo&& valueType, const char* name, uint64_t argPosition)
+		: argType(argType),
+		valueType(valueType),
+		name(std::string(name)),
+		argPosition(argPosition)
+	{
+	}
+
+	ArgumentInfo(ArgumentType argType, TypeInfo& valueType, const std::string& name, uint64_t argPosition)
 		: argType(argType),
 		valueType(valueType),
 		name(name),
@@ -23,7 +29,16 @@ struct ArgumentInfo
 	{
 	}
 
-	ArgumentInfo(ArgumentType argType, Type valueType, const char* name, uint64_t argPosition, bool canBeMultiple)
+	ArgumentInfo(ArgumentType argType, TypeInfo&& valueType, const char* name, uint64_t argPosition, bool canBeMultiple)
+		: argType(argType),
+		valueType(valueType),
+		name(std::string(name)),
+		canBeMultiple(canBeMultiple),
+		argPosition(argPosition)
+	{
+	}
+
+	ArgumentInfo(ArgumentType argType, TypeInfo& valueType, const std::string& name, uint64_t argPosition, bool canBeMultiple)
 		: argType(argType),
 		valueType(valueType),
 		name(name),
@@ -32,7 +47,17 @@ struct ArgumentInfo
 	{
 	}
 
-	ArgumentInfo(ArgumentType argType, Type valueType, const char* name, uint64_t argPosition, bool canBeMultiple, const char* optionalValue)
+	ArgumentInfo(ArgumentType argType, TypeInfo&& valueType, const char* name, uint64_t argPosition, bool canBeMultiple, const char* optionalValue)
+		: argType(argType),
+		valueType(valueType),
+		name(std::string(name)),
+		canBeMultiple(canBeMultiple),
+		optionalValue(std::string(optionalValue)),
+		argPosition(argPosition)
+	{
+	}
+
+	ArgumentInfo(ArgumentType argType, TypeInfo&& valueType, const std::string& name, uint64_t argPosition, bool canBeMultiple, const std::string& optionalValue)
 		: argType(argType),
 		valueType(valueType),
 		name(name),
@@ -41,4 +66,21 @@ struct ArgumentInfo
 		argPosition(argPosition)
 	{
 	}
+
+	bool equals(const ArgumentInfo& other) const
+	{
+		return name == other.name &&
+			argType == other.argType &&
+			argPosition == argPosition &&
+			valueType.equals(other.valueType) &&
+			canBeMultiple == other.canBeMultiple;
+	}
+
+	bool about_equals(const ArgumentInfo& other) const
+	{
+		return argPosition == argPosition &&
+			   valueType.equals(other.valueType);
+	}
 };
+
+std::string toString(const ArgumentInfo& arg);

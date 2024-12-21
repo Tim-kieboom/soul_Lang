@@ -31,9 +31,9 @@ void printTokenizer(const string& sourceFile, const vector<Token>& tokens, const
     for (uint32_t i = 0; i < lines.size(); i += 2)
         cout << lines.at(i) << '\n';
 
-    cout << "\n-------------- Tokens --------------\n\n";
-    for (const Token& token : tokens)
-        cout << token.text << '\n';
+    //cout << "\n-------------- Tokens --------------\n\n";
+    //for (const Token& token : tokens)
+    //    cout << token.text << '\n';
 
     cout << "\n-------------- strStore --------------\n\n";
     for (const auto& pair : constStringStore)
@@ -82,9 +82,9 @@ static string execAndPrint(const char* cmd)
 }
 
 constexpr const char* test_Path = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_cppTranspiller\\Source.soul";
+//constexpr const char* test_Path = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_cppTranspiller\\quickTest.soul";
 constexpr const char* test_outputPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soulOutput\\out.cpp";
 constexpr const char* test_hardCodedPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_hardCodedFunctions\\soul_hardCodedFunctions.cpp";
-
 
 int main(int argc, char* argv[])
 {
@@ -137,7 +137,9 @@ int main(int argc, char* argv[])
     try
     {
 #endif
-        Result<string> result = transpileToCpp(tokens, TranspilerOptions(), /*out*/ metaData);
+        metaData.transpillerOption = TranspilerOptions();
+        //metaData.transpillerOption.addEndLines = false;
+        Result<string> result = transpileToCpp(tokens, /*out*/ metaData);
         if (result.hasError)
         {
             cout << "transpillerError: " << result.error.message << ", onLine: " << result.error.lineNumber;
@@ -148,7 +150,9 @@ int main(int argc, char* argv[])
         fileWriter << metaData.getCpptIncludes() << hardCodeLib << result.value();
         fileWriter.close();
 
+#ifdef NDEBUG
         this_thread::sleep_for(100ms);
+#endif
 
         string execCppCodeCommand = "g++ " + string(outputPath);
         execAndPrint(execCppCodeCommand.c_str());

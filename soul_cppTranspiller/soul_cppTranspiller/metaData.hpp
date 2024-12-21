@@ -1,20 +1,23 @@
 #pragma once
-#include <vector> 
-#include <sstream> 
+#include <sstream>
 #include <unordered_map>
 
-#include "tokens.h"
+#include "Result.h"
 #include "FuncInfo.h"
 #include "C_strPair.h"
-#include "stringTools.h"
+#include "TokenIterator.hpp"
+#include "TransPillerOption.h"
 
 struct MetaData
 {
+	TranspilerOptions transpillerOption;
 	std::vector<VarInfo> globalScope;
-	std::vector<std::vector<VarInfo>> scopeStack;
-	std::unordered_map<std::string, FuncInfo> funcStore;
+	std::unordered_map<std::string, std::vector<FuncInfo>> funcStore;
 	std::unordered_map<std::string, C_strPair> c_strStore;
+	std::unordered_map<std::string, ClassInfo> classStore;
 	std::unordered_map<std::string, std::string> cppIncludeStore;
+
+	MetaData() = default;
 
 	void addToGlobalScope(const VarInfo& varInfo)
 	{
@@ -34,24 +37,54 @@ struct MetaData
 		return ss.str();
 	}
 
-	void addFuncInfo(const std::string& funcName, FuncInfo info)
+	void addFuncInfo(const std::string& funcName, const FuncInfo& info)
 	{
-		funcStore[funcName] = info;
+		funcStore[funcName].push_back(info);
 	}
 
-	bool TryGetfuncInfo(const std::string& funcName, FuncInfo& funcInfo)
+	bool isFunction(const std::string& funcName)
 	{
-		if (funcStore.find(funcName) != funcStore.end())
-		{
-			funcInfo = funcStore.at(funcName);
-			return true;
-		}
+		return funcStore.find(funcName) != funcStore.end();
+	}
 
+	bool TryGetfuncInfo(const std::string& funcName, std::vector<ArgumentInfo> args, FuncInfo& funcInfo)
+	{
+		if (funcStore.find(funcName) == funcStore.end())
+			return false;
+
+		std::vector<FuncInfo>& funcs = funcStore.at(funcName);
+		for (FuncInfo& func : funcs)
+		{
+			if (func.argsEquals(args))
+			{
+				funcInfo = func;
+				return true;
+			}
+		}
 		return false;
 	}
 
-	bool checkC_str(const std::string& strName)
+	std::string addMethode(ClassInfo& classInfo, const FuncInfo& funcInfo, /*out*/MetaData& metaData)
 	{
-		return c_strStore.find(strName) != c_strStore.end();
+		std::stringstream ss;
+		ss << classInfo.className << '#' << funcInfo.funcName;
+
+		std::string methodeName = ss.str();
+		classInfo.methodesNames.push_back(methodeName);
+		return methodeName;
+	}
+
+	std::pair<std::string, std::string> addProperty(ClassInfo& classInfo, const std::string& varName, const FuncInfo& setter, const FuncInfo& getter, /*out*/MetaData& metaData)
+	{
+		std::stringstream ss;
+		ss << classInfo.className << "#prop#" << varName << "#setter";
+		std::string setterName = ss.str();
+
+		ss << classInfo.className << "#prop#" << varName << "#getter";
+		std::string getterName = ss.str();
+
+		metaData.addFuncInfo(setterName, setter);
+		metaData.addFuncInfo(getterName, getter);
+		return { setterName, getterName };
 	}
 };

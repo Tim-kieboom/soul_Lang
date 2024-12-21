@@ -1,22 +1,31 @@
-#include "funcDecleration.h"
-#include <sstream>
-
+#include "convertFuncDecleration.h"
 #include "soulCheckers.h"
-#include "ArgumentType.h"
-#include "cppConverter.h"
+#include "Nesting.h"
+#include "ArgumentInfo.h"
 #include "storeArguments.h"
+#include "cppConverter.h"
 
 using namespace std;
 
-static inline Result<string> convertFuncDeclaration_arguments
-	(
-		/*out*/TokenIterator& iterator, 
-		/*out*/MetaData& metaData,
-		/*out*/FuncInfo& funcInfo, 
-		/*out*/vector<Nesting>& scope
-	)
+static inline string toString(vector<ArgumentInfo>& args)
 {
-	Result<void*> result = storeArguments(/*out*/iterator, /*out*/metaData, /*out*/funcInfo, /*out*/scope.at(0));
+	stringstream ss;
+	ss << '[';
+	for (const ArgumentInfo& arg : args)
+		ss << toString(arg);
+	ss << ']';
+	return ss.str();
+}
+
+static inline Result<string> convertFuncDeclaration_arguments
+(
+	/*out*/TokenIterator& iterator,
+	/*out*/MetaData& metaData,
+	/*out*/FuncInfo& funcInfo,
+	/*out*/vector<Nesting>& scope
+)
+{
+	Result<void> result = storeArguments(/*out*/iterator, /*out*/metaData, /*out*/funcInfo, /*out*/scope.at(0));
 	if (result.hasError)
 		return result.error;
 
@@ -27,7 +36,7 @@ static inline Result<string> convertFuncDeclaration_arguments
 	for (uint32_t i = 0; i < args.size(); i++)
 	{
 		const ArgumentInfo& arg = args.at(i);
-		ss << "/*" << toString(arg.argType) << "*/ " << ArgToCppArg(arg.argType, arg.valueType) << ' ' << arg.name;
+		ss << "/*" << toString(arg.argType) << "*/" << ArgToCppArg(arg.argType, arg.valueType) << ' ' << arg.name;
 
 		if (i != args.size() - 1)
 			ss << ", ";
@@ -42,33 +51,34 @@ Result<string> convertFuncDeclaration(/*out*/TokenIterator& iterator, /*out*/Met
 	stringstream ss;
 	FuncInfo _;
 
-	string token;
-	while(iterator.nextToken(/*out*/token))
+	string& token = iterator.currentToken;
+	while(iterator.nextToken())
 	{
-		if (!checkName(token))
+		if(!checkName(token))
 			return ErrorInfo("function name is illigal, name: " + token, iterator.currentLine);
 
-		if (metaData.TryGetfuncInfo(token, _))
-			return ErrorInfo("function already exsists, name: " + token, iterator.currentLine);
-	
-		funcInfo = FuncInfo(string_copyTo_c_str(token));
-
+		funcInfo = FuncInfo(token);
 		vector<Nesting>& scope = funcInfo.scope;
 
-		if (!iterator.nextToken(/*out*/token))
+		if (!iterator.nextToken())
 			break;
 
-		if (token != "(")
+		if(token != "(")
 			return ErrorInfo("function Declaration missing '(' ", iterator.currentLine);
-
+	
 		Result<string> argsResult = convertFuncDeclaration_arguments(iterator, metaData, funcInfo, scope);
 		if (argsResult.hasError)
 			return argsResult.error;
 
 		string returnType = typeToCppType(funcInfo.returnType);
 
+		if (metaData.TryGetfuncInfo(token, funcInfo.args, _))
+			return ErrorInfo("function with these arguments already exists, name: \'" + token + "\', args: \'" + toString(funcInfo.args) + "\'", iterator.currentLine);
+
 		metaData.addFuncInfo(funcInfo.funcName, funcInfo);
-		ss << returnType << ' ' << funcInfo.funcName << ' ' << argsResult.value() << '\n';
+		ss << returnType << ' ' << funcInfo.funcName << argsResult.value();
+		if (metaData.transpillerOption.addEndLines)
+			ss << '\n';
 
 		return ss.str();
 	}

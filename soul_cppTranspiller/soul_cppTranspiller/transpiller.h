@@ -3,12 +3,6 @@
 #include <vector>
 #include <cstdint>
 
-#include "Result.h"
-#include "tokenizer.h"
+#include "MetaData.hpp"
 
-struct TranspilerOptions
-{
-	int not_yet_implemented;
-};
-
-Result<std::string> transpileToCpp(const std::vector<Token> tokens, const TranspilerOptions& option, MetaData& metaData);
+Result<std::string> transpileToCpp(const std::vector<Token> tokens, MetaData& metaData);

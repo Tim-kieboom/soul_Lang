@@ -127,16 +127,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ArgumentInfo.cpp" />
     <ClCompile Include="ArgumentType.cpp" />
-    <ClCompile Include="callFunc.cpp" />
+    <ClCompile Include="convertBody.cpp" />
+    <ClCompile Include="convertClass.cpp" />
     <ClCompile Include="convertForLoop.cpp" />
+    <ClCompile Include="convertFuncDecleration.cpp" />
+    <ClCompile Include="convertFunctionCall.cpp" />
+    <ClCompile Include="convertIndexer.cpp" />
     <ClCompile Include="convertVar.cpp" />
+    <ClCompile Include="convertVarInit.cpp" />
+    <ClCompile Include="convertVarSetter.cpp" />
     <ClCompile Include="cppConverter.cpp" />
-    <ClCompile Include="funcBody.cpp" />
-    <ClCompile Include="funcDecleration.cpp" />
+    <ClCompile Include="DuckType.cpp" />
+    <ClCompile Include="PrimitiveType.cpp" />
     <ClCompile Include="readFile.cpp" />
-    <ClCompile Include="soulCheckers.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="soulCheckers.cpp" />
     <ClCompile Include="storeArguments.cpp" />
     <ClCompile Include="string_contain.cpp" />
     <ClCompile Include="string_copy.cpp" />
@@ -146,34 +153,45 @@
     <ClCompile Include="string_replace.cpp" />
     <ClCompile Include="string_split.cpp" />
     <ClCompile Include="tokenizer.cpp" />
-    <ClCompile Include="Tokens.h" />
     <ClCompile Include="transpiller.cpp" />
-    <ClCompile Include="Type.cpp" />
-    <ClCompile Include="VarInit.cpp" />
-    <ClCompile Include="varSetter.cpp" />
+    <ClCompile Include="TypeCategory.cpp" />
+    <ClCompile Include="TypeInfo.cpp" />
+    <ClCompile Include="TypeWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="quickTest.soul" />
     <None Include="Source.soul" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArgumentInfo.h" />
     <ClInclude Include="ArgumentType.h" />
-    <ClInclude Include="callFunc.h" />
+    <ClInclude Include="ClassField.h" />
+    <ClInclude Include="ClassInfo.h" />
+    <ClInclude Include="ComplexType.h" />
+    <ClInclude Include="convertBody.h" />
+    <ClInclude Include="convertClass.h" />
     <ClInclude Include="convertForLoop.h" />
+    <ClInclude Include="convertFuncDecleration.h" />
+    <ClInclude Include="convertFunctionCall.h" />
+    <ClInclude Include="convertIndexer.h" />
     <ClInclude Include="convertVar.h" />
+    <ClInclude Include="convertVarInit.h" />
+    <ClInclude Include="convertVarSetter.h" />
     <ClInclude Include="cppConverter.h" />
     <ClInclude Include="C_strPair.h" />
-    <ClInclude Include="funcBody.h" />
-    <ClInclude Include="funcDecleration.h" />
+    <ClInclude Include="DuckType.h" />
     <ClInclude Include="FuncInfo.h" />
     <ClInclude Include="internalFunction.h" />
-    <ClInclude Include="metaData.hpp" />
-    <ClInclude Include="nesting.hpp" />
-    <ClInclude Include="readFile.h" />
-    <ClInclude Include="Result.h" />
-    <ClInclude Include="scope.h" />
+    <ClInclude Include="MetaData.hpp" />
+    <ClInclude Include="Nesting.h" />
+    <ClInclude Include="PrimitiveType.h" />
+    <ClInclude Include="ScopeIterator.h" />
     <ClInclude Include="soulCheckers.h" />
     <ClInclude Include="storeArguments.h" />
+    <ClInclude Include="equalTools.h" />
+    <ClInclude Include="Token.h" />
+    <ClInclude Include="readFile.h" />
+    <ClInclude Include="Result.h" />
     <ClInclude Include="stringTools.h" />
     <ClInclude Include="string_contain.h" />
     <ClInclude Include="string_copy.h" />
@@ -182,13 +200,14 @@
     <ClInclude Include="string_remove.h" />
     <ClInclude Include="string_replace.h" />
     <ClInclude Include="string_split.h" />
-    <ClInclude Include="TokenIterator.h" />
+    <ClInclude Include="TokenIterator.hpp" />
     <ClInclude Include="tokenizer.h" />
     <ClInclude Include="transpiller.h" />
-    <ClInclude Include="Type.h" />
-    <ClInclude Include="VarInfo.h" />
-    <ClInclude Include="VarInit.h" />
-    <ClInclude Include="varSetter.h" />
+    <ClInclude Include="TranspillerOption.h" />
+    <ClInclude Include="TypeInfo.h" />
+    <ClInclude Include="TypeCategory.h" />
+    <ClInclude Include="TypeWrapper.h" />
+    <ClInclude Include="varInfo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
