@@ -82,6 +82,7 @@ static string execAndPrint(const char* cmd)
 }
 
 constexpr const char* test_Path = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_cppTranspiller\\Source.soul";
+//constexpr const char* test_Path = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_cppTranspiller\\quickTest.soul";
 constexpr const char* test_outputPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soulOutput\\out.cpp";
 constexpr const char* test_hardCodedPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_hardCodedFunctions\\soul_hardCodedFunctions.cpp";
 
@@ -114,7 +115,7 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    printFile(sourceFile);
+    //printFile(sourceFile);
 
     MetaData metaData;
     Result<vector<Token>> tokensResult = tokenize(/*out*/ sourceFile, /*out*/metaData);
@@ -131,7 +132,7 @@ int main(int argc, char* argv[])
     }
     vector<Token> tokens = tokensResult.value();
 
-    printTokenizer(sourceFile, tokens, metaData.c_strStore);
+    //printTokenizer(sourceFile, tokens, metaData.c_strStore);
 #ifdef NDEBUG
     try
     {

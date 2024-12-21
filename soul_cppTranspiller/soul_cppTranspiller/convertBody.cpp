@@ -10,7 +10,7 @@ initializer_list<const char*> bodiedStatements = { "if", "else", "while", "for" 
 
 static inline ErrorInfo ERROR_convertBody_outOfBounds(FuncInfo& funcInfo, TokenIterator& iterator)
 {
-	return ErrorInfo("incomplete functionBody funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine);
+	return ErrorInfo("unexpected en in functionBody, funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine);
 }
 
 static inline Result<string> convertBodiedStetement(TokenIterator& iterator, FuncInfo& funcInfo, MetaData& metaData, ScopeIterator& scope, uint32_t depth)
@@ -109,7 +109,7 @@ Result<string> convertBody
 	uint32_t openCurlyBracketCounter = 0;
 	while(iterator.nextToken())
 	{
-		if (iterator.currentLine == 185)
+		if (iterator.currentLine == 189)
 			int debug = 0;
 
 		if (token == "{")
@@ -146,9 +146,17 @@ Result<string> convertBody
 		Result<TypeInfo> typeResult = getTypeInfo(iterator, metaData.classStore);
 		Result<VarInfo> varResult = scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 
-		if(metaData.TryGetfuncInfo(token, /*out*/callFunc))
+		if (!varResult.hasError)
 		{
-			result = convertFunctionCall(iterator, metaData, scope, callFunc, funcInfo);
+			result = convertVar(varResult.value(), iterator, metaData, funcInfo, scope);
+			if (result.hasError)
+				return result.error;
+
+			ss << result.value();
+		}
+		else if(metaData.isFunction(token))
+		{
+			result = convertFunctionCall(iterator, metaData, scope, token, funcInfo);
 			if (result.hasError)
 				return result.error;
 
@@ -192,13 +200,25 @@ Result<string> convertBody
 
 			ss << result.value();
 		}
-		else if (!varResult.hasError)
+		else if(token == "delete")
 		{
-			result = convertVar(varResult.value(), iterator, metaData, funcInfo, scope);
-			if (result.hasError)
-				return result.error;
+			string nextToken;
+			if (!iterator.peekToken(/*out*/nextToken))
+				break;
 
-			ss << result.value();
+			Result<VarInfo> varResult = scope.tryGetVariable_fromCurrent(nextToken, metaData.globalScope, iterator.currentLine);
+			if (varResult.hasError)
+				return varResult.error;
+
+			if (!iterator.nextToken(/*steps:*/2))
+				break;
+
+			if (token != ";")
+				return ErrorInfo("invalid end of delete, end: \'" + token + "\'", iterator.currentLine);
+
+			ss << "delete " + varResult.value().name + ";";
+			if (metaData.transpillerOption.addEndLines)
+				ss << "\n";
 		}
 		else
 		{

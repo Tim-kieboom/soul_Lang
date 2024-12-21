@@ -106,8 +106,13 @@ string ArgToCppArg(const ArgumentType argType, const TypeInfo& type)
 	switch (argType)
 	{
 	case ArgumentType::tk_default:
-		ss << "const " << typeToCppType(type) << "&";
-		break;
+	{
+		ss << "const " << typeToCppType(type);
+		
+		if(type.isComplexType)
+			ss << "&";
+	}
+	break;
 	case ArgumentType::tk_mut:
 		ss << typeToCppType(type);
 		break;

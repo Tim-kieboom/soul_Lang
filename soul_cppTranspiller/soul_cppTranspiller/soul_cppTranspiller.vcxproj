@@ -127,8 +127,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ArgumentInfo.cpp" />
     <ClCompile Include="ArgumentType.cpp" />
     <ClCompile Include="convertBody.cpp" />
+    <ClCompile Include="convertClass.cpp" />
     <ClCompile Include="convertForLoop.cpp" />
     <ClCompile Include="convertFuncDecleration.cpp" />
     <ClCompile Include="convertFunctionCall.cpp" />
@@ -157,14 +159,17 @@
     <ClCompile Include="TypeWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="quickTest.soul" />
     <None Include="Source.soul" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArgumentInfo.h" />
     <ClInclude Include="ArgumentType.h" />
+    <ClInclude Include="ClassField.h" />
     <ClInclude Include="ClassInfo.h" />
     <ClInclude Include="ComplexType.h" />
     <ClInclude Include="convertBody.h" />
+    <ClInclude Include="convertClass.h" />
     <ClInclude Include="convertForLoop.h" />
     <ClInclude Include="convertFuncDecleration.h" />
     <ClInclude Include="convertFunctionCall.h" />
@@ -183,6 +188,7 @@
     <ClInclude Include="ScopeIterator.h" />
     <ClInclude Include="soulCheckers.h" />
     <ClInclude Include="storeArguments.h" />
+    <ClInclude Include="equalTools.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="readFile.h" />
     <ClInclude Include="Result.h" />

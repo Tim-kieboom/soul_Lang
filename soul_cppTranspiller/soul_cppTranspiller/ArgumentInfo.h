@@ -66,4 +66,21 @@ struct ArgumentInfo
 		argPosition(argPosition)
 	{
 	}
+
+	bool equals(const ArgumentInfo& other) const
+	{
+		return name == other.name &&
+			argType == other.argType &&
+			argPosition == argPosition &&
+			valueType.equals(other.valueType) &&
+			canBeMultiple == other.canBeMultiple;
+	}
+
+	bool about_equals(const ArgumentInfo& other) const
+	{
+		return argPosition == argPosition &&
+			   valueType.equals(other.valueType);
+	}
 };
+
+std::string toString(const ArgumentInfo& arg);

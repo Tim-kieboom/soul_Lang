@@ -28,6 +28,10 @@ Result<string> convertVarInit
 	if (!checkName(token))
 		return ErrorInfo("name invalid name: \'" + token + "\'", iterator.currentLine);
 
+	Result<VarInfo> varExsists = scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
+	if (!varExsists.hasError)
+		return ErrorInfo("varName: \'" +token+"\' already exsists", iterator.currentLine);
+
 	ss << typeToCppType(type) << ' ' << token;
 
 	VarInfo varInfo = VarInfo(token, type);

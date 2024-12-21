@@ -1,0 +1,30 @@
+//invis till endInvis is removed by tokenizer
+#invis
+//for syntax highlighting
+func ctor();
+func println(str msg);
+func print(str msg);
+func assertThrow(bool condition, str msg);
+func assertFail(bool condition, str msg);
+struct func;
+struct pub;
+struct priv;
+struct delete;
+struct mut;
+class i32;
+class f64;
+class ui64;
+class str;
+class none;
+class f;
+# endInvis
+
+func sum(i32 a, i32 b): i32
+{
+    return a + b;
+}
+
+//func main(): i32
+//{
+//    println(f"hello world, sum(1,2)={sum(1,2)}");
+//}

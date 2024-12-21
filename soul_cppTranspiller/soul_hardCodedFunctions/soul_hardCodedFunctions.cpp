@@ -1,3 +1,5 @@
+#define null nullptr
+
 template <typename T>
 class soul_optional
 {
@@ -165,17 +167,43 @@ static inline void assertThrow(bool condition, const char* msg)
 #endif
 }
 
-template<typename T>
+template<typename T, typename = void>
 void print(T msg)
 {
     std::cout << msg;
 }
 
-template<typename T>
+template<>
+void print<int8_t>(int8_t msg)
+{
+    std::cout << static_cast<int16_t>(msg);
+}
+
+template<>
+void print<uint8_t>(uint8_t msg)
+{
+    std::cout << static_cast<uint16_t>(msg);
+}
+
+
+template<typename T, typename = void>
 void println(T msg)
 {
     std::cout << msg << std::endl;
 }
+
+template<>
+void println<int8_t>(int8_t msg)
+{
+    std::cout << static_cast<int16_t>(msg) << std::endl;
+}
+
+template<>
+void println<uint8_t>(uint8_t msg)
+{
+    std::cout << static_cast<uint16_t>(msg) << std::endl;
+}
+
 
 template <typename T>
 void __soul__append_to_stream__(std::ostringstream& oss, T&& arg)
@@ -191,13 +219,9 @@ void __soul__append_to_stream__(std::ostringstream& oss, T&& arg, Args&&... args
 }
 
 template <typename ...Args>
-const char* __soul_format_string__(Args&&... args)
+std::string __soul_format_string__(Args&&... args)
 {
     std::ostringstream oss;
     __soul__append_to_stream__(oss, std::forward<Args>(args)...);
-    std::string str = oss.str();
-    char* buffer = new char[str.size() + 1];
-    copy(str.begin(), str.end(), buffer);
-    buffer[str.size()] = '\0';
-    return (const char*)buffer;
+    return oss.str();
 }

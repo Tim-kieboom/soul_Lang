@@ -5,6 +5,7 @@
 #include "internalFunction.h"
 #include "convertFuncDecleration.h"
 #include "convertBody.h"
+#include "convertClass.h"
 
 using namespace std;
 
@@ -81,11 +82,23 @@ Result<std::string> transpileToCpp(const std::vector<Token> tokens, MetaData& me
 
 			ss << funcBody.value();
 		}
+		else if(token == "class")
+		{
+			throw exception("not yet implemented");
+			//Result<string> classResult = convertClass();
+			//if (classResult.hasError)
+				//return classResult.error;
+
+			//ss << classResult.value();
+		}
 		else
 		{
 			return ErrorInfo("unexpected token in global, token: \'" + token + "\'", iterator.currentLine);
 		}
 	}
+
+	if (!metaData.isFunction("main"))
+		return ErrorInfo("main function not found", 0);
 
 	return ss.str();
 }

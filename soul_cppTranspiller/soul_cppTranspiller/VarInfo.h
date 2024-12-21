@@ -7,7 +7,6 @@ struct VarInfo
 	std::string name;
 	TypeInfo type;
 	bool isOption = false;
-	bool isOnHeap = false;
 
 	VarInfo() = default;
 

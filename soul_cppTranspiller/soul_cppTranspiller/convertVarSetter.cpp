@@ -236,14 +236,13 @@ static inline Result<void> _checkFirstToken(stringstream& ss, TokenIterator& ite
 	string& token = iterator.currentToken;
 	Result<VarInfo> varResult = scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 
-	FuncInfo callFunc;
-	if (metaData.TryGetfuncInfo(token, callFunc))
+	if (metaData.isFunction(token))
 	{
-		Result<void> isCompatible = type.areTypesCompatiple(callFunc.returnType, iterator.currentLine);
+		Result<void> isCompatible = type.areTypesCompatiple(metaData.funcStore[token].front().returnType, iterator.currentLine);
 		if (isCompatible.hasError)
 			return isCompatible.error;
 
-		Result<string> callResult = convertFunctionCall(iterator, metaData, scope, callFunc, funcInfo);
+		Result<string> callResult = convertFunctionCall(iterator, metaData, scope, token, funcInfo);
 		if (callResult.hasError)
 			return callResult.error;
 

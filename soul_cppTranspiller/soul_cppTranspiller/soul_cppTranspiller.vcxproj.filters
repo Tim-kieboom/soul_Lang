@@ -95,6 +95,12 @@
     <Filter Include="Source Files\transpiller\func\convertForLoop">
       <UniqueIdentifier>{8b8a88bc-44bb-4ebe-b0df-33133161b6b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\transpiller\func\convertClass">
+      <UniqueIdentifier>{3205207d-9675-498f-8161-89fc63cd2257}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools">
+      <UniqueIdentifier>{756862aa-6667-4d1c-8c77-3b0aeb6e4558}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -181,9 +187,18 @@
     <ClCompile Include="convertIndexer.cpp">
       <Filter>Source Files\transpiller\func\convertBody\convertVar</Filter>
     </ClCompile>
+    <ClCompile Include="convertClass.cpp">
+      <Filter>Source Files\transpiller\func\convertClass</Filter>
+    </ClCompile>
+    <ClCompile Include="ArgumentInfo.cpp">
+      <Filter>Source Files\metaData\func</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.soul">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="quickTest.soul">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
@@ -313,6 +328,15 @@
     </ClInclude>
     <ClInclude Include="convertIndexer.h">
       <Filter>Source Files\transpiller\func\convertBody\convertVar</Filter>
+    </ClInclude>
+    <ClInclude Include="convertClass.h">
+      <Filter>Source Files\transpiller\func\convertClass</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassField.h">
+      <Filter>Source Files\metaData\Type\ComplexType</Filter>
+    </ClInclude>
+    <ClInclude Include="equalTools.h">
+      <Filter>Source Files\tools</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

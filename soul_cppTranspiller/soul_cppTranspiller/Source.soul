@@ -59,27 +59,101 @@ func handleResult(bool value): str
 //invis till endInvis is removed by tokenizer
 #invis
 //for syntax highlighting
+func ctor();
 func println(str msg);
 func print(str msg);
-func assertThrow(str msg, bool condition);
-func assertFail(str msg, bool condition);
+func assertThrow(bool condition, str msg);
+func assertFail(bool condition, str msg);
+func testArg(i8 a, i8 b);
 struct func;
+struct pub;
+struct priv;
+struct delete;
 struct mut;
+class i8;
 class i32;
+class f64;
+class ui64;
 class str;
 class none;
 class f;
-#endInvis
+# endInvis
 
+//class List_i32
+//{
+//	//pub ui64 size {get; priv set;} = 0;
+//	//pub ui64 capacity 
+//	//{
+//	//	get;
+//	//	set(newCapacity)
+//	//	{
+//	//		reserve(newCapacity);
+//	//	}
+//	//} = 0;
+
+
+//	i32[] array = null;
+
+//	pub ctor(this.capacity): List_i32
+//	{
+//		array = new i32[capacity];
+//	}
+
+//	pub push(i32 item): none
+//	{
+//		if (size + 1 > capacity)
+//			resize(capacity * 2);
+
+//		array[size++] = item;
+//	}
+
+//	pub pop(i32 item): i32
+//	{
+//		assertThrow(size <= 0, "trying to pop empty array");
+//		return array[--size];
+//	}
+
+//	pub at(i32 index): i32 &
+//	{
+//		assertThrow(index <= size, "index is out of bounds");
+//		return array[index];
+//	}
+
+//	pub oparator[](ui64 index): i32&
+//	{
+//		assertFail(index <= capacity, "trying to index element of index that is out of bounds");
+//		return array[index];           
+//	}
+
+//	priv reserve(ui64 newCapacity): none
+//	{
+//		capacity = newCapacity;
+//		i32[] oldArray = array;
+//		array = new i32[newCapacity];
+//		for (ui64 i = 0; i < size; i++)
+//			array[i] = oldArray[i];
+
+//		delete oldArray;
+//	}
+//}
 
 func sum(i32 a, i32 b): i32
 {
 	return a + b;
 }
 
+func sum(f64 a, f64 b): f64
+{
+	return a + b;
+}
+
+func testArg(i8 a, i8 b): i8
+{
+	return a;
+}
+
 func sumPlusOne(i32 a, mut i32 b): i32
 {
-	sum(1, 2);
 	b++;
 	return a + b;
 }
@@ -161,9 +235,16 @@ func main(): i32
 {
 	const str tokenizeHell = " ()--,./\\;' \t \n \r \\ \' {} !@#$%^&*() \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\" ";
 
+	i8 b = 86;
+	println(b);
+
     println("------ sum ------\n");
 	i32 result = sum(1, 2);
+
+	f64 fl = 8;
+	i32 result2 = sum(fl, fl);
 	println(result); //prints 3
+	println(result2); //prints 16
 
 	println("\n\n------ sumPlusOne ------\n");
 	result = sumPlusOne(1, 2);
@@ -178,7 +259,8 @@ func main(): i32
 	testIf(true);
 	testForLoop();
 
-	i32[] array = new i32[2];
+	i32[] array = null;
+	array = new i32[2];
 	array[0] = 0;
 	array[1] = 1;
 	i32 el = array[0];
@@ -186,7 +268,7 @@ func main(): i32
 	println("\n\n------ testArray ------\n");
 	println(f"array[0]={array[0]} shouldBe=0, array[1]={array[1]} shouldBe=1");
 
-	//delete array;
+	delete array;
 
 	//increment(out i32 initInOutValue);
 	//println(f"after increment initInOutValue: {value}"); //prints 1

@@ -11,6 +11,7 @@ enum class DuckType
 	number
 };
 
+PrimitiveType DuckToPrimitive(DuckType type);
 std::string toString(DuckType type);
 DuckType getDuckType(PrimitiveType type);
 DuckType getDuckType(TypeCategory type);

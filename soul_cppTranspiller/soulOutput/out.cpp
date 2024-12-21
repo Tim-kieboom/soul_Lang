@@ -4,6 +4,8 @@
 #include <sstream>
 #include <assert.h>
 #include <iostream>
+#define null nullptr
+ 
 template <typename T>
 class soul_optional
 {
@@ -171,17 +173,43 @@ static inline void assertThrow(bool condition, const char* msg)
 #endif
 }
  
-template<typename T>
+template<typename T, typename = void>
 void print(T msg)
 {
     std::cout << msg;
 }
  
-template<typename T>
+template<>
+void print<int8_t>(int8_t msg)
+{
+    std::cout << static_cast<int16_t>(msg);
+}
+ 
+template<>
+void print<uint8_t>(uint8_t msg)
+{
+    std::cout << static_cast<uint16_t>(msg);
+}
+ 
+ 
+template<typename T, typename = void>
 void println(T msg)
 {
     std::cout << msg << std::endl;
 }
+ 
+template<>
+void println<int8_t>(int8_t msg)
+{
+    std::cout << static_cast<int16_t>(msg) << std::endl;
+}
+ 
+template<>
+void println<uint8_t>(uint8_t msg)
+{
+    std::cout << static_cast<uint16_t>(msg) << std::endl;
+}
+ 
  
 template <typename T>
 void __soul__append_to_stream__(std::ostringstream& oss, T&& arg)
@@ -197,15 +225,11 @@ void __soul__append_to_stream__(std::ostringstream& oss, T&& arg, Args&&... args
 }
  
 template <typename ...Args>
-const char* __soul_format_string__(Args&&... args)
+std::string __soul_format_string__(Args&&... args)
 {
     std::ostringstream oss;
     __soul__append_to_stream__(oss, std::forward<Args>(args)...);
-    std::string str = oss.str();
-    char* buffer = new char[str.size() + 1];
-    copy(str.begin(), str.end(), buffer);
-    buffer[str.size()] = '\0';
-    return (const char*)buffer;
+    return oss.str();
 }
  
 
@@ -231,14 +255,23 @@ constexpr const char* __17c_str__ = "\n\n------ testArray ------\n";
 constexpr const char* __18c_str__ = "array[0]=";
 constexpr const char* __19c_str__ = " shouldBe=0, array[1]=";
 
-int32_t sum(/*default*/const int32_t& a, /*default*/const int32_t& b)
+int32_t sum(/*default*/const int32_t a, /*default*/const int32_t b)
 {
 	return a+b;
 }
 
-int32_t sumPlusOne(/*default*/const int32_t& a, /*mut*/int32_t b)
+double sum(/*default*/const double a, /*default*/const double b)
 {
-	sum(1, 2);
+	return a+b;
+}
+
+int8_t testArg(/*default*/const int8_t a, /*default*/const int8_t b)
+{
+	return a;
+}
+
+int32_t sumPlusOne(/*default*/const int32_t a, /*mut*/int32_t b)
+{
 	b++;
 	return a+b;
 }
@@ -248,7 +281,7 @@ void increment(/*out*/int32_t& a)
 	a++;
 }
 
-void testIf(/*default*/const bool& condition)
+void testIf(/*default*/const bool condition)
 {
 	if(condition)
 	{
@@ -325,9 +358,14 @@ void testForLoop()
 int32_t main()
 {
 	const std::string tokenizeHell = __10c_str__;
+	int8_t b = 86;
+	println(b);
 	println(__11c_str__);
 	int32_t result = sum(1, 2);
+	double fl = 8;
+	int32_t result2 = sum(fl, fl);
 	println(result);
+	println(result2);
 	println(__12c_str__);
 	result = sumPlusOne(1, 2);
 	println(__soul_format_string__(__13c_str__, result, __4c_str__));
@@ -338,11 +376,13 @@ int32_t main()
 	println(__soul_format_string__(__16c_str__, value, __4c_str__));
 	testIf(true);
 	testForLoop();
-	int32_t* array = new int32_t[2];
+	int32_t* array = null;
+	array = new int32_t[2];
 	array [0] =0;
 	array [1] =1;
 	int32_t el = array[0];
 	println(__17c_str__);
 	println(__soul_format_string__(__18c_str__, array[0], __19c_str__, array[1], __20c_str__));
+	delete array;
 }
 

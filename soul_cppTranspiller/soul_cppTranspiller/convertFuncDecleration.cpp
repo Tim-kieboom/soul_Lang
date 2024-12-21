@@ -6,6 +6,17 @@
 #include "cppConverter.h"
 
 using namespace std;
+
+static inline string toString(vector<ArgumentInfo>& args)
+{
+	stringstream ss;
+	ss << '[';
+	for (const ArgumentInfo& arg : args)
+		ss << toString(arg);
+	ss << ']';
+	return ss.str();
+}
+
 static inline Result<string> convertFuncDeclaration_arguments
 (
 	/*out*/TokenIterator& iterator,
@@ -46,9 +57,6 @@ Result<string> convertFuncDeclaration(/*out*/TokenIterator& iterator, /*out*/Met
 		if(!checkName(token))
 			return ErrorInfo("function name is illigal, name: " + token, iterator.currentLine);
 
-		if (metaData.TryGetfuncInfo(token, _))
-			return ErrorInfo("function already exists, name: " + token, iterator.currentLine);
-
 		funcInfo = FuncInfo(token);
 		vector<Nesting>& scope = funcInfo.scope;
 
@@ -63,6 +71,9 @@ Result<string> convertFuncDeclaration(/*out*/TokenIterator& iterator, /*out*/Met
 			return argsResult.error;
 
 		string returnType = typeToCppType(funcInfo.returnType);
+
+		if (metaData.TryGetfuncInfo(token, funcInfo.args, _))
+			return ErrorInfo("function with these arguments already exists, name: \'" + token + "\', args: \'" + toString(funcInfo.args) + "\'", iterator.currentLine);
 
 		metaData.addFuncInfo(funcInfo.funcName, funcInfo);
 		ss << returnType << ' ' << funcInfo.funcName << argsResult.value();

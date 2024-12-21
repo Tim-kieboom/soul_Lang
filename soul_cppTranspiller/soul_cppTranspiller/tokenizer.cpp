@@ -356,10 +356,10 @@ Result<vector<Token>> tokenize(/*out*/ string& sourceFile, /*out*/ MetaData& met
         for (uint32_t i = 0; i < lines.size(); i += 2)
         {
             string line = lines.at(i);
-            if (string_contains(line, "#invis"))
+            if (string_contains(line, "#invis") || string_contains(line, "# invis"))
                 isInvis = true;
 
-            if (string_contains(line, "#endInvis"))
+            if (string_contains(line, "#endInvis") || string_contains(line, "# endInvis"))
             {
                 isInvis = false;
                 continue;

@@ -68,4 +68,36 @@ struct FuncInfo
 			this->scope.at(0).addVariable(varInfo);
 		}
 	}
+
+	bool argsAboutEquals(const std::vector<ArgumentInfo>& other) const
+	{
+		if (args.size() != other.size())
+			return false;
+
+		for(uint64_t i = 0; i < args.size(); i++)
+		{
+			const ArgumentInfo& one = args.at(i);
+			const ArgumentInfo& two = other.at(i);
+			if(!one.about_equals(two))
+				return false;
+		}
+
+		return true;
+	}
+
+	bool argsEquals(const std::vector<ArgumentInfo>& other) const
+	{
+		if (args.size() != other.size())
+			return false;
+
+		for (uint64_t i = 0; i < args.size(); i++)
+		{
+			const ArgumentInfo& one = args.at(i);
+			const ArgumentInfo& two = other.at(i);
+			if (!one.equals(two))
+				return false;
+		}
+
+		return true;
+	}
 };

@@ -7,6 +7,23 @@ DuckType getDuckType(PrimitiveType type)
 	return getDuckType(getTypeCategory(type));
 }
 
+PrimitiveType DuckToPrimitive(DuckType type)
+{
+	switch(type)
+	{
+	case DuckType::number:
+		return PrimitiveType::f64;
+	case DuckType::invalid:
+		return PrimitiveType::invalid;
+	case DuckType::compile_dynamic:
+		return PrimitiveType::compile_dynamic;
+	case DuckType::text:
+		return PrimitiveType::str;
+	case DuckType::character:
+		return PrimitiveType::char_;
+	}
+}
+
 DuckType getDuckType(TypeCategory type)
 {
 	switch (type)

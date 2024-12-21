@@ -7,6 +7,7 @@
 #include "TypeWrapper.h"
 #include "ComplexType.h"
 #include "TokenIterator.hpp"
+#include "equalTools.h"
 
 std::string toString(const TypeInfo& type);
 
@@ -113,6 +114,24 @@ struct TypeInfo
 	bool isValid() const
 	{
 		return !(primType == PrimitiveType::invalid && complexType.complexType_type == ComplexType_Type::invalid);
+	}
+
+	constexpr bool equals(const TypeInfo& other) const
+	{
+		bool boolEqs = isArray == other.isArray &&
+					   isPointer == other.isPointer &&
+					   isMutable == other.isMutable &&
+					   refrenceCounter == refrenceCounter &&
+					   isComplexType == other.isComplexType &&
+					   vectorEquals(typeWrappers, other.typeWrappers);
+
+		if (!boolEqs)
+			return false;
+
+		if (isComplexType)
+			return complexType.equals(other.complexType);
+		
+		return primType == other.primType;
 	}
 
 private:

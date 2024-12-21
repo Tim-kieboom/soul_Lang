@@ -7,6 +7,6 @@ Result<std::string> convertFunctionCall
 	TokenIterator& iterator, 
 	MetaData& metaData, 
 	ScopeIterator& scope, 
-	FuncInfo& callFunc, 
+	std::string& callFuncName,
 	FuncInfo& funcInfo
 );
