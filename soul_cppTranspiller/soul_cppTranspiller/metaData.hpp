@@ -47,6 +47,13 @@ struct MetaData
 		return funcStore.find(funcName) != funcStore.end();
 	}
 
+	bool isMethode(const std::string& methodeName, const std::string& className)
+	{
+		std::stringstream ss;
+		ss << className << '#' << methodeName;
+		return funcStore.find(ss.str()) != funcStore.end();
+	}
+
 	bool TryGetfuncInfo(const std::string& funcName, std::vector<ArgumentInfo> args, FuncInfo& funcInfo)
 	{
 		if (funcStore.find(funcName) == funcStore.end())
@@ -64,27 +71,33 @@ struct MetaData
 		return false;
 	}
 
-	std::string addMethode(ClassInfo& classInfo, const FuncInfo& funcInfo, /*out*/MetaData& metaData)
+	std::string addMethode(ClassInfo& classInfo, const FuncInfo& funcInfo, ClassAccessType classScope)
 	{
 		std::stringstream ss;
 		ss << classInfo.className << '#' << funcInfo.funcName;
 
 		std::string methodeName = ss.str();
-		classInfo.methodesNames.push_back(methodeName);
+		classInfo.methodesNames.push_back(Methode(methodeName, classScope));
+		this->addFuncInfo(methodeName, funcInfo);
 		return methodeName;
 	}
 
-	std::pair<std::string, std::string> addProperty(ClassInfo& classInfo, const std::string& varName, const FuncInfo& setter, const FuncInfo& getter, /*out*/MetaData& metaData)
+	std::pair<std::string, std::string> addProperty(ClassInfo& classInfo, const std::string& varName, Result<FuncInfo>& setterResult, Result<FuncInfo>& getterResult)
 	{
 		std::stringstream ss;
 		ss << classInfo.className << "#prop#" << varName << "#setter";
 		std::string setterName = ss.str();
+		ss.str("");
 
 		ss << classInfo.className << "#prop#" << varName << "#getter";
 		std::string getterName = ss.str();
 
-		metaData.addFuncInfo(setterName, setter);
-		metaData.addFuncInfo(getterName, getter);
+		if(!setterResult.hasError)
+			this->addFuncInfo(setterName, setterResult.value());
+
+		if (!getterResult.hasError)
+			this->addFuncInfo(getterName, getterResult.value());
+
 		return { setterName, getterName };
 	}
 };

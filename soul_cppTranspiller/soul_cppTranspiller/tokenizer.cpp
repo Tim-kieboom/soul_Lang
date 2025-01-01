@@ -310,7 +310,7 @@ static inline Result<void*> storeRawString_inMap(/*out*/ string& sourceFile, /*o
 
 static inline void tokenizeLine(const string& line, vector<Token>& tokenizer, uint64_t& lineNumber)
 {
-    vector<string> splitArgs = string_splitOn(line, { "!", "[]", "[", "]", "(", ")", "{", "}", ":", ";", "++", "--", "==", "!=", "+=", "-=", "/=", "*=", "+", "-", "/", "*", "=" });
+    vector<string> splitArgs = string_splitOn(line, { ",", "!=", "!", "[]", "[", "]", "(", ")", "{", "}", ":", ";", "++", "--", ">=", "<=", "==", "+=", "-=", "/=", "*=", "<", ">", "+", "-", "/", "*", "=" });
     string argsLine = concatToString(splitArgs, " ");
     string_replace(/*out*/argsLine, ",", " ,");
 
@@ -356,10 +356,10 @@ Result<vector<Token>> tokenize(/*out*/ string& sourceFile, /*out*/ MetaData& met
         for (uint32_t i = 0; i < lines.size(); i += 2)
         {
             string line = lines.at(i);
-            if (string_contains(line, "#invis") || string_contains(line, "# invis"))
+            if (string_containsMultiple(line, { "#invis", "# invis" }))
                 isInvis = true;
 
-            if (string_contains(line, "#endInvis") || string_contains(line, "# endInvis"))
+            if (string_containsMultiple(line, { "#endInvis", "# endInvis" }))
             {
                 isInvis = false;
                 continue;

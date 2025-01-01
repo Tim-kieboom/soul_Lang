@@ -3,7 +3,21 @@
 
 using namespace std;
 
-Result<string> convertIndexer(TokenIterator& iterator, FuncInfo& funcInfo)
+static inline DuckType _getDuckTypeOfToken(const string& token, const TokenIterator& iterator, ScopeIterator& scope, MetaData& metaData)
+{
+	Result<VarInfo> varResult = scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
+	if (varResult.hasError)
+		return getDuckType_fromValue(token);
+
+	VarInfo var = varResult.value();
+
+	if (var.type.isComplexType)
+		return DuckType::invalid;
+
+	return getDuckType(var.type.primType);
+}
+
+Result<string> convertIndexer(TokenIterator& iterator, FuncInfo& funcInfo, ScopeIterator& scope, MetaData& metaData)
 {
 	stringstream ss;
 	ss << '[';
@@ -12,7 +26,7 @@ Result<string> convertIndexer(TokenIterator& iterator, FuncInfo& funcInfo)
 	if (!iterator.nextToken())
 		return ErrorInfo("unexpeced end while checking indexer", iterator.currentLine);
 
-	if (getDuckType_fromValue(token) != DuckType::number)
+	if (_getDuckTypeOfToken(token, iterator, scope, metaData) != DuckType::number)
 		return ErrorInfo("invalid token in indexer token: \'" + token + "\'", iterator.currentLine);
 
 	ss << token;

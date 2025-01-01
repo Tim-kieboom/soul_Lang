@@ -9,7 +9,7 @@ static inline ErrorInfo ERROR_convertForLoop_outOfBounds(TokenIterator& iterator
     return ErrorInfo("forLoop end enexpected", iterator.currentLine);
 }
 
-static inline Result<void> convertForLoop_firstCondition(stringstream& ss, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, ScopeIterator& scope)
+static inline Result<void> convertForLoop_firstCondition(stringstream& ss, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, ScopeIterator& scope, string* className)
 {
     string& token = iterator.currentToken;
     if (!iterator.nextToken())
@@ -35,11 +35,11 @@ static inline Result<void> convertForLoop_firstCondition(stringstream& ss, Token
             return ErrorInfo("iterator variable of forLoop has to by of a number type currentType: \'" + toString(type) + "\'", iterator.currentLine);
 
         FuncInfo _;
-        varResult = convertVarInit(type, iterator, metaData, _, funcInfo, scope);
+        varResult = convertVarInit(type, iterator, metaData, _, funcInfo, scope, className);
     }
     else if (!varInfo.hasError)
     {
-        varResult = convertVar(varInfo.value(), iterator, metaData, funcInfo, scope);
+        varResult = convertVar(varInfo.value(), iterator, metaData, funcInfo, scope, className);
     }
     else
     {
@@ -53,7 +53,7 @@ static inline Result<void> convertForLoop_firstCondition(stringstream& ss, Token
     return {};
 }
 
-static inline Result<void> convertForLoop_secondCondition(stringstream& ss, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, ScopeIterator& scope)
+static inline Result<void> convertForLoop_secondCondition(stringstream& ss, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, ScopeIterator& scope, string* className)
 {
     string token;
 
@@ -64,7 +64,7 @@ static inline Result<void> convertForLoop_secondCondition(stringstream& ss, Toke
         return ErrorInfo("second condition of forLoop can't be empty", iterator.currentLine);
 
     static const TypeInfo boolType = TypeInfo(PrimitiveType::bool_);
-    Result<string> varSetterResult = convertVarSetter(iterator, metaData, boolType, funcInfo, scope, varSetter_Option::endSemiColon, false);
+    Result<string> varSetterResult = convertVarSetter(iterator, metaData, boolType, funcInfo, scope, varSetter_Option::endSemiColon, className, false);
     if (varSetterResult.hasError)
         return varSetterResult.error;
 
@@ -72,7 +72,7 @@ static inline Result<void> convertForLoop_secondCondition(stringstream& ss, Toke
     return {};
 }
 
-static inline Result<void> convertForLoop_thirdCondition(stringstream& ss, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, ScopeIterator& scope)
+static inline Result<void> convertForLoop_thirdCondition(stringstream& ss, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, ScopeIterator& scope, string* className)
 {
     string& token = iterator.currentToken;
 
@@ -93,7 +93,7 @@ static inline Result<void> convertForLoop_thirdCondition(stringstream& ss, Token
     if (varInfoResult.hasError)
         return varInfoResult.error;
 
-    Result<string> varResult = convertVar(varInfoResult.value(), iterator, metaData, funcInfo, scope, varSetter_Option::endRoundBracket);
+    Result<string> varResult = convertVar(varInfoResult.value(), iterator, metaData, funcInfo, scope, className, varSetter_Option::endRoundBracket);
     if (varResult.hasError)
         return varResult.error;
 
@@ -101,7 +101,7 @@ static inline Result<void> convertForLoop_thirdCondition(stringstream& ss, Token
     return {};
 }
 
-Result<string> convertForLoop(TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, ScopeIterator& scope)
+Result<string> convertForLoop(TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, ScopeIterator& scope, string* className)
 {
     stringstream ss;
     string& token = iterator.currentToken;
@@ -112,15 +112,15 @@ Result<string> convertForLoop(TokenIterator& iterator, MetaData& metaData, FuncI
     ss << '(';
 
     Result<void> result;
-    result = convertForLoop_firstCondition(/*out*/ss, iterator, metaData, funcInfo, scope);
+    result = convertForLoop_firstCondition(/*out*/ss, iterator, metaData, funcInfo, scope, className);
     if (result.hasError)
         return result.error;
 
-    result = convertForLoop_secondCondition(/*out*/ss, iterator, metaData, funcInfo, scope);
+    result = convertForLoop_secondCondition(/*out*/ss, iterator, metaData, funcInfo, scope, className);
     if (result.hasError)
         return result.error;
 
-    result = convertForLoop_thirdCondition(/*out*/ss, iterator, metaData, funcInfo, scope);
+    result = convertForLoop_thirdCondition(/*out*/ss, iterator, metaData, funcInfo, scope, className);
     if (result.hasError)
         return result.error;
 

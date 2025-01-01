@@ -8,5 +8,6 @@ Result<std::string> convertFunctionCall
 	MetaData& metaData, 
 	ScopeIterator& scope, 
 	std::string& callFuncName,
-	FuncInfo& funcInfo
+	FuncInfo& funcInfo,
+	std::string* className
 );

@@ -148,23 +148,49 @@ public:
     }
 };
 
-static inline void assertFail(bool condition, const char* msg)
+
+
+static inline void Throw(const std::string& msg)
+{
+    throw std::runtime_error(msg.c_str());
+}
+
+static inline void Fail(const std::string& msg)
+{
+    std::cout << msg.c_str() << std::endl;
+    assert(("assertFail failed (read last console message)", false));
+}
+
+static inline void checkThrow(bool condition, const std::string& msg)
+{
+    if (condition)
+        Throw(msg);
+}
+
+static inline checkFail(bool condition, const std::string& msg)
+{
+    if (condition)
+        Fail(msg);
+}
+
+static inline void checkFail_debug(bool condition, const std::string& msg)
 {
 #ifndef NDEBUG
-    if (!condition)
-    {  
-        std::cout << msg << std::endl;
-        assert(("assertFail failed (read last console message)", false));
-    }
+    checkFail(condition, msg);
 #endif
 }
 
-static inline void assertThrow(bool condition, const char* msg)
+static inline void checkThrow_debug(bool condition, const std::string& msg)
 {
 #ifndef NDEBUG
-    if (!condition)
-        throw std::runtime_error(msg);
+    checkThrow(condition, msg);
 #endif
+}
+
+template <typename T>
+inline std::string toStr(T value)
+{
+    return std::to_string(value);
 }
 
 template<typename T, typename = void>

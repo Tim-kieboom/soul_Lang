@@ -13,7 +13,7 @@ static inline ErrorInfo ERROR_convertBody_outOfBounds(FuncInfo& funcInfo, TokenI
 	return ErrorInfo("unexpected en in functionBody, funcName: \'" + string(funcInfo.funcName) + '\'', iterator.currentLine);
 }
 
-static inline Result<string> convertBodiedStetement(TokenIterator& iterator, FuncInfo& funcInfo, MetaData& metaData, ScopeIterator& scope, uint32_t depth)
+static inline Result<string> convertBodiedStatement(TokenIterator& iterator, FuncInfo& funcInfo, MetaData& metaData, ScopeIterator& scope, uint32_t depth, string* className)
 {
 	stringstream ss;
 	string& token = iterator.currentToken;
@@ -29,12 +29,12 @@ static inline Result<string> convertBodiedStetement(TokenIterator& iterator, Fun
 			return ERROR_convertBody_outOfBounds(funcInfo, iterator);
 	}
 
-	uint64_t statementNestingIndex = funcInfo.scope.size();
-	funcInfo.scope.emplace_back
+	uint64_t statementNestingIndex = scope.scope.size();
+	scope.scope.emplace_back
 	(
 		Nesting::makeChild(&scope.getCurrentNesting(), funcInfo.scope)
 	);
-	ScopeIterator statementScope = ScopeIterator(funcInfo.scope, statementNestingIndex);
+	ScopeIterator statementScope = ScopeIterator(scope.scope, statementNestingIndex);
 
 	bool isConditionalStatement = !initListEquals({ "else" }, bodiedStatment);
 	if(isConditionalStatement)
@@ -45,12 +45,12 @@ static inline Result<string> convertBodiedStetement(TokenIterator& iterator, Fun
 		Result<string> conditionResult;
 		if (bodiedStatment == "for")
 		{
-			conditionResult = convertForLoop(iterator, metaData, funcInfo, statementScope);
+			conditionResult = convertForLoop(iterator, metaData, funcInfo, statementScope, className);
 		}
 		else
 		{
 			static const TypeInfo boolType = TypeInfo(PrimitiveType::bool_);
-			conditionResult = convertVarSetter(iterator, metaData, boolType, funcInfo, statementScope, varSetter_Option::endRoundBracket);
+			conditionResult = convertVarSetter(iterator, metaData, boolType, funcInfo, statementScope, varSetter_Option::endRoundBracket, className);
 		}
 
 		if (conditionResult.hasError)
@@ -68,7 +68,7 @@ static inline Result<string> convertBodiedStetement(TokenIterator& iterator, Fun
 	if (metaData.transpillerOption.addEndLines && bodiedStatment != "for")
 		ss << '\n';
 
-	Result<string> bodyResult = convertBody(iterator, funcInfo, metaData, statementScope, depth+1);
+	Result<string> bodyResult = convertBody(iterator, funcInfo, metaData, statementScope, depth+1, className);
 	if (bodyResult.hasError)
 		return bodyResult.error;
 
@@ -76,13 +76,39 @@ static inline Result<string> convertBodiedStetement(TokenIterator& iterator, Fun
 	return ss.str();
 }	
 
+Result<string> convertBody_inClass
+(
+	TokenIterator& iterator,
+	FuncInfo& funcInfo,
+	MetaData& metaData,
+	ClassInfo& classInfo,
+	ScopeIterator& scope
+)
+{
+	uint64_t oldIndex = scope.currentIndex;
+
+	scope.scope.emplace_back
+	(
+		Nesting::makeChild(&scope.scope.at(0), scope.scope)
+	);
+	
+
+	Result<string> result = convertBody(iterator, funcInfo, metaData, scope, 2, &classInfo.className);
+
+	scope.currentIndex = oldIndex;
+	scope.scope.pop_back();
+
+	return result;
+}
+
 Result<string> convertBody
 (
 	TokenIterator& iterator, 
 	FuncInfo& funcInfo, 
 	MetaData& metaData, 
 	ScopeIterator& scope,
-	uint32_t depth
+	uint32_t depth,
+	string* className
 )
 {
 	stringstream ss;
@@ -109,8 +135,9 @@ Result<string> convertBody
 	uint32_t openCurlyBracketCounter = 0;
 	while(iterator.nextToken())
 	{
-		if (iterator.currentLine == 189)
-			int debug = 0;
+
+		if (iterator.currentLine == 173)
+			int f = 0;
 
 		if (token == "{")
 		{
@@ -148,15 +175,19 @@ Result<string> convertBody
 
 		if (!varResult.hasError)
 		{
-			result = convertVar(varResult.value(), iterator, metaData, funcInfo, scope);
+			result = convertVar(varResult.value(), iterator, metaData, funcInfo, scope, className);
 			if (result.hasError)
 				return result.error;
 
 			ss << result.value();
 		}
-		else if(metaData.isFunction(token))
+		else if
+		(
+			metaData.isFunction(token) || 
+			(className != nullptr && metaData.isMethode(token, *className))
+		)
 		{
-			result = convertFunctionCall(iterator, metaData, scope, token, funcInfo);
+			result = convertFunctionCall(iterator, metaData, scope, token, funcInfo, className);
 			if (result.hasError)
 				return result.error;
 
@@ -165,7 +196,7 @@ Result<string> convertBody
 			if (!iterator.nextToken())
 				return ERROR_convertBody_outOfBounds(funcInfo, iterator);
 
-			if(token != ";")
+			if (token != ";")
 				return ErrorInfo("invalid symbol in argument, symbool: \'" + token + '\'', iterator.currentLine);
 
 			ss << ';';
@@ -175,7 +206,7 @@ Result<string> convertBody
 		else if(!typeResult.hasError)
 		{
 			TypeInfo type = typeResult.value();
-			result = convertVarInit(type, iterator, metaData, callFunc, funcInfo, scope);
+			result = convertVarInit(type, iterator, metaData, callFunc, funcInfo, scope, className);
 			if (result.hasError)
 				return result.error;
 
@@ -186,7 +217,7 @@ Result<string> convertBody
 			if (!iterator.nextToken())
 				break;
 
-			result = convertVarSetter(iterator, metaData, funcInfo.returnType, funcInfo, scope, varSetter_Option::endSemiColon);
+			result = convertVarSetter(iterator, metaData, funcInfo.returnType, funcInfo, scope, varSetter_Option::endSemiColon, className);
 			if (result.hasError)
 				return result.error;
 
@@ -194,7 +225,7 @@ Result<string> convertBody
 		}
 		else if(initListEquals(bodiedStatements, token))
 		{
-			result = convertBodiedStetement(iterator, funcInfo, metaData, scope, depth);
+			result = convertBodiedStatement(iterator, funcInfo, metaData, scope, depth, className);
 			if (result.hasError)
 				return result.error;
 

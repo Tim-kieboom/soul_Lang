@@ -59,7 +59,8 @@ static inline Result<void> storeLastArgument
     /*out*/ TokenIterator& iterator, 
     /*out*/ MetaData& metaData, 
     /*out*/ FuncInfo& funcInfo, 
-    /*out*/ Nesting& scope
+    /*out*/ Nesting& scope,
+    bool isCtor
 )
 {
     string& token = iterator.currentToken;
@@ -70,25 +71,29 @@ static inline Result<void> storeLastArgument
             return result.error;
     }
 
-    TypeInfo& type = storeInfo.type;
-    if(!iterator.nextToken())
-        return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
+    if (!isCtor)
+    {
+        TypeInfo& type = storeInfo.type;
+        if (!iterator.nextToken())
+            return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
 
-    if(token != ":") 
-        return ErrorInfo("function Declarations doesn't end with ':'", iterator.currentLine);
+        if (token != ":")
+            return ErrorInfo("function Declarations doesn't end with ':'", iterator.currentLine);
 
-    if (!iterator.nextToken())
-        return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
+        if (!iterator.nextToken())
+            return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
 
-    Result<TypeInfo> returnType = getTypeInfo(iterator, metaData.classStore);
-    if (returnType.hasError)
-        return returnType.error;
+        Result<TypeInfo> returnType = getTypeInfo(iterator, metaData.classStore);
+        if (returnType.hasError)
+            return returnType.error;
+        
+        funcInfo.returnType = returnType.value();
+    }
 
-    funcInfo.returnType = returnType.value();
     return {};
 }
 
-Result<void> storeArguments(TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, Nesting& scope)
+Result<void> storeArguments(TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, Nesting& scope, bool isCtor)
 {
     StoreArgsInfo storeInfo;
     uint32_t& openBracketCounter = storeInfo.openBracketCounter;
@@ -111,7 +116,7 @@ Result<void> storeArguments(TokenIterator& iterator, MetaData& metaData, FuncInf
         {
             if(openBracketCounter <= 1)
             {
-                Result<void> result = storeLastArgument(storeInfo, iterator, metaData, funcInfo, scope);
+                Result<void> result = storeLastArgument(storeInfo, iterator, metaData, funcInfo, scope, isCtor);
                 if (result.hasError)
                     return result.error;
 

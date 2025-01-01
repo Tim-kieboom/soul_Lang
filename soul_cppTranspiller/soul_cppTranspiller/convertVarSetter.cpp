@@ -7,7 +7,7 @@
 using namespace std;
 
 static const initializer_list<const char*> allOparations = { "+", "-", "/", "*", "=" };
-static const initializer_list<const char*> allConditionOparations = { "<", ">", "==", "!=" };
+static const initializer_list<const char*> allConditionOparations = { "<", ">", "<=", ">=", "==", "!=" };
 
 static inline ErrorInfo ERROR_convertVarSetter_outOfBounds(TokenIterator& iterator)
 {
@@ -34,34 +34,63 @@ static inline Result<void> _checkTypeOrVar(const TypeInfo& type, const std::stri
 	return {};
 }
 
+static inline Result<TypeInfo> _getConditionType(const string& token, const TokenIterator& iterator, ScopeIterator& scope, MetaData& metaData)
+{
+	Result<VarInfo> leftVarResult = scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
+	DuckType typeResult = getDuckType_fromValue(token);
+
+	if(!leftVarResult.hasError)
+		return leftVarResult.value().type;
+
+	if (typeResult == DuckType::invalid)
+		return ErrorInfo("condition invalid, token: \'" +token+ "\'", iterator.currentLine);
+
+	return TypeInfo(DuckToPrimitive(typeResult));
+}
+
+static inline Result<void> _checkConditionTypes(const string& leftCondition, const TokenIterator& iterator, ScopeIterator& scope, MetaData& metaData)
+{
+	const string& token = iterator.currentToken;
+	
+	Result<TypeInfo> leftTypeResult = _getConditionType(leftCondition, iterator, scope, metaData);
+	if (leftTypeResult.hasError)
+		return leftTypeResult.error;
+
+	TypeInfo leftType = leftTypeResult.value();
+
+	if(token == "null")
+	{
+		if (leftType.isArray || leftType.isPointer)
+			return {};
+	}
+
+	Result<TypeInfo> rightTypeResult = _getConditionType(token, iterator, scope, metaData);
+	if (rightTypeResult.hasError)
+		return rightTypeResult.error;
+
+	TypeInfo rightType = rightTypeResult.value();
+
+	Result<void> compare = leftType.areTypesCompatiple(rightType, iterator.currentLine);
+	if (compare.hasError)
+		return ErrorInfo("condition types invalid, leftType: \'" + toString(leftType) + "\', rightType: \'" + toString(rightType) + '\'', iterator.currentLine);
+
+	return {};
+}
+
 static inline Result<void> _convertBoolSetter(stringstream& ss, TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, const FuncInfo& funcInfo)
 {
 	string leftCondition;
 	string& token = iterator.currentToken;
 	if (!iterator.peekToken(/*out*/leftCondition, /*steps:*/-1))
 		return ERROR_convertVarSetter_outOfBounds(iterator);
-
-	Result<VarInfo> leftVarResult = scope.tryGetVariable_fromCurrent(leftCondition, metaData.globalScope, iterator.currentLine);
-	Result<TypeInfo> typeResult = getTypeInfo(iterator, metaData.classStore);
 	
 	ss << token;
 	if (!iterator.nextToken())
 		return ERROR_convertVarSetter_outOfBounds(iterator);
 
-	if(!leftVarResult.hasError)
-	{
-		if(!checkValue(token, leftVarResult.value().type))
-			return ErrorInfo("condition invalid, left: \'" + leftCondition + "\', right: \'" + token + '\'', iterator.currentLine);
-	}
-	else if(!typeResult.hasError)
-	{
-		if (!checkValue(token, typeResult.value()))
-			return ErrorInfo("condition invalid, left: \'" + leftCondition + "\', right: \'" + token + '\'', iterator.currentLine);
-	}
-	else
-	{
-		return ErrorInfo("left condition invalid, left: \'" + leftCondition + "\', right: \'" + token + '\'', iterator.currentLine);
-	}
+	Result<void> result = _checkConditionTypes(leftCondition, iterator, scope, metaData);
+	if (result.hasError)
+		return result.error;
 
 	ss << token;
 	return {};
@@ -176,6 +205,20 @@ static inline Result<void> _goToFirstNonBracketToken(stringstream& ss, TokenIter
 	return {};
 }
 
+static inline DuckType _getDuckTypeOfToken(const string& token, const TokenIterator& iterator, ScopeIterator& scope, MetaData& metaData)
+{
+	Result<VarInfo> varResult = scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
+	if (varResult.hasError)
+		return getDuckType_fromValue(token);
+
+	VarInfo var = varResult.value();
+
+	if (var.type.isComplexType)
+		return DuckType::invalid;
+
+	return getDuckType(var.type.primType);
+}
+
 static inline Result<void> _convertNew(stringstream& ss, TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, const TypeInfo& type, const FuncInfo& funcInfo)
 {
 	string& token = iterator.currentToken;
@@ -206,7 +249,8 @@ static inline Result<void> _convertNew(stringstream& ss, TokenIterator& iterator
 		if (!iterator.nextToken())
 			return ERROR_convertVarSetter_outOfBounds(iterator);
 
-		if (getDuckType_fromValue(token) != DuckType::number)
+
+		if (_getDuckTypeOfToken(token, iterator, scope, metaData) != DuckType::number)
 			return ErrorInfo("array constructor only takes a number, token: \'" + token + "\'", iterator.currentLine);
 
 		ss << token;
@@ -231,7 +275,7 @@ static inline Result<void> _convertNew(stringstream& ss, TokenIterator& iterator
 	return {};
 }
 
-static inline Result<void> _checkFirstToken(stringstream& ss, TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, const TypeInfo& type, FuncInfo& funcInfo)
+static inline Result<void> _checkFirstToken(stringstream& ss, TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, const TypeInfo& type, FuncInfo& funcInfo, string* className)
 {
 	string& token = iterator.currentToken;
 	Result<VarInfo> varResult = scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
@@ -242,7 +286,7 @@ static inline Result<void> _checkFirstToken(stringstream& ss, TokenIterator& ite
 		if (isCompatible.hasError)
 			return isCompatible.error;
 
-		Result<string> callResult = convertFunctionCall(iterator, metaData, scope, token, funcInfo);
+		Result<string> callResult = convertFunctionCall(iterator, metaData, scope, token, funcInfo, className);
 		if (callResult.hasError)
 			return callResult.error;
 
@@ -266,6 +310,34 @@ static inline Result<void> _checkFirstToken(stringstream& ss, TokenIterator& ite
 	return {};
 }
 
+Result<string> convertVarSetter_inClass
+(
+	TokenIterator& iterator,
+	MetaData& metaData,
+	const TypeInfo& type,
+	FuncInfo& funcInfo,
+	ScopeIterator& scope,
+	const varSetter_Option& option,
+	string* className,
+	bool addEndl
+)
+{
+	uint64_t oldIndex = scope.currentIndex;
+
+	Nesting tempNesting = Nesting(scope.scope.size());
+	tempNesting.parentIndex = 0;
+	scope.scope.push_back(tempNesting);
+	scope.currentIndex = tempNesting.selfIndex;
+
+	int64_t openBracketStack = 0;
+	auto result = convertVarSetter(iterator, metaData, type, funcInfo, scope, option, openBracketStack, className, addEndl);
+
+	scope.currentIndex = oldIndex;
+	scope.scope.pop_back();
+
+	return result;
+}
+
 Result<string> convertVarSetter
 (
 	TokenIterator& iterator,
@@ -274,11 +346,12 @@ Result<string> convertVarSetter
 	FuncInfo& funcInfo,
 	ScopeIterator& scope,
 	const varSetter_Option& option,
+	string* className,
 	bool addEndl
 )
 {
 	int64_t openBracketStack = 0;
-	return convertVarSetter(iterator, metaData, type, funcInfo, scope, option, openBracketStack, addEndl);
+	return convertVarSetter(iterator, metaData, type, funcInfo, scope, option, openBracketStack, className, addEndl);
 }
 
 Result<string> convertVarSetter
@@ -290,6 +363,7 @@ Result<string> convertVarSetter
 	ScopeIterator& scope,
 	const varSetter_Option& option,
 	int64_t& openBracketStack,
+	string* className,
 	bool addEndl
 )
 {
@@ -300,7 +374,7 @@ Result<string> convertVarSetter
 	if (result.hasError)
 		return result.error;
 
-	result = _checkFirstToken(/*out*/ss, /*out*/iterator, /*out*/metaData, /*out*/scope, type, /*out*/funcInfo);
+	result = _checkFirstToken(/*out*/ss, /*out*/iterator, /*out*/metaData, /*out*/scope, type, /*out*/funcInfo, className);
 	if (result.hasError)
 		return result.error;
 
@@ -327,7 +401,7 @@ Result<string> convertVarSetter
 		}
 		else if (token == "[")
 		{
-			Result<string> indexResult = convertIndexer(/*out*/iterator, /*out*/funcInfo);
+			Result<string> indexResult = convertIndexer(/*out*/iterator, /*out*/funcInfo, scope, metaData);
 			if (indexResult.hasError)
 				return indexResult.error;
 

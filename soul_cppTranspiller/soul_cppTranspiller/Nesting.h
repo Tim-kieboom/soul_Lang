@@ -56,9 +56,13 @@ struct Nesting
                 return varInfo;
         }
 
+        int64_t prevIndex = INT64_MIN;
         int64_t currentIndex = parentIndex;
         while (currentIndex >= 0)
         {
+            if (prevIndex == currentIndex)
+                throw std::logic_error("Nesting cirular ref issue");
+
             if (currentIndex == this->selfIndex)
                 throw std::exception("Nesting ref's itself");
 
@@ -69,6 +73,7 @@ struct Nesting
                     return varInfo;
             }
 
+            prevIndex = currentIndex;
             currentIndex = parent.parentIndex;
         }
 

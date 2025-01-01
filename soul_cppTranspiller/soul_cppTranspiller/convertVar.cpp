@@ -60,7 +60,7 @@ static inline Result<void> _isSymboolAllowed(string& symbool, const VarInfo& var
 	return {};
 }
 
-Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, ScopeIterator& scope, varSetter_Option option)
+Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, ScopeIterator& scope, string* className, varSetter_Option option)
 {
 	stringstream ss;
 	string& token = iterator.currentToken;
@@ -74,7 +74,7 @@ Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterator, MetaData& m
 
 	if (symbool == "[")
 	{
-		Result<string> indexResult = convertIndexer(/*out*/iterator, /*out*/funcInfo);
+		Result<string> indexResult = convertIndexer(/*out*/iterator, /*out*/funcInfo, scope, metaData);
 		if (indexResult.hasError)
 			return indexResult.error;
 
@@ -98,7 +98,7 @@ Result<string> convertVar(VarInfo& varInfo, TokenIterator& iterator, MetaData& m
 		return ss.str();
 	}
 
-	Result<string> varSetResult = convertVarSetter(iterator, metaData, varInfo.type, funcInfo, scope, option);
+	Result<string> varSetResult = convertVarSetter(iterator, metaData, varInfo.type, funcInfo, scope, option, className);
 	if (varSetResult.hasError)
 		return varSetResult.error;
 

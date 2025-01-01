@@ -29,7 +29,7 @@ func passErrorParent(bool value): Result<str>
 	if (number2.hasError())
 		return Error(f"passErrorInt returned: {number2.error()}");
 
-	return number.toStr();
+	return toStr(number);
 }
 
 func handleResult(bool value): str
@@ -52,97 +52,163 @@ func handleResult(bool value): str
 
 	return result.value;
 }
-
-
 */
 
 //invis till endInvis is removed by tokenizer
-#invis
+# invis
 //for syntax highlighting
 func ctor();
 func println(str msg);
 func print(str msg);
-func assertThrow(bool condition, str msg);
-func assertFail(bool condition, str msg);
+func checkFail(bool condition, str msg);
+func checkThrow(bool condition, str msg);
+func checkFail_debug(bool condition, str msg);
+func checkThrow_debug(bool condition, str msg);
 func testArg(i8 a, i8 b);
 struct func;
 struct pub;
 struct priv;
 struct delete;
 struct mut;
+class f;
 class i8;
 class i32;
 class f64;
-class ui64;
 class str;
+class ui64;
 class none;
-class f;
 # endInvis
-
-//class List_i32
+//class Result<V, E = str>
 //{
-//	//pub ui64 size {get; priv set;} = 0;
-//	//pub ui64 capacity 
-//	//{
-//	//	get;
-//	//	set(newCapacity)
-//	//	{
-//	//		reserve(newCapacity);
-//	//	}
-//	//} = 0;
-
-
-//	i32[] array = null;
-
-//	pub ctor(this.capacity): List_i32
+//	pub V? value {get; priv set;} = empty;
+//	pub E? error {get; priv set;} = empty;
+//	pub const bool isError {get; priv set;} = false;
+//
+//	pub ctor(this.value) {}
+//	pub ctor(this.error) 
+//		: isError(true) 
 //	{
-//		array = new i32[capacity];
 //	}
-
-//	pub push(i32 item): none
+//
+//	pub keyword::pass(): i32
 //	{
-//		if (size + 1 > capacity)
-//			resize(capacity * 2);
-
-//		array[size++] = item;
+//		return value;
 //	}
-
-//	pub pop(i32 item): i32
+//
+//	pub getValue(): V
 //	{
-//		assertThrow(size <= 0, "trying to pop empty array");
-//		return array[--size];
+//		checkThrow(isError, "try to get value while Result has Error");
+//		return value;
 //	}
-
-//	pub at(i32 index): i32 &
+//
+//	pub getError(): E
 //	{
-//		assertThrow(index <= size, "index is out of bounds");
-//		return array[index];
+//		checkThrow(isError, "try to get value while Result has Error");
+//		return error;
 //	}
-
-//	pub oparator[](ui64 index): i32&
-//	{
-//		assertFail(index <= capacity, "trying to index element of index that is out of bounds");
-//		return array[index];           
-//	}
-
-//	priv reserve(ui64 newCapacity): none
-//	{
-//		capacity = newCapacity;
-//		i32[] oldArray = array;
-//		array = new i32[newCapacity];
-//		for (ui64 i = 0; i < size; i++)
-//			array[i] = oldArray[i];
-
-//		delete oldArray;
-//	}
+//
 //}
+
+class List_i32
+{
+	pub ui64 Size {get; priv set;} = 0;
+	pub ui64 Capacity {get; priv set;} = 0;
+
+	i32[] array = null;
+
+	pub ctor() {}
+	//pub ctor(this.array, this.Capacity) {}
+	//pub ctor(this.Capacity) 
+	//	: array(new i32[Capacity]) 
+	//{
+	//}
+
+	pub ~ctor()
+	{
+		if (array != null)
+		{
+			delete array;
+		}
+	}
+
+	pub reserve(ui64 newCapacity): none
+	{
+		if(newCapacity < Size)
+		{
+			Size = newCapacity;
+		}
+
+		Capacity = newCapacity;
+		i32[] oldArray = array;
+		array = new i32[newCapacity];
+
+		for (ui64 i = 0; i < Size; i++)
+		{
+			array[i] = oldArray[i];
+		}
+		delete oldArray;
+	}
+
+	pub push(i32 item): bool
+	{
+		bool hasResized = false;
+		if (Size + 1 > Capacity)
+		{
+			reserve(Capacity * 2);
+			hasResized = true;
+		}
+
+		array[Size++] = item;
+		return hasResized;
+	}
+
+	pub pop(i32 item): i32
+	{
+		checkThrow(Size == 0, "trying to pop empty array");
+		Size--;    
+		return array[Size];
+	}
+
+	pub at(i32 index): i32 &
+	{
+		checkThrow(index >= Size, "index is out of bounds");
+		return array[index];
+	}
+
+	//pub [](ui64 index): i32 &
+	//{
+	//	checkFail(index >= Capacity, "trying to index element of index that is out of bounds");
+	//	return array[index];
+	//}
+
+	//pub +=(i32 item): bool
+	//{
+	//	return push(item);
+	//} 
+
+	//pub +=(List_i32 items): bool
+	//{
+	//	bool hasResized = false;
+	//	if (Capacity < Size + items.Size)
+	//	{
+	//		reserve(Size + items.Size);
+	//		hasResized = true;
+	//	}
+
+	//	for (ui64 i = Size; i < Size + items.Size; i++)
+	//	{
+	//		array[i] = items[i];
+	//	}
+	//	return hasResized;
+	//} 
+}
 
 func sum(i32 a, i32 b): i32
 {
 	return a + b;
 }
 
-func sum(f64 a, f64 b): f64
+func sum(f64 a, f64 b): i32
 {
 	return a + b;
 }
@@ -235,9 +301,6 @@ func main(): i32
 {
 	const str tokenizeHell = " ()--,./\\;' \t \n \r \\ \' {} !@#$%^&*() \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\" ";
 
-	i8 b = 86;
-	println(b);
-
     println("------ sum ------\n");
 	i32 result = sum(1, 2);
 
@@ -272,5 +335,5 @@ func main(): i32
 
 	//increment(out i32 initInOutValue);
 	//println(f"after increment initInOutValue: {value}"); //prints 1
-	//return 0;
+	return 0;
 }

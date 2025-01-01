@@ -101,6 +101,9 @@
     <Filter Include="Source Files\tools">
       <UniqueIdentifier>{756862aa-6667-4d1c-8c77-3b0aeb6e4558}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\transpiller\func\convertClass\convertField">
+      <UniqueIdentifier>{38ad0c90-c3c5-4519-9c53-0c6e81f86500}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -192,6 +195,9 @@
     </ClCompile>
     <ClCompile Include="ArgumentInfo.cpp">
       <Filter>Source Files\metaData\func</Filter>
+    </ClCompile>
+    <ClCompile Include="convertField.cpp">
+      <Filter>Source Files\transpiller\func\convertClass\convertField</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -337,6 +343,9 @@
     </ClInclude>
     <ClInclude Include="equalTools.h">
       <Filter>Source Files\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="convertField.h">
+      <Filter>Source Files\transpiller\func\convertClass\convertField</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

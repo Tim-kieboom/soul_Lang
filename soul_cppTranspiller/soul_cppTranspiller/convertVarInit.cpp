@@ -6,7 +6,7 @@ using namespace std;
 
 static inline ErrorInfo ERROR_convertVarInit_outOfBounds(FuncInfo& callFunc, TokenIterator& iterator)
 {
-	return ErrorInfo("incomplete functionBody funcName: \'" + string(callFunc.funcName) + '\'', iterator.currentLine);
+	return ErrorInfo("unexpeced end of functionBody funcName: \'" + string(callFunc.funcName) + '\'', iterator.currentLine);
 }
 
 Result<string> convertVarInit
@@ -16,7 +16,8 @@ Result<string> convertVarInit
 	MetaData& metaData, 
 	FuncInfo& callFunc, 
 	FuncInfo& funcInfo, 
-	ScopeIterator& scope
+	ScopeIterator& scope,
+	string* className
 )
 {
 	stringstream ss;
@@ -56,7 +57,7 @@ Result<string> convertVarInit
 	if (!iterator.nextToken())
 		return ERROR_convertVarInit_outOfBounds(callFunc, iterator);
 
-	Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, funcInfo, scope, varSetter_Option::endSemiColon);
+	Result<string> varSetterResult = convertVarSetter(iterator, metaData, type, funcInfo, scope, varSetter_Option::endSemiColon, className);
 	if (varSetterResult.hasError)
 		return varSetterResult.error;
 

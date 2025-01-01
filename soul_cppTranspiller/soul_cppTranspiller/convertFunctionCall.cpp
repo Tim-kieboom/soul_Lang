@@ -53,6 +53,7 @@ static inline Result<CallArgInfo> _getCallArgument
 	FuncInfo& callFunc,
 	ScopeIterator& scope, 
 	uint32_t& currentArgument, 
+	string* className,
 	bool& lastArgument
 )
 {
@@ -110,7 +111,7 @@ static inline Result<CallArgInfo> _getCallArgument
 				break;
 		}
 
-		Result<string> varSetResult = convertVarSetter(iterator, metaData, argInfo.valueType, callFunc, scope, varSetter_Option::endComma_or_RoundBrasket, openBracketStack, /*addEndl:*/false);
+		Result<string> varSetResult = convertVarSetter(iterator, metaData, argInfo.valueType, callFunc, scope, varSetter_Option::endComma_or_RoundBrasket, openBracketStack, className, /*addEndl:*/false);
 		if (varSetResult.hasError)
 			return varSetResult.error;
 		ss << varSetResult.value();
@@ -154,7 +155,7 @@ static inline Result<CallArgInfo> _getCallArgument
 	return ERROR_convertFunctionCall_outOfBounds(callFunc.funcName, iterator);
 }
 
-static inline Result< vector<ArgumentPair> > _getAllArguments
+static inline Result< pair<vector<ArgumentPair>, FuncInfo> > _getAllArguments
 (
 	TokenIterator& iterator,
 	MetaData& metaData,
@@ -163,6 +164,7 @@ static inline Result< vector<ArgumentPair> > _getAllArguments
 	string& funcCallName,
 	ScopeIterator& scope,
 	uint32_t& currentArgument,
+	string* className,
 	bool& lastArgument
 )
 {
@@ -173,7 +175,7 @@ static inline Result< vector<ArgumentPair> > _getAllArguments
 	Result<CallArgInfo> argResult;
 	for (FuncInfo& callFunc : callFuncs)
 	{
-		argResult = _getCallArgument(iterator, metaData, inCurrentFunc, callFunc, scope, /*out*/currentArgument, /*out*/lastArgument);
+		argResult = _getCallArgument(iterator, metaData, inCurrentFunc, callFunc, scope, /*out*/currentArgument, className, /*out*/lastArgument);
 
 		if (!argResult.hasError)
 		{
@@ -181,24 +183,29 @@ static inline Result< vector<ArgumentPair> > _getAllArguments
 			if (!iterator.nextToken(/*steps:*/argInfo.skipedTokens))
 				return ERROR_convertFunctionCall_outOfBounds(funcCallName, iterator);
 
-			return argInfo.args;
+			return make_pair(argInfo.args, callFunc);
 		}
 	}
 
 	return ErrorInfo(argResult.error.message + "\nfunction decl of: \'" + callFuncs.at(0).funcName + "\', does not match args in call", iterator.currentLine);
 }
 
-Result<std::string> convertFunctionCall(TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, string& callFuncName, FuncInfo& funcInfo)
+Result<std::string> convertFunctionCall(TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, string& _callFuncName, FuncInfo& funcInfo, string* className)
 {
     stringstream ss;
     string& token = iterator.currentToken;
+	string callFuncName = _callFuncName;
 
     ss << token;
 
 	vector<FuncInfo> callFuncs;
-	if (metaData.funcStore.find(callFuncName) != metaData.funcStore.end())
+	if (metaData.isFunction(callFuncName))
 	{
 		callFuncs = metaData.funcStore[callFuncName];
+	}
+	else if(className != nullptr && metaData.isMethode(callFuncName, *className))
+	{
+
 	}
 	else
 	{
@@ -217,19 +224,26 @@ Result<std::string> convertFunctionCall(TokenIterator& iterator, MetaData& metaD
 	vector<ArgumentPair> argsStrings;
 	argsStrings.reserve(6);
 
+	FuncInfo callFunc;
+
 	uint32_t currentArgument = 1;
 	bool lastArgument = false;
 	while (!lastArgument)
 	{
-		Result< vector<ArgumentPair> > argResult = _getAllArguments(iterator, metaData, funcInfo, callFuncs, callFuncName, scope, currentArgument, lastArgument);
+		Result< pair<vector<ArgumentPair>, FuncInfo> > argResult = _getAllArguments(iterator, metaData, funcInfo, callFuncs, callFuncName, scope, currentArgument, className, lastArgument);
 		if (argResult.hasError)
 			return argResult.error;
-		
-		for (const auto& pair : argResult.value())
+
+		callFunc = argResult.value().second;
+		for (const auto& pair : argResult.value().first)
 			argsStrings.push_back(pair);
 
 		currentArgument++;
 	}
+
+	if (argsStrings.size() < callFunc.args.size())
+		return ErrorInfo("function call has to little arguments, funcName: \'" +callFuncName+ "\'", iterator.currentLine);
+
 
 	for (const auto& pair : argsStrings)
 		ss << pair.argument;

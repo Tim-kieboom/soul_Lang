@@ -131,6 +131,7 @@
     <ClCompile Include="ArgumentType.cpp" />
     <ClCompile Include="convertBody.cpp" />
     <ClCompile Include="convertClass.cpp" />
+    <ClCompile Include="convertField.cpp" />
     <ClCompile Include="convertForLoop.cpp" />
     <ClCompile Include="convertFuncDecleration.cpp" />
     <ClCompile Include="convertFunctionCall.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="ComplexType.h" />
     <ClInclude Include="convertBody.h" />
     <ClInclude Include="convertClass.h" />
+    <ClInclude Include="convertField.h" />
     <ClInclude Include="convertForLoop.h" />
     <ClInclude Include="convertFuncDecleration.h" />
     <ClInclude Include="convertFunctionCall.h" />

@@ -14,6 +14,17 @@ bool string_contains(const string& str, const char* find)
 	return string_contains(str, string(find));
 }
 
+bool string_containsMultiple(const std::string& str, initializer_list<const char*> find)
+{
+	for (const char* findEl : find)
+	{
+		if (string_contains(str, string(findEl)))
+			return true;
+	}
+
+	return false;
+}
+
 bool string_contains(const string& str, char find)
 {
 	return str.find(find) != string::npos;

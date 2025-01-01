@@ -25,7 +25,7 @@ static inline Result<string> convertFuncDeclaration_arguments
 	/*out*/vector<Nesting>& scope
 )
 {
-	Result<void> result = storeArguments(/*out*/iterator, /*out*/metaData, /*out*/funcInfo, /*out*/scope.at(0));
+	Result<void> result = storeArguments(/*out*/iterator, /*out*/metaData, /*out*/funcInfo, /*out*/funcInfo.scope.at(0));
 	if (result.hasError)
 		return result.error;
 
@@ -58,7 +58,6 @@ Result<string> convertFuncDeclaration(/*out*/TokenIterator& iterator, /*out*/Met
 			return ErrorInfo("function name is illigal, name: " + token, iterator.currentLine);
 
 		funcInfo = FuncInfo(token);
-		vector<Nesting>& scope = funcInfo.scope;
 
 		if (!iterator.nextToken())
 			break;
@@ -66,7 +65,7 @@ Result<string> convertFuncDeclaration(/*out*/TokenIterator& iterator, /*out*/Met
 		if(token != "(")
 			return ErrorInfo("function Declaration missing '(' ", iterator.currentLine);
 	
-		Result<string> argsResult = convertFuncDeclaration_arguments(iterator, metaData, funcInfo, scope);
+		Result<string> argsResult = convertFuncDeclaration_arguments(iterator, metaData, funcInfo, funcInfo.scope);
 		if (argsResult.hasError)
 			return argsResult.error;
 

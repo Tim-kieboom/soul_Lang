@@ -84,12 +84,11 @@ Result<std::string> transpileToCpp(const std::vector<Token> tokens, MetaData& me
 		}
 		else if(token == "class")
 		{
-			throw exception("not yet implemented");
-			//Result<string> classResult = convertClass();
-			//if (classResult.hasError)
-				//return classResult.error;
+			Result<string> classResult = convertClass(iterator, metaData);
+			if (classResult.hasError)
+				return classResult.error;
 
-			//ss << classResult.value();
+			ss << classResult.value();
 		}
 		else
 		{

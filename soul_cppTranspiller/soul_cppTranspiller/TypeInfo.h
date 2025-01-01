@@ -28,8 +28,6 @@ struct TypeInfo
 	TypeInfo(PrimitiveType type, bool isMutable = true)
 		: isMutable(isMutable), isComplexType(false), primType(type)
 	{
-		//if (getDuckType(type) == DuckType::text)
-		//	this->isMutable = false;
 	}
 
 	TypeInfo(ClassInfo* classInfo, bool isMutable = true)
