@@ -1,6 +1,8 @@
 #pragma once
-#include "MetaData.hpp"
-#include "ScopeIterator.h"	
+#include "Token.h"
+#include "Result.h"
+#include "MetaData.h"
+#include "FuncNode.h"
+#include "CurrentContext.h"
 
-Result<std::string> convertBody(TokenIterator& iterator, /*out*/ FuncInfo& funcInfo, MetaData& metaData, ScopeIterator& scope, uint32_t depth, std::string* className = nullptr);
-Result<std::string> convertBody_inClass(TokenIterator& iterator, FuncInfo& funcInfo, MetaData& metaData, ClassInfo& classInfo, ScopeIterator& scope);
+Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context);

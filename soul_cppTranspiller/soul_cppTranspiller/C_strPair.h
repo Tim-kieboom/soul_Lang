@@ -9,7 +9,7 @@ struct C_strPair
     C_strPair() = default;
 
     C_strPair(std::string& name, std::string& value)
-        : name(std::move(name)), value(std::move(value))
+        : name(name), value(value)
     {
     }
 

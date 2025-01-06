@@ -9,9 +9,15 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <unordered_map>
+
+#include "Token.h"
+#include "Result.h"
+#include "MetaData.h"
 #include "readFile.h"
 #include "tokenizer.h"
-#include "transpiller.h"
+#include "stringTools.h"
+#include "getAbstractSyntaxTree.h"
 
 using namespace std;
 
@@ -86,6 +92,17 @@ constexpr const char* test_Path = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHu
 constexpr const char* test_outputPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soulOutput\\out.cpp";
 constexpr const char* test_hardCodedPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_hardCodedFunctions\\soul_hardCodedFunctions.cpp";
 
+static inline void _tokenizerGetErrorLine(string& sourceFile, Result<vector<Token>>& tokensResult)
+{
+    int64_t charNumber = tokensResult.error.lineNumber;
+    string str = sourceFile.substr(0, charNumber);
+    vector<uint32_t> lineIndex = string_find(str, "\n");
+    uint64_t lineNumber = lineIndex.size() / 2;
+
+    cout << sourceFile << endl;
+    cout << "tokenizeError: " << tokensResult.error.message << ", charIndex: " << charNumber << ", prediced lineNumber: " << lineNumber;
+}
+
 int main(int argc, char* argv[])
 {
     const char* path;
@@ -121,39 +138,37 @@ int main(int argc, char* argv[])
     Result<vector<Token>> tokensResult = tokenize(/*out*/ sourceFile, /*out*/metaData);
     if (tokensResult.hasError)
     {
-        int64_t charNumber = tokensResult.error.lineNumber;
-        string str = sourceFile.substr(0, charNumber);
-        vector<uint32_t> lineIndex = string_find(str, "\n");
-        uint64_t lineNumber = lineIndex.size() / 2;
-
-        cout << sourceFile << endl;
-        cout << "tokenizeError: " << tokensResult.error.message << ", charIndex: " << charNumber << ", prediced lineNumber: " << lineNumber;
+        _tokenizerGetErrorLine(sourceFile, tokensResult);
         exit(1);
     }
     vector<Token> tokens = tokensResult.value();
 
     //printTokenizer(sourceFile, tokens, metaData.c_strStore);
+
 #ifdef NDEBUG
     try
     {
 #endif
-        metaData.transpillerOption = TranspilerOptions();
-        //metaData.transpillerOption.addEndLines = false;
-        Result<string> result = transpileToCpp(tokens, /*out*/ metaData);
-        if (result.hasError)
+        Result<SyntaxTree> syntaxTreeResult = getAbstractSyntaxTree(TokenIterator(tokens), metaData);
+        if (syntaxTreeResult.hasError)
         {
-            cout << "transpillerError: " << result.error.message << ", onLine: " << result.error.lineNumber;
+            cout << "transpillerError: " << syntaxTreeResult.error.message << ", onLine: " << syntaxTreeResult.error.lineNumber;
             exit(1);
         }
 
-        ofstream fileWriter(outputPath);
-        fileWriter << metaData.getCpptIncludes() << hardCodeLib << result.value();
-        fileWriter.close();
+        SyntaxTree syntaxTree = move(syntaxTreeResult.value());
+        syntaxTree.print();
 
-        string execCppCodeCommand = "g++ " + string(outputPath);
-        execAndPrint(execCppCodeCommand.c_str());
-        string output = execAndPrint("a.exe");
-        cout << output << endl;
+        //Result<string> cppResult = convert_AbstractSyntaxTree_ToCpp(syntaxTree);
+
+        //ofstream fileWriter(outputPath);
+        //fileWriter << metaData.getCpptIncludes() << hardCodeLib << cppResult.value();
+        //fileWriter.close();
+
+        //string execCppCodeCommand = "g++ " + string(outputPath);
+        //execAndPrint(execCppCodeCommand.c_str());
+        //string output = execAndPrint("a.exe");
+        //cout << output << endl;
 
 #ifdef NDEBUG
     }

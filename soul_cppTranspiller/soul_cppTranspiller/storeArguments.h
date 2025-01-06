@@ -1,6 +1,11 @@
 #pragma once
-#include "MetaData.hpp"
+#include <vector>
 
-Result<void> storeArguments(/*out*/ TokenIterator& iterator, /*out*/ MetaData& metaData, /*out*/ FuncInfo& funcInfo, /*out*/ Nesting& scope, bool isCtor = false);
+#include "Type.h"
+#include "Token.h"
+#include "Result.h"
+#include "MetaData.h"
+#include "ArgumentInfo.h"
 
 
+Result<std::vector<ArgumentInfo>> storeArguments(TokenIterator& iterator, MetaData& metaData, RawType& returnType);

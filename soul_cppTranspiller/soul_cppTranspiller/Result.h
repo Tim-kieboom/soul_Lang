@@ -1,10 +1,6 @@
 #pragma once
-#include <memory>
 #include <string>
-#include <cstdint>
-#include <stdexcept>
-
-#include "stringTools.h"
+#include <exception>
 
 struct ErrorInfo
 {
@@ -23,60 +19,60 @@ struct ErrorInfo
 	}
 };
 
-template <typename T>
-struct Result
+template<typename V, typename E = ErrorInfo>
+class Result
 {
 private:
-	T value_;
+	V value_;
 
 public:
-	bool hasError = false;
-	ErrorInfo error;
+	E error;
+	bool hasError;
 
 	Result()
 		: value_(), hasError(false), error()
 	{
 	}
 
-	Result(T value)
-		: value_(value), hasError(false), error()
+	Result(V value)
+		: value_(std::move(value)), hasError(false), error()
 	{
 	}
 
-	Result(ErrorInfo error)
-		: value_(), hasError(true), error(error)
+	Result(E error)
+		: value_(), hasError(true), error(std::move(error))
 	{
 	}
 
-	T& value();
+	V& value();
 };
 
 // Specialization for void
-template <>
-struct Result<void>
+template <typename E>
+struct Result<void, E>
 {
 public:
 	bool hasError = false;
-	ErrorInfo error;
+	E error;
 
 	Result()
 		: hasError(false), error()
 	{
 	}
 
-	Result(ErrorInfo error)
+	Result(E error)
 		: hasError(true), error(error)
 	{
 	}
 
-	void value() {} // No-op function for void specialization
+	void value() {}
 };
 
-template<typename T>
-inline T& Result<T>::value()
+template<typename V, typename E>
+inline V& Result<V, E>::value()
 {
 	if (hasError)
-		throw std::runtime_error("Attempting to access value of an error Result");
+		throw std::exception("Attempting to access value of an error Result");
 
 	return value_;
 }

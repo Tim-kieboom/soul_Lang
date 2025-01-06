@@ -1,64 +1,42 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "TypeInfo.h"
-#include "equalTools.h"
-
-struct TypeInfo;
-
-enum class ClassAccessType
-{
-	public_,
-	private_
-};
+#include "ClassAccessLevel.h"
 
 struct FieldsInfo
 {
-	std::string name;
+	std::string name = "";
+	std::string stringedRawType = "";
 	bool isProperty = false;
-	ClassAccessType scope = ClassAccessType::private_;
+	ClassAccessLevel accessLevel = ClassAccessLevel::private_;
+
+	FieldsInfo() = default;
+	FieldsInfo(const std::string& name, const std::string& stringedRawType, ClassAccessLevel accessLevel, bool isProperty = false)
+		: name(name), stringedRawType(stringedRawType), isProperty(isProperty), accessLevel(accessLevel)
+	{
+	}
 };
 
 struct Methode
 {
-	std::string methodeNames;
-	ClassAccessType scope = ClassAccessType::private_;
+	std::string methodeName;
+	ClassAccessLevel accessLevel = ClassAccessLevel::private_;
 
 	Methode() = default;
-	Methode(std::string& methodeNames, ClassAccessType scope)
-		: methodeNames(methodeNames), scope(scope)
+	Methode(std::string& methodeName, ClassAccessLevel accessLevel)
+		: methodeName(methodeName), accessLevel(accessLevel)
 	{
 	}
 };
 
 struct ClassInfo
 {
-	std::string className;
-	std::vector<TypeInfo> fieldsType;
-	std::vector<FieldsInfo> fieldsInfo;
-	std::vector<Methode> methodesNames;
+	std::string name;
+	std::vector<FieldsInfo> publicFields;
+	std::vector<Methode> methodes;
 
-	void setField(FieldsInfo& fieldInfo, TypeInfo& type)
+	bool isEqual(const ClassInfo& other) const
 	{
-		fieldsType.push_back(type);
-		fieldsInfo.push_back(fieldInfo);
-	}
-
-	Result<uint64_t> tryGetFieldIndex(const std::string& name, TypeInfo& type)
-	{
-		uint64_t i = 0;
-		for (; i < fieldsInfo.size(); i++)
-		{
-			FieldsInfo& info = fieldsInfo.at(i);
-			if (info.name == name)
-				break;
-		}
-
-		return i;
-	}
-
-	bool equals(ClassInfo& other) const
-	{
-		return className == other.className;
+		return name == other.name;
 	}
 };

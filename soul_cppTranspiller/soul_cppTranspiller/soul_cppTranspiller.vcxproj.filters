@@ -11,9 +11,6 @@
     <Filter Include="Source Files\tokenizer">
       <UniqueIdentifier>{01bceeea-5278-4583-849d-4032110cf6f7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\metaData">
-      <UniqueIdentifier>{07e019fe-ba48-4ac6-b025-d4b34bfbc798}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\stringTools">
       <UniqueIdentifier>{efe63f4e-aa5f-4300-aa64-94aea8de3f3b}</UniqueIdentifier>
     </Filter>
@@ -38,71 +35,65 @@
     <Filter Include="Source Files\stringTools\string_copy">
       <UniqueIdentifier>{ef7f5d00-4549-4cb7-9f43-7c55ccff0774}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller">
-      <UniqueIdentifier>{64e4a780-8136-4eaf-bd60-7c85a84b95f7}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree">
+      <UniqueIdentifier>{de5340af-28cb-4a20-a63b-261d04ffc988}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\metaData\token">
-      <UniqueIdentifier>{7c574999-f010-47de-ae70-e47d657a3028}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\SyntaxTree">
+      <UniqueIdentifier>{ecbbf375-af9e-4ae1-a063-a94991324d1e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\metaData\Type">
-      <UniqueIdentifier>{c912eee9-b2de-4b87-a819-2249aca51e3b}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\SyntaxTree\Statements">
+      <UniqueIdentifier>{f222bf62-9ac9-436a-95d3-23019a80421c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\metaData\Type\PrimTypesAndCategorys">
-      <UniqueIdentifier>{f1efbf2d-e9f1-4ffc-a557-50bbdd139a55}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\SyntaxTree\Expression">
+      <UniqueIdentifier>{b8224908-564a-4a41-99be-ca0f14611ab4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\metaData\Type\ComplexType">
-      <UniqueIdentifier>{2342041a-6ed3-4725-8ea0-2b698412c14f}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\SyntaxTree\ClassNode">
+      <UniqueIdentifier>{ec7c4531-8356-43ea-9279-6d75fdc74459}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func">
-      <UniqueIdentifier>{d3464079-38d0-4692-8c9f-255824edaaec}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\SyntaxTree\Function">
+      <UniqueIdentifier>{7bdf8ece-8390-4fea-936d-d89300c102fd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\convertFuncDecleration">
-      <UniqueIdentifier>{6867cbb3-be0d-4da8-a663-0dfd1a1c6fbc}</UniqueIdentifier>
+    <Filter Include="Source Files\MetaData">
+      <UniqueIdentifier>{114747a2-27a4-45d7-a348-ffc91c885b76}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\soulCheckers">
-      <UniqueIdentifier>{f3ba28b1-9197-42eb-bc64-7d06b98e1ee9}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\SyntaxTree\Expression\SyntaxTree_Operator">
+      <UniqueIdentifier>{2c142633-f0f1-4c55-906d-4fd3909862e8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\metaData\scope">
-      <UniqueIdentifier>{f383063b-4e18-4155-8774-ff93868ae579}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\SyntaxTree\ClassNode\ClassAccessLevel">
+      <UniqueIdentifier>{f3c44cde-ef05-44c2-ad01-2cf7541f2d3e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\metaData\Type\ArgumentType">
-      <UniqueIdentifier>{cf5365b5-f0b2-4545-b3a0-7e70c7a9aa9e}</UniqueIdentifier>
+    <Filter Include="Source Files\MetaData\ArgumentInfo">
+      <UniqueIdentifier>{f0128fe6-c5a7-485e-be17-9778e0b2ba4a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\convertFuncDecleration\storeArgument">
-      <UniqueIdentifier>{cb52364b-9017-47d9-a516-71b6ccc95bf7}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree">
+      <UniqueIdentifier>{3b31217c-e489-4ab1-b072-cc4e32276cff}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\cppConverter">
-      <UniqueIdentifier>{cee8ac1a-34ad-40d6-bd3d-650c6c03d3df}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\getFunctionDeclaration">
+      <UniqueIdentifier>{0164b165-4b51-47dd-8bba-0922bd1ac111}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\metaData\func">
-      <UniqueIdentifier>{a4269725-c48c-4190-8c3e-c31c7ba3876f}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\soulChecker">
+      <UniqueIdentifier>{801e930a-1dc8-4ff3-bdcd-3634ccf5214c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\convertBody">
-      <UniqueIdentifier>{ef22404e-9a45-4e6d-9eee-5aa9657cf3f8}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\getFunctionDeclaration\storeArguments">
+      <UniqueIdentifier>{247d4530-3d3d-4e53-8103-2ac6b974316b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\convertBody\convertVar">
-      <UniqueIdentifier>{ccea0a23-07e9-40b7-a067-3a642cc81360}</UniqueIdentifier>
+    <Filter Include="Source Files\MetaData\Type">
+      <UniqueIdentifier>{2b74a5c9-f96b-4f21-a07b-d2b1d587872a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\convertBody\convertVar\convertFunctionCall">
-      <UniqueIdentifier>{0679eb79-79c5-44f4-88b6-3aa3fadfcfd4}</UniqueIdentifier>
+    <Filter Include="Source Files\MetaData\Type\PrimitiveType">
+      <UniqueIdentifier>{31e1ca42-3081-4706-933a-17e3656570f2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\convertBody\convertVar\convertVarInit">
-      <UniqueIdentifier>{1858fdee-c8d3-43ac-9973-5155f17ea5e1}</UniqueIdentifier>
+    <Filter Include="Source Files\MetaData\Type\TypeWrapper">
+      <UniqueIdentifier>{4376a0a7-41eb-447f-845a-392d54a6d93a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\convertBody\convertVar\convertVarSetter">
-      <UniqueIdentifier>{88869148-285a-438f-9ab8-80910f919b8e}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody">
+      <UniqueIdentifier>{4cd1e84e-2ff4-4c85-9fbd-ef4c04f42cc8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\convertForLoop">
-      <UniqueIdentifier>{8b8a88bc-44bb-4ebe-b0df-33133161b6b0}</UniqueIdentifier>
+    <Filter Include="Source Files\MetaData\scope">
+      <UniqueIdentifier>{7b95f3ff-b9e4-4ccc-baae-e85506dcbc49}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\transpiller\func\convertClass">
-      <UniqueIdentifier>{3205207d-9675-498f-8161-89fc63cd2257}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\tools">
-      <UniqueIdentifier>{756862aa-6667-4d1c-8c77-3b0aeb6e4558}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\transpiller\func\convertClass\convertField">
-      <UniqueIdentifier>{38ad0c90-c3c5-4519-9c53-0c6e81f86500}</UniqueIdentifier>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertAssignment">
+      <UniqueIdentifier>{54ef7660-bbe2-4922-88d7-f24fd97370af}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -136,68 +127,47 @@
     <ClCompile Include="string_copy.cpp">
       <Filter>Source Files\stringTools\string_copy</Filter>
     </ClCompile>
-    <ClCompile Include="transpiller.cpp">
-      <Filter>Source Files\transpiller</Filter>
+    <ClCompile Include="getAbstractSyntaxTree.cpp">
+      <Filter>Source Files\AbstractSyntaxTree</Filter>
     </ClCompile>
-    <ClCompile Include="PrimitiveType.cpp">
-      <Filter>Source Files\metaData\Type\PrimTypesAndCategorys</Filter>
+    <ClCompile Include="SyntaxTree_Operator.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression\SyntaxTree_Operator</Filter>
     </ClCompile>
-    <ClCompile Include="DuckType.cpp">
-      <Filter>Source Files\metaData\Type\PrimTypesAndCategorys</Filter>
-    </ClCompile>
-    <ClCompile Include="TypeCategory.cpp">
-      <Filter>Source Files\metaData\Type\PrimTypesAndCategorys</Filter>
-    </ClCompile>
-    <ClCompile Include="convertFuncDecleration.cpp">
-      <Filter>Source Files\transpiller\func\convertFuncDecleration</Filter>
-    </ClCompile>
-    <ClCompile Include="soulCheckers.cpp">
-      <Filter>Source Files\transpiller\soulCheckers</Filter>
-    </ClCompile>
-    <ClCompile Include="ArgumentType.cpp">
-      <Filter>Source Files\metaData\Type\ArgumentType</Filter>
-    </ClCompile>
-    <ClCompile Include="storeArguments.cpp">
-      <Filter>Source Files\transpiller\func\convertFuncDecleration\storeArgument</Filter>
-    </ClCompile>
-    <ClCompile Include="TypeInfo.cpp">
-      <Filter>Source Files\metaData\Type</Filter>
-    </ClCompile>
-    <ClCompile Include="cppConverter.cpp">
-      <Filter>Source Files\transpiller\cppConverter</Filter>
-    </ClCompile>
-    <ClCompile Include="TypeWrapper.cpp">
-      <Filter>Source Files\metaData\Type</Filter>
-    </ClCompile>
-    <ClCompile Include="convertBody.cpp">
-      <Filter>Source Files\transpiller\func\convertBody</Filter>
-    </ClCompile>
-    <ClCompile Include="convertFunctionCall.cpp">
-      <Filter>Source Files\transpiller\func\convertBody\convertVar\convertFunctionCall</Filter>
-    </ClCompile>
-    <ClCompile Include="convertVarInit.cpp">
-      <Filter>Source Files\transpiller\func\convertBody\convertVar\convertVarInit</Filter>
-    </ClCompile>
-    <ClCompile Include="convertVarSetter.cpp">
-      <Filter>Source Files\transpiller\func\convertBody\convertVar\convertVarSetter</Filter>
-    </ClCompile>
-    <ClCompile Include="convertVar.cpp">
-      <Filter>Source Files\transpiller\func\convertBody\convertVar</Filter>
-    </ClCompile>
-    <ClCompile Include="convertForLoop.cpp">
-      <Filter>Source Files\transpiller\func\convertForLoop</Filter>
-    </ClCompile>
-    <ClCompile Include="convertIndexer.cpp">
-      <Filter>Source Files\transpiller\func\convertBody\convertVar</Filter>
-    </ClCompile>
-    <ClCompile Include="convertClass.cpp">
-      <Filter>Source Files\transpiller\func\convertClass</Filter>
+    <ClCompile Include="ClassAccessLevel.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\ClassNode\ClassAccessLevel</Filter>
     </ClCompile>
     <ClCompile Include="ArgumentInfo.cpp">
-      <Filter>Source Files\metaData\func</Filter>
+      <Filter>Source Files\MetaData\ArgumentInfo</Filter>
     </ClCompile>
-    <ClCompile Include="convertField.cpp">
-      <Filter>Source Files\transpiller\func\convertClass\convertField</Filter>
+    <ClCompile Include="getFunctionDeclaration.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\getFunctionDeclaration</Filter>
+    </ClCompile>
+    <ClCompile Include="soulChecker.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\soulChecker</Filter>
+    </ClCompile>
+    <ClCompile Include="storeArguments.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\getFunctionDeclaration\storeArguments</Filter>
+    </ClCompile>
+    <ClCompile Include="PrimitiveType.cpp">
+      <Filter>Source Files\MetaData\Type\PrimitiveType</Filter>
+    </ClCompile>
+    <ClCompile Include="Type.cpp">
+      <Filter>Source Files\MetaData\Type</Filter>
+    </ClCompile>
+    <ClCompile Include="TypeWrapper.cpp">
+      <Filter>Source Files\MetaData\Type\TypeWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="DuckType.cpp">
+      <Filter>Source Files\MetaData\Type\PrimitiveType</Filter>
+    </ClCompile>
+    <ClCompile Include="TypeCatagory.cpp">
+      <Filter>Source Files\MetaData\Type\PrimitiveType</Filter>
+    </ClCompile>
+    <ClCompile Include="convertBody.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody</Filter>
+    </ClCompile>
+    <ClCompile Include="convertAssignment.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertAssignment</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -239,113 +209,125 @@
     <ClInclude Include="string_copy.h">
       <Filter>Source Files\stringTools\string_copy</Filter>
     </ClInclude>
-    <ClInclude Include="transpiller.h">
-      <Filter>Source Files\transpiller</Filter>
+    <ClInclude Include="Result.h">
+      <Filter>Source Files\MetaData</Filter>
     </ClInclude>
     <ClInclude Include="Token.h">
-      <Filter>Source Files\metaData\token</Filter>
+      <Filter>Source Files\MetaData</Filter>
     </ClInclude>
-    <ClInclude Include="MetaData.hpp">
-      <Filter>Source Files\metaData</Filter>
+    <ClInclude Include="MetaData.h">
+      <Filter>Source Files\MetaData</Filter>
     </ClInclude>
     <ClInclude Include="C_strPair.h">
-      <Filter>Source Files\metaData</Filter>
+      <Filter>Source Files\MetaData</Filter>
     </ClInclude>
-    <ClInclude Include="TokenIterator.hpp">
-      <Filter>Source Files\metaData\token</Filter>
+    <ClInclude Include="getAbstractSyntaxTree.h">
+      <Filter>Source Files\AbstractSyntaxTree</Filter>
     </ClInclude>
-    <ClInclude Include="TypeInfo.h">
-      <Filter>Source Files\metaData\Type</Filter>
+    <ClInclude Include="SyntaxTree.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree</Filter>
     </ClInclude>
-    <ClInclude Include="TypeCategory.h">
-      <Filter>Source Files\metaData\Type\PrimTypesAndCategorys</Filter>
+    <ClInclude Include="FuncDeclaration.h">
+      <Filter>Source Files\MetaData</Filter>
     </ClInclude>
-    <ClInclude Include="PrimitiveType.h">
-      <Filter>Source Files\metaData\Type\PrimTypesAndCategorys</Filter>
+    <ClInclude Include="ISyntaxNode.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree</Filter>
     </ClInclude>
-    <ClInclude Include="DuckType.h">
-      <Filter>Source Files\metaData\Type\PrimTypesAndCategorys</Filter>
+    <ClInclude Include="SuperStatement.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Statements</Filter>
     </ClInclude>
-    <ClInclude Include="TypeWrapper.h">
-      <Filter>Source Files\metaData\Type</Filter>
+    <ClInclude Include="Assignment.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Statements</Filter>
     </ClInclude>
-    <ClInclude Include="ClassInfo.h">
-      <Filter>Source Files\metaData\Type\ComplexType</Filter>
+    <ClInclude Include="SuperExpression.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
     </ClInclude>
-    <ClInclude Include="ComplexType.h">
-      <Filter>Source Files\metaData\Type\ComplexType</Filter>
+    <ClInclude Include="Literal.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
     </ClInclude>
-    <ClInclude Include="convertFuncDecleration.h">
-      <Filter>Source Files\transpiller\func\convertFuncDecleration</Filter>
+    <ClInclude Include="Variable.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
     </ClInclude>
-    <ClInclude Include="soulCheckers.h">
-      <Filter>Source Files\transpiller\soulCheckers</Filter>
+    <ClInclude Include="BinairyExpression.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
     </ClInclude>
-    <ClInclude Include="varInfo.h">
-      <Filter>Source Files\metaData</Filter>
+    <ClInclude Include="SuperMainNodes.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree</Filter>
     </ClInclude>
-    <ClInclude Include="Nesting.h">
-      <Filter>Source Files\metaData\scope</Filter>
+    <ClInclude Include="InitVariable.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Statements</Filter>
     </ClInclude>
-    <ClInclude Include="Result.h">
-      <Filter>Source Files\metaData</Filter>
+    <ClInclude Include="ClassNode.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\ClassNode</Filter>
     </ClInclude>
-    <ClInclude Include="TranspillerOption.h">
-      <Filter>Source Files\metaData</Filter>
+    <ClInclude Include="FieldNode.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\ClassNode</Filter>
     </ClInclude>
-    <ClInclude Include="ArgumentType.h">
-      <Filter>Source Files\metaData\Type\ArgumentType</Filter>
+    <ClInclude Include="BodyNode.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Function</Filter>
     </ClInclude>
-    <ClInclude Include="storeArguments.h">
-      <Filter>Source Files\transpiller\func\convertFuncDecleration\storeArgument</Filter>
+    <ClInclude Include="FuncNode.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Function</Filter>
     </ClInclude>
-    <ClInclude Include="cppConverter.h">
-      <Filter>Source Files\transpiller\cppConverter</Filter>
+    <ClInclude Include="MethodeNode.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\ClassNode</Filter>
     </ClInclude>
-    <ClInclude Include="FuncInfo.h">
-      <Filter>Source Files\metaData\func</Filter>
+    <ClInclude Include="SyntaxTree_Operator.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression\SyntaxTree_Operator</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassAccessLevel.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\ClassNode\ClassAccessLevel</Filter>
     </ClInclude>
     <ClInclude Include="ArgumentInfo.h">
-      <Filter>Source Files\metaData\func</Filter>
+      <Filter>Source Files\MetaData\ArgumentInfo</Filter>
     </ClInclude>
-    <ClInclude Include="internalFunction.h">
-      <Filter>Source Files\metaData\func</Filter>
+    <ClInclude Include="SyntaxNodeId.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree</Filter>
     </ClInclude>
-    <ClInclude Include="ScopeIterator.h">
-      <Filter>Source Files\metaData\scope</Filter>
+    <ClInclude Include="getFunctionDeclaration.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\getFunctionDeclaration</Filter>
+    </ClInclude>
+    <ClInclude Include="soulChecker.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\soulChecker</Filter>
+    </ClInclude>
+    <ClInclude Include="storeArguments.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\getFunctionDeclaration\storeArguments</Filter>
+    </ClInclude>
+    <ClInclude Include="PrimitiveType.h">
+      <Filter>Source Files\MetaData\Type\PrimitiveType</Filter>
+    </ClInclude>
+    <ClInclude Include="Type.h">
+      <Filter>Source Files\MetaData\Type</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeWrapper.h">
+      <Filter>Source Files\MetaData\Type\TypeWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="DuckType.h">
+      <Filter>Source Files\MetaData\Type\PrimitiveType</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeCatagory.h">
+      <Filter>Source Files\MetaData\Type\PrimitiveType</Filter>
     </ClInclude>
     <ClInclude Include="convertBody.h">
-      <Filter>Source Files\transpiller\func\convertBody</Filter>
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody</Filter>
     </ClInclude>
-    <ClInclude Include="convertFunctionCall.h">
-      <Filter>Source Files\transpiller\func\convertBody\convertVar\convertFunctionCall</Filter>
+    <ClInclude Include="ClassInfo.h">
+      <Filter>Source Files\MetaData\Type</Filter>
     </ClInclude>
-    <ClInclude Include="convertVarInit.h">
-      <Filter>Source Files\transpiller\func\convertBody\convertVar\convertVarInit</Filter>
+    <ClInclude Include="VarInfo.h">
+      <Filter>Source Files\MetaData\scope</Filter>
     </ClInclude>
-    <ClInclude Include="convertVarSetter.h">
-      <Filter>Source Files\transpiller\func\convertBody\convertVar\convertVarSetter</Filter>
+    <ClInclude Include="Nesting.h">
+      <Filter>Source Files\MetaData\scope</Filter>
     </ClInclude>
-    <ClInclude Include="convertVar.h">
-      <Filter>Source Files\transpiller\func\convertBody\convertVar</Filter>
+    <ClInclude Include="ScopeIterator.h">
+      <Filter>Source Files\MetaData\scope</Filter>
     </ClInclude>
-    <ClInclude Include="convertForLoop.h">
-      <Filter>Source Files\transpiller\func\convertForLoop</Filter>
+    <ClInclude Include="convertAssignment.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertAssignment</Filter>
     </ClInclude>
-    <ClInclude Include="convertIndexer.h">
-      <Filter>Source Files\transpiller\func\convertBody\convertVar</Filter>
-    </ClInclude>
-    <ClInclude Include="convertClass.h">
-      <Filter>Source Files\transpiller\func\convertClass</Filter>
-    </ClInclude>
-    <ClInclude Include="ClassField.h">
-      <Filter>Source Files\metaData\Type\ComplexType</Filter>
-    </ClInclude>
-    <ClInclude Include="equalTools.h">
-      <Filter>Source Files\tools</Filter>
-    </ClInclude>
-    <ClInclude Include="convertField.h">
-      <Filter>Source Files\transpiller\func\convertClass\convertField</Filter>
+    <ClInclude Include="CurrentContext.h">
+      <Filter>Source Files\MetaData</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

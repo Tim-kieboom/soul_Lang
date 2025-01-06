@@ -1,16 +1,14 @@
 #pragma once
-#include <string>
-
 #include "Result.h"
 #include "Nesting.h"
 
 struct ScopeIterator
 {
 	std::vector<Nesting>& scope;
-	uint64_t currentIndex = 0;
+	uint64_t currentIndex;
 
 	ScopeIterator(std::vector<Nesting>& scope)
-		: scope(scope)
+		: scope(scope), currentIndex(0)
 	{
 	}
 

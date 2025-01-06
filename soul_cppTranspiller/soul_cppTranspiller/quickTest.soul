@@ -19,51 +19,13 @@ class none;
 class f;
 # endInvis
 
-class Option_i32
+func test(i32 foo, mut f64[] bar): str& 
 {
-    priv i32 value = 0;
-    pub bool hasValue = false;
 
-    pub ctor() { }
-    pub ctor(i32 initValue)
-    {
-        hasValue = initValue;
-        hasValue = true;
-    }
-
-    pub set(i32 setValue): none
-    {
-        value = setValue;
-        hasValue = true;
-    }
-
-    pub tryGet(out i32 outValue): bool
-    {
-        if(!hasValue)
-        {
-            return false;
-        }
-        outValue = value;
-        return true;
-    }
 }
 
 func main(): i32
 {
-    Option_i32 option;
-    i32 value;
-    if(option.tryGet(out value))
-    {
-        println("obj has no value (expected)");
-    }
-
-    option.set(5);
-    if(option.tryGet(out value))
-    {
-        println("obj has no value (unexpected)");
-        return 1;
-    }
-
-    println(f"obj value: {value}");
-    return 0;
+    print("");
+    println("hello world");
 }

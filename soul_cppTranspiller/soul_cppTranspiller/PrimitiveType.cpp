@@ -2,7 +2,7 @@
 
 using namespace std;
 
-PrimitiveType getType(const string& rawType)
+PrimitiveType getPrimitiveType(const string& rawType)
 {
 	if (rawType == toString(PrimitiveType::c_str))
 		return PrimitiveType::c_str;
@@ -108,5 +108,5 @@ string toString(PrimitiveType type)
 		return "f64";
 	}
 
-	return "invalid";
+	return "<invalid>";
 }

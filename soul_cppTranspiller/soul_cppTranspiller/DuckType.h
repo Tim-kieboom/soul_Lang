@@ -1,5 +1,6 @@
 #pragma once
-#include "TypeCategory.h"
+#include "PrimitiveType.h"
+#include "TypeCatagory.h"
 
 enum class DuckType
 {

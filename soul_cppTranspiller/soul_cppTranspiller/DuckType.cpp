@@ -1,4 +1,5 @@
 #include "DuckType.h"
+#include "DuckType.h"
 
 using namespace std;
 
@@ -9,7 +10,7 @@ DuckType getDuckType(PrimitiveType type)
 
 PrimitiveType DuckToPrimitive(DuckType type)
 {
-	switch(type)
+	switch (type)
 	{
 	case DuckType::number:
 		return PrimitiveType::f64;

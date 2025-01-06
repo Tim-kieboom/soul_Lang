@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <unordered_map>
 
 enum class PrimitiveType
 {
@@ -30,4 +29,4 @@ enum class PrimitiveType
 };
 
 std::string toString(PrimitiveType type);
-PrimitiveType getType(const std::string& rawType);
+PrimitiveType getPrimitiveType(const std::string& rawType);

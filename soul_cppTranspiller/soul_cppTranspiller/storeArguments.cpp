@@ -1,114 +1,107 @@
 #include "storeArguments.h"
-#include "TypeInfo.h"
-#include "soulCheckers.h"
+#include "soulChecker.h"
 
 using namespace std;
 
 struct StoreArgsInfo
 {
-    ArgumentType argType = ArgumentType::tk_default;
-    TypeInfo type;
+    ArgumentType argType = ArgumentType::default_;
     uint32_t openBracketCounter = 1;
     string defaultValue = "";
+    bool isOptional = false;
     string argName = "";
+    RawType type;
 
     uint64_t argumentPosition = 1;
 
     void reset()
     {
+        this->type;
         this->argName = "";
         this->defaultValue = "";
         this->argumentPosition++;
-        this->type = TypeInfo();
-        this->argType = ArgumentType::tk_default;
+        this->isOptional = false;
+        this->argType = ArgumentType::default_;
     }
 };
 
 static inline Result<void> storeArgument
 (
-    TokenIterator& iterator,  
-    StoreArgsInfo& storeInfo, 
-    /*out*/ FuncInfo& funcInfo,
-    /*out*/ Nesting& scope
+    TokenIterator& iterator,
+    StoreArgsInfo& storeInfo,
+    MetaData& metaData,
+    vector<ArgumentInfo>& args
 )
 {
-    TypeInfo type = storeInfo.type;
+    RawType& type = storeInfo.type;
     string& argName = storeInfo.argName;
     ArgumentType& argType = storeInfo.argType;
     uint64_t& argumentPosition = storeInfo.argumentPosition;
 
-    if (!type.isValid())
+    if(!type.isValid(metaData.classStore))
         return ErrorInfo("valueType of argument is invalid argumentNumber: \'" + argumentPosition + string("\'"), iterator.currentLine);
 
     if (argName.empty())
         return ErrorInfo("no name given to argument, argument type: \'" + toString(type) + "\'", iterator.currentLine);
 
-    ArgumentInfo argInfo = ArgumentInfo(argType, type, argName, argumentPosition);
-    VarInfo varInfo = VarInfo(argName, type, argType_isOptions(argType));
-
-    funcInfo.args.emplace_back(argInfo);
-    scope.addVariable(varInfo);
+    ArgumentInfo arg = ArgumentInfo(storeInfo.isOptional, type, argName, argType);
+    args.push_back(arg);
 
     storeInfo.reset();
     return {};
 }
 
-static inline Result<void> storeLastArgument
+static inline Result<RawType> storeLastArgument
 (
+    TokenIterator& iterator,
     StoreArgsInfo& storeInfo,
-    /*out*/ TokenIterator& iterator, 
-    /*out*/ MetaData& metaData, 
-    /*out*/ FuncInfo& funcInfo, 
-    /*out*/ Nesting& scope,
-    bool isCtor
+    MetaData& metaData,
+    vector<ArgumentInfo>& args
 )
 {
     string& token = iterator.currentToken;
-    if (storeInfo.type.isValid())
+    if (storeInfo.type.isValid(metaData.classStore))
     {
-        Result<void> result = storeArgument(iterator, storeInfo, funcInfo, scope);
+        Result<void> result = storeArgument(iterator, storeInfo, metaData, args);
         if (result.hasError)
             return result.error;
     }
 
-    if (!isCtor)
-    {
-        TypeInfo& type = storeInfo.type;
-        if (!iterator.nextToken())
-            return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
+    RawType& type = storeInfo.type;
+    if (!iterator.nextToken())
+        return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
 
-        if (token != ":")
-            return ErrorInfo("function Declarations doesn't end with ':'", iterator.currentLine);
+    if (token != ":")
+        return ErrorInfo("function Declarations doesn't end with ':'", iterator.currentLine);
 
-        if (!iterator.nextToken())
-            return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
+    if (!iterator.nextToken())
+        return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
 
-        Result<TypeInfo> returnType = getTypeInfo(iterator, metaData.classStore);
-        if (returnType.hasError)
-            return returnType.error;
-        
-        funcInfo.returnType = returnType.value();
-    }
+    Result<RawType> returnType = getRawType(iterator, metaData.classStore);
+    if (returnType.hasError)
+        return returnType.error;
 
-    return {};
+    return returnType.value();
 }
 
-Result<void> storeArguments(TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, Nesting& scope, bool isCtor)
+
+Result<vector<ArgumentInfo>> storeArguments(TokenIterator& iterator, MetaData& metaData, RawType& returnType)
 {
     StoreArgsInfo storeInfo;
     uint32_t& openBracketCounter = storeInfo.openBracketCounter;
+    vector<ArgumentInfo> args;
 
     string& token = iterator.currentToken;
     while(iterator.nextToken())
     {
-        Result<TypeInfo> typeResult = getTypeInfo(iterator, metaData.classStore);
-        if(token == ",")
+        Result<RawType> typeResult = getRawType(iterator, metaData.classStore);
+        if (token == ",")
         {
-            Result<void> result = storeArgument(iterator, storeInfo, funcInfo, scope);
+            Result<void> result = storeArgument(iterator, storeInfo, metaData, args);
             if (result.hasError)
                 return result.error;
         }
-        else if (token == "(")
+        else if(token == "(")
         {
             openBracketCounter++;
         }
@@ -116,25 +109,23 @@ Result<void> storeArguments(TokenIterator& iterator, MetaData& metaData, FuncInf
         {
             if(openBracketCounter <= 1)
             {
-                Result<void> result = storeLastArgument(storeInfo, iterator, metaData, funcInfo, scope, isCtor);
+                Result<RawType> result = storeLastArgument(iterator, storeInfo, metaData, args);
                 if (result.hasError)
                     return result.error;
 
-                return {};
+                returnType = result.value();
+                return args;
             }
 
             openBracketCounter--;
         }
-        else if(getArgType_symbol(token) != ArgumentType::invalid)
+        else if(getArgumentType(token) != ArgumentType::invalid)
         {
-            storeInfo.argType = getArgType_symbol(token);
+            storeInfo.argType = getArgumentType(token);
         }
         else if(token == "=")
         {
-            storeInfo.argType = argType_ChangeToOptional(storeInfo.argType);
-
-            if (iterator.nextToken())
-                break;
+            storeInfo.isOptional = true;
         }
         else if (!typeResult.hasError)
         {
@@ -147,6 +138,5 @@ Result<void> storeArguments(TokenIterator& iterator, MetaData& metaData, FuncInf
             storeInfo.argName = token;
         }
     }
-
     return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
 }

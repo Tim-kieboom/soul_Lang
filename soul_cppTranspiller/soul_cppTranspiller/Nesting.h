@@ -1,11 +1,11 @@
 #pragma once
-#include <cstdint>
+#include <vector>
 #include "Result.h"
-#include "varInfo.h"
+#include "VarInfo.h"
 
 struct Nesting
 {
-	uint32_t selfIndex;
+	uint32_t selfIndex = 0;
 	int64_t parentIndex = -1;
 	std::vector<VarInfo> vars;
 
@@ -14,8 +14,14 @@ struct Nesting
 		: selfIndex(selfIndex)
 	{
 	}
-
-    Nesting(uint32_t selfIndex, std::initializer_list<VarInfo> vars)
+	Nesting(uint32_t selfIndex, std::initializer_list<VarInfo> vars)
+		: selfIndex(selfIndex)
+	{
+		this->vars.reserve(vars.size());
+		for (const auto& var : vars)
+			this->vars.push_back(var);
+	}
+    Nesting(uint32_t selfIndex, std::vector<VarInfo>& vars)
         : selfIndex(selfIndex)
     {
         this->vars.reserve(vars.size());
@@ -61,7 +67,7 @@ struct Nesting
         while (currentIndex >= 0)
         {
             if (prevIndex == currentIndex)
-                throw std::logic_error("Nesting cirular ref issue");
+                throw std::exception("Nesting cirular ref issue");
 
             if (currentIndex == this->selfIndex)
                 throw std::exception("Nesting ref's itself");

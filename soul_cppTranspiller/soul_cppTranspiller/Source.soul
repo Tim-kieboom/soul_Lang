@@ -109,99 +109,99 @@ class none;
 //
 //}
 
-class List_i32
-{
-	pub ui64 Size {get; priv set;} = 0;
-	pub ui64 Capacity {get; priv set;} = 0;
+//class List_i32
+//{
+//	pub ui64 Size {get; priv set;} = 0;
+//	pub ui64 Capacity {get; priv set;} = 0;
 
-	i32[] array = null;
+//	i32[] array = null;
 
-	pub ctor() {}
-	//pub ctor(this.array, this.Capacity) {}
-	//pub ctor(this.Capacity) 
-	//	: array(new i32[Capacity]) 
-	//{
-	//}
+//	pub ctor() {}
+//	//pub ctor(this.array, this.Capacity) {}
+//	//pub ctor(this.Capacity) 
+//	//	: array(new i32[Capacity]) 
+//	//{
+//	//}
 
-	pub ~ctor()
-	{
-		if (array != null)
-		{
-			delete array;
-		}
-	}
+//	pub ~ctor()
+//	{
+//		if (array != null)
+//		{
+//			delete array;
+//		}
+//	}
 
-	pub reserve(ui64 newCapacity): none
-	{
-		if(newCapacity < Size)
-		{
-			Size = newCapacity;
-		}
+//	pub reserve(ui64 newCapacity): none
+//	{
+//		if(newCapacity < Size)
+//		{
+//			Size = newCapacity;
+//		}
 
-		Capacity = newCapacity;
-		i32[] oldArray = array;
-		array = new i32[newCapacity];
+//		Capacity = newCapacity;
+//		i32[] oldArray = array;
+//		array = new i32[newCapacity];
 
-		for (ui64 i = 0; i < Size; i++)
-		{
-			array[i] = oldArray[i];
-		}
-		delete oldArray;
-	}
+//		for (ui64 i = 0; i < Size; i++)
+//		{
+//			array[i] = oldArray[i];
+//		}
+//		delete oldArray;
+//	}
 
-	pub push(i32 item): bool
-	{
-		bool hasResized = false;
-		if (Size + 1 > Capacity)
-		{
-			reserve(Capacity * 2);
-			hasResized = true;
-		}
+//	pub push(i32 item): bool
+//	{
+//		bool hasResized = false;
+//		if (Size + 1 > Capacity)
+//		{
+//			reserve(Capacity * 2);
+//			hasResized = true;
+//		}
 
-		array[Size++] = item;
-		return hasResized;
-	}
+//		array[Size++] = item;
+//		return hasResized;
+//	}
 
-	pub pop(i32 item): i32
-	{
-		checkThrow(Size == 0, "trying to pop empty array");
-		Size--;    
-		return array[Size];
-	}
+//	pub pop(i32 item): i32
+//	{
+//		checkThrow(Size == 0, "trying to pop empty array");
+//		Size--;    
+//		return array[Size];
+//	}
 
-	pub at(i32 index): i32 &
-	{
-		checkThrow(index >= Size, "index is out of bounds");
-		return array[index];
-	}
+//	pub at(i32 index): i32 &
+//	{
+//		checkThrow(index >= Size, "index is out of bounds");
+//		return array[index];
+//	}
 
-	//pub [](ui64 index): i32 &
-	//{
-	//	checkFail(index >= Capacity, "trying to index element of index that is out of bounds");
-	//	return array[index];
-	//}
+//	//pub [](ui64 index): i32 &
+//	//{
+//	//	checkFail(index >= Capacity, "trying to index element of index that is out of bounds");
+//	//	return array[index];
+//	//}
 
-	//pub +=(i32 item): bool
-	//{
-	//	return push(item);
-	//} 
+//	//pub +=(i32 item): bool
+//	//{
+//	//	return push(item);
+//	//} 
 
-	//pub +=(List_i32 items): bool
-	//{
-	//	bool hasResized = false;
-	//	if (Capacity < Size + items.Size)
-	//	{
-	//		reserve(Size + items.Size);
-	//		hasResized = true;
-	//	}
+//	//pub +=(List_i32 items): bool
+//	//{
+//	//	bool hasResized = false;
+//	//	if (Capacity < Size + items.Size)
+//	//	{
+//	//		reserve(Size + items.Size);
+//	//		hasResized = true;
+//	//	}
 
-	//	for (ui64 i = Size; i < Size + items.Size; i++)
-	//	{
-	//		array[i] = items[i];
-	//	}
-	//	return hasResized;
-	//} 
-}
+//	//	for (ui64 i = Size; i < Size + items.Size; i++)
+//	//	{
+//	//		array[i] = items[i];
+//	//	}
+//	//	return hasResized;
+//	//} 
+//}
 
 func sum(i32 a, i32 b): i32
 {
