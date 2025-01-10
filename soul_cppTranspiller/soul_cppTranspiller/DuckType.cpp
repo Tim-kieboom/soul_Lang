@@ -22,6 +22,9 @@ PrimitiveType DuckToPrimitive(DuckType type)
 		return PrimitiveType::str;
 	case DuckType::character:
 		return PrimitiveType::char_;
+
+	default:
+		return PrimitiveType::invalid;
 	}
 }
 

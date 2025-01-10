@@ -15,7 +15,14 @@ public:
 
 	void print() const override
 	{
-		std::cout << "Variable(" << value << ")";
+		std::cout << printToString();
+	}
+
+	std::string printToString() const override
+	{
+		std::stringstream ss;
+		ss << "Variable(" << value << ")";
+		return ss.str();
 	}
 
 	SyntaxNodeId getId() const override

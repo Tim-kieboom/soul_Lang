@@ -13,17 +13,21 @@ public:
 
 	void print() const override
 	{
-		for (const auto& var : globalVariables)
-		{
-			var->print();
-			std::cout << '\n';
-		}
-		for (const auto& funcOrClass : funcsAndClasses)
-		{
-			funcOrClass->print();
-			std::cout << '\n';
-		}
+		std::cout << printToString();
 	}
+
+	std::string printToString() const
+	{
+		std::stringstream ss;
+		for (const auto& var : globalVariables)
+			ss << var->printToString() << '\n';
+
+		for (const auto& funcOrClass : funcsAndClasses)
+			ss << funcOrClass->printToString() << '\n';
+
+		return ss.str();
+	}
+
 
 	SyntaxNodeId getId() const override 
 	{

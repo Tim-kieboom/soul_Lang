@@ -5,22 +5,25 @@
 class BinaryExpression : public SuperExpression
 {
 public:
-	std::unique_ptr<SuperExpression> left;
+	std::shared_ptr<SuperExpression> left;
 	SyntaxTree_Operator operatorType;
-	std::unique_ptr<SuperExpression> right;
+	std::shared_ptr<SuperExpression> right;
 
-	BinaryExpression(std::unique_ptr<SuperExpression> left, SyntaxTree_Operator opType, std::unique_ptr<SuperExpression> right)
-		: left(std::move(left)), operatorType(opType), right(std::move(right))
+	BinaryExpression(std::shared_ptr<SuperExpression> left, SyntaxTree_Operator opType, std::shared_ptr<SuperExpression> right)
+		: left(left), operatorType(opType), right(right)
 	{
 	}
 
 	void print() const override
 	{
-		std::cout << "BinaryExpression(";
-		left->print();
-		std::cout << "operator::" << toString(operatorType);
-		right->print();
-		std::cout << ')';
+		std::cout << printToString();
+	}
+
+	std::string printToString() const override
+	{
+		std::stringstream ss;
+		ss << "BinaryExpression(" << left->printToString() << ' ' << toString(operatorType) << ' ' << right->printToString() << ')';
+		return ss.str();
 	}
 
 	SyntaxNodeId getId() const override

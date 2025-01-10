@@ -6,19 +6,24 @@ class FieldVariable : public SuperStatement
 {
 private:
     ClassAccessLevel accessLevel;
-    std::unique_ptr<InitializeVariable> init;
+    std::shared_ptr<InitializeVariable> init;
 
 public:
-    FieldVariable(ClassAccessLevel accessLevel, std::unique_ptr<InitializeVariable> init)
-        : accessLevel(accessLevel), init(std::move(init))
+    FieldVariable(ClassAccessLevel accessLevel, std::shared_ptr<InitializeVariable> init)
+        : accessLevel(accessLevel), init(init)
     {
     }
 
     void print() const override
     {
-        std::cout << "FieldVariable(AccessLevel::" << toString(accessLevel) << ' ';
-        init->print();
-        std::cout << ')';
+        std::cout << printToString();
+    }	
+    
+    std::string printToString() const override
+    {
+        std::stringstream ss;
+        ss << "FieldVariable(AccessLevel::" << toString(accessLevel) << ' ' << init->printToString() << ')';
+        return ss.str();
     }
 
     SyntaxNodeId getId() const override

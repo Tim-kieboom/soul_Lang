@@ -3,6 +3,8 @@
 
 enum class SyntaxTree_Operator
 {
+	Invalid,
+
 	Equals,
 	NotEquals,
 	IsSmaller,
@@ -10,18 +12,20 @@ enum class SyntaxTree_Operator
 	IsBigger,
 	IsBigger_Equals,
 
-	add,
-	sub,
-	mul,
-	div,
-	modulo,
+	Add,
+	Sub,
+	Mul,
+	Div,
+	Modulo,
 
 	BitWise_OR,
 	BitWise_AND,
 	BitWise_XOR,
 	Logical_OR,
 	Logical_AND,
-	Logical_XOR,
 };
+uint32_t getOperator_Priority(const std::string& opType);
+uint32_t getOperator_Priority(SyntaxTree_Operator opType);
 
+SyntaxTree_Operator getSyntax_Operator(const std::string& token);
 std::string toString(SyntaxTree_Operator op);

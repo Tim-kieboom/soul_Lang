@@ -8,6 +8,11 @@
 #include "stringTools.h"
 using namespace std;
 
+DuckType getDuckType(RawType& type)
+{
+    return getDuckType(getPrimitiveType(type.getType_WithoutWrapper()));
+}
+
 std::string toString(const RawType& type)
 {
     stringstream ss;
@@ -30,6 +35,10 @@ Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawTyp
 {
     string strType = stringedRawType;
     string_remove(strType, ' ');
+
+    if (strType.empty())
+        return ErrorInfo("type is <empty>", currentLine);
+
     uint64_t i = 0;
     vector<string> strTypes = string_splitOn(strType, { "const", "[]", "*", "&" });
 
@@ -49,9 +58,12 @@ Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawTyp
 
     rawType = RawType(strTypes.at(i), isMutable);
 
+    if (strTypes.size() == 1)
+        return rawType;
+
     Result<void> result;
     uint8_t refrenceCounter = 0;
-    while (i++ < strTypes.size())
+    while (i++ < strTypes.size()-1)
     {
         TypeWrapper wrap = getTypeWrapper(strTypes.at(i));
         if (wrap == TypeWrapper::invalid)

@@ -7,19 +7,29 @@ class ClassNode : public SuperMainNode
 {
 public:
 	std::string className;
-	std::vector<std::unique_ptr<FieldVariable>> fields;
-	std::vector<std::unique_ptr<MethodeNode>> methodes;
+	std::vector<std::shared_ptr<FieldVariable>> fields;
+	std::vector<std::shared_ptr<MethodeNode>> methodes;
 
 	ClassNode() = default;
 
 	void print() const override
 	{
-		std::cout << "classDef\n( className::" << className << "{";
-		for (const std::unique_ptr<FieldVariable>& field : fields)
-			field->print();
-		for (const std::unique_ptr<MethodeNode>& methode : methodes)
-			methode->print();
-		std::cout << "\n})";
+		std::cout << printToString();
+	}
+
+	std::string printToString() const override
+	{
+		std::stringstream ss;
+		ss << "classDef\n( className::" << className << "{";
+		
+		for (const std::shared_ptr<FieldVariable>& field : fields)
+			ss << field->printToString();
+		
+		for (const std::shared_ptr<MethodeNode>& methode : methodes)
+			ss << methode->printToString();
+		
+		ss << "\n})";
+		return ss.str();
 	}
 
 	SyntaxNodeId getId() const override

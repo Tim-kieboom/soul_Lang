@@ -77,15 +77,6 @@
     <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\getFunctionDeclaration\storeArguments">
       <UniqueIdentifier>{247d4530-3d3d-4e53-8103-2ac6b974316b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\MetaData\Type">
-      <UniqueIdentifier>{2b74a5c9-f96b-4f21-a07b-d2b1d587872a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\MetaData\Type\PrimitiveType">
-      <UniqueIdentifier>{31e1ca42-3081-4706-933a-17e3656570f2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\MetaData\Type\TypeWrapper">
-      <UniqueIdentifier>{4376a0a7-41eb-447f-845a-392d54a6d93a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody">
       <UniqueIdentifier>{4cd1e84e-2ff4-4c85-9fbd-ef4c04f42cc8}</UniqueIdentifier>
     </Filter>
@@ -94,6 +85,21 @@
     </Filter>
     <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertAssignment">
       <UniqueIdentifier>{54ef7660-bbe2-4922-88d7-f24fd97370af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MetaData\scope\Type">
+      <UniqueIdentifier>{2b74a5c9-f96b-4f21-a07b-d2b1d587872a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MetaData\scope\Type\PrimitiveType">
+      <UniqueIdentifier>{31e1ca42-3081-4706-933a-17e3656570f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MetaData\scope\Type\TypeWrapper">
+      <UniqueIdentifier>{4376a0a7-41eb-447f-845a-392d54a6d93a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertInitVariable">
+      <UniqueIdentifier>{fe1d1791-6e0e-4eae-93fc-adee989ea009}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression">
+      <UniqueIdentifier>{6f33b6c6-8d01-43f8-99c7-4b4a81e0c2b5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -149,25 +155,31 @@
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\getFunctionDeclaration\storeArguments</Filter>
     </ClCompile>
     <ClCompile Include="PrimitiveType.cpp">
-      <Filter>Source Files\MetaData\Type\PrimitiveType</Filter>
+      <Filter>Source Files\MetaData\scope\Type\PrimitiveType</Filter>
     </ClCompile>
     <ClCompile Include="Type.cpp">
-      <Filter>Source Files\MetaData\Type</Filter>
+      <Filter>Source Files\MetaData\scope\Type</Filter>
     </ClCompile>
     <ClCompile Include="TypeWrapper.cpp">
-      <Filter>Source Files\MetaData\Type\TypeWrapper</Filter>
+      <Filter>Source Files\MetaData\scope\Type\TypeWrapper</Filter>
     </ClCompile>
     <ClCompile Include="DuckType.cpp">
-      <Filter>Source Files\MetaData\Type\PrimitiveType</Filter>
+      <Filter>Source Files\MetaData\scope\Type\PrimitiveType</Filter>
     </ClCompile>
     <ClCompile Include="TypeCatagory.cpp">
-      <Filter>Source Files\MetaData\Type\PrimitiveType</Filter>
+      <Filter>Source Files\MetaData\scope\Type\PrimitiveType</Filter>
     </ClCompile>
     <ClCompile Include="convertBody.cpp">
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody</Filter>
     </ClCompile>
     <ClCompile Include="convertAssignment.cpp">
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertAssignment</Filter>
+    </ClCompile>
+    <ClCompile Include="convertInitVariable.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertInitVariable</Filter>
+    </ClCompile>
+    <ClCompile Include="convertExpression.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -294,25 +306,25 @@
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\getFunctionDeclaration\storeArguments</Filter>
     </ClInclude>
     <ClInclude Include="PrimitiveType.h">
-      <Filter>Source Files\MetaData\Type\PrimitiveType</Filter>
+      <Filter>Source Files\MetaData\scope\Type\PrimitiveType</Filter>
     </ClInclude>
     <ClInclude Include="Type.h">
-      <Filter>Source Files\MetaData\Type</Filter>
+      <Filter>Source Files\MetaData\scope\Type</Filter>
     </ClInclude>
     <ClInclude Include="TypeWrapper.h">
-      <Filter>Source Files\MetaData\Type\TypeWrapper</Filter>
+      <Filter>Source Files\MetaData\scope\Type\TypeWrapper</Filter>
     </ClInclude>
     <ClInclude Include="DuckType.h">
-      <Filter>Source Files\MetaData\Type\PrimitiveType</Filter>
+      <Filter>Source Files\MetaData\scope\Type\PrimitiveType</Filter>
     </ClInclude>
     <ClInclude Include="TypeCatagory.h">
-      <Filter>Source Files\MetaData\Type\PrimitiveType</Filter>
+      <Filter>Source Files\MetaData\scope\Type\PrimitiveType</Filter>
     </ClInclude>
     <ClInclude Include="convertBody.h">
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody</Filter>
     </ClInclude>
     <ClInclude Include="ClassInfo.h">
-      <Filter>Source Files\MetaData\Type</Filter>
+      <Filter>Source Files\MetaData\scope\Type</Filter>
     </ClInclude>
     <ClInclude Include="VarInfo.h">
       <Filter>Source Files\MetaData\scope</Filter>
@@ -328,6 +340,18 @@
     </ClInclude>
     <ClInclude Include="CurrentContext.h">
       <Filter>Source Files\MetaData</Filter>
+    </ClInclude>
+    <ClInclude Include="Increment.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
+    <ClInclude Include="convertInitVariable.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertInitVariable</Filter>
+    </ClInclude>
+    <ClInclude Include="NoExpression.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
+    <ClInclude Include="convertExpression.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

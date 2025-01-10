@@ -14,7 +14,14 @@ public:
 
 	void print() const override
 	{
-		std::cout << "Literal(" << value << ")";
+		std::cout << printToString();
+	}
+
+	std::string printToString() const override
+	{
+		std::stringstream ss;
+		ss << "Literal(" << value << ")";
+		return ss.str();
 	}
 
 	SyntaxNodeId getId() const override

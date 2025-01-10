@@ -6,19 +6,24 @@ class MethodeNode : public SuperStatement
 {
 private:
     ClassAccessLevel accessLevel;
-    std::unique_ptr<FuncNode> func;
+    std::shared_ptr<FuncNode> func;
 
 public:
-    MethodeNode(ClassAccessLevel accessLevel, std::unique_ptr<FuncNode> func)
-        : accessLevel(accessLevel), func(std::move(func))
+    MethodeNode(ClassAccessLevel accessLevel, std::shared_ptr<FuncNode> func)
+        : accessLevel(accessLevel), func(func)
     {
     }
 
     void print() const override
     {
-        std::cout << "MethodeNode(AccessLevel::" << toString(accessLevel) << ' ';
-        func->print();
-        std::cout << ')';
+        std::cout << printToString();
+    }
+
+    std::string printToString() const override
+    {
+        std::stringstream ss;
+        ss << "MethodeNode(AccessLevel::" << toString(accessLevel) << ' ' << func->printToString() << ')';
+        return ss.str();
     }
 
     SyntaxNodeId getId() const override

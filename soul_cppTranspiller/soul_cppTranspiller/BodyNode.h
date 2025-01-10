@@ -6,25 +6,37 @@
 class BodyNode : public ISyntaxNode
 {
 private:
-	std::vector<std::unique_ptr<SuperStatement>> statements;
+	std::vector<std::shared_ptr<SuperStatement>> statements;
 
 public:
 	BodyNode() = default;
 
-	void addStatment(std::unique_ptr<SuperStatement> statement)
+	void addStatment(std::shared_ptr<SuperStatement> statement)
 	{
-		statements.push_back(std::move(statement));
+		statements.push_back(statement);
+	}
+
+	void addStatment(std::vector<std::shared_ptr<SuperStatement>>& _statements)
+	{
+		for(auto& statement : _statements)
+			statements.push_back(statement);
 	}
 
 	void print() const override
 	{
-		std::cout << "{\n";
-		for(const std::unique_ptr<SuperStatement>& node : statements)
-		{
-			node->print();
-			std::cout << ",\n";
-		}
-		std::cout << "\n}";
+		std::cout << printToString();
+	}
+
+	std::string printToString() const override
+	{
+		std::stringstream ss;
+		ss << "{\n";
+
+		for (const std::shared_ptr<SuperStatement>& node : statements)
+			ss << node->printToString() << ",\n";
+
+		ss << "\n}";
+		return ss.str();
 	}
 
 	SyntaxNodeId getId() const override

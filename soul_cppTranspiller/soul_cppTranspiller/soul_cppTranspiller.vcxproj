@@ -130,7 +130,9 @@
     <ClCompile Include="ArgumentInfo.cpp" />
     <ClCompile Include="ClassAccessLevel.cpp" />
     <ClCompile Include="convertAssignment.cpp" />
+    <ClCompile Include="convertExpression.cpp" />
     <ClCompile Include="convertBody.cpp" />
+    <ClCompile Include="convertInitVariable.cpp" />
     <ClCompile Include="DuckType.cpp" />
     <ClCompile Include="getAbstractSyntaxTree.cpp" />
     <ClCompile Include="getFunctionDeclaration.cpp" />
@@ -159,7 +161,9 @@
   <ItemGroup>
     <ClInclude Include="ClassInfo.h" />
     <ClInclude Include="convertAssignment.h" />
+    <ClInclude Include="convertExpression.h" />
     <ClInclude Include="convertBody.h" />
+    <ClInclude Include="convertInitVariable.h" />
     <ClInclude Include="CurrentContext.h" />
     <ClInclude Include="DuckType.h" />
     <ClInclude Include="getAbstractSyntaxTree.h" />
@@ -171,7 +175,9 @@
     <ClInclude Include="ClassNode.h" />
     <ClInclude Include="C_strPair.h" />
     <ClInclude Include="getFunctionDeclaration.h" />
+    <ClInclude Include="Increment.h" />
     <ClInclude Include="Nesting.h" />
+    <ClInclude Include="NoExpression.h" />
     <ClInclude Include="PrimitiveType.h" />
     <ClInclude Include="ScopeIterator.h" />
     <ClInclude Include="soulChecker.h" />

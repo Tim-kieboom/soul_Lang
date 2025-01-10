@@ -7,18 +7,22 @@ class InitializeVariable : public SuperStatement
 public:
     std::string type;
     std::string varName;
-    std::unique_ptr<SuperExpression> expression;
 
-    InitializeVariable(const std::string& type, const std::string& varName, std::unique_ptr<SuperExpression> expression)
-        : type(type), varName(varName), expression(std::move(expression))
+    InitializeVariable(const std::string& type, const std::string& varName)
+        : type(type), varName(varName)
     {
     }
 
     void print() const override
     {
-        std::cout << "InitializeVariable(" << varName << " = ";
-        expression->print();
-        std::cout << ")";
+        std::cout << printToString();
+    }
+
+    std::string printToString() const
+    {
+        std::stringstream ss;
+        ss << "InitializeVariable(" << varName << ", Type(" << type << "))";
+        return ss.str();
     }
 
     SyntaxNodeId getId() const override

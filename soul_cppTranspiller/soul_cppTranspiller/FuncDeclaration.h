@@ -12,19 +12,26 @@ struct FuncDeclaration
 
 	void print() const
 	{
-		std::cout << returnType << ' ' << functionName << '(';
-		for(uint32_t i = 0; i < args.size(); i++)
+		std::cout << printToString();
+	}
+
+	std::string printToString() const
+	{
+		std::stringstream ss;
+		ss << returnType << ' ' << functionName << '(';
+		for (uint32_t i = 0; i < args.size(); i++)
 		{
 			auto& arg = args.at(i);
-			std::cout << "ArgumentType::" << toString(arg.argType);
+			ss << "ArgumentType::" << toString(arg.argType);
 			if (arg.isOptional)
-				std::cout << "_optional";
-			std::cout << " type::" << toString(arg.valueType) << ' ' << arg.argName;
+				ss << "_optional";
+			ss << " type::" << toString(arg.valueType) << ' ' << arg.argName;
 
 			if ((uint64_t)i + 1 < args.size())
-				std::cout << ", ";
+				ss << ", ";
 		}
-		std::cout << ")\n";
+		ss << ")\n";
+		return ss.str();
 	}
 
 	bool argsEquals(const std::vector<ArgumentInfo>& other) const

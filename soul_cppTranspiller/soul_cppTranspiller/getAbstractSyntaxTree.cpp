@@ -7,12 +7,12 @@ using namespace std;
 
 static inline void addFunc(SyntaxTree& tree, FuncNode& func)
 {
-    tree.funcsAndClasses.emplace_back(make_unique<FuncNode>(move(func)));
+    tree.funcsAndClasses.emplace_back(make_shared<FuncNode>(move(func)));
 }
 
 static inline void addClass(SyntaxTree& tree, ClassNode& class_)
 {
-    tree.funcsAndClasses.emplace_back(make_unique<ClassNode>(move(class_)));
+    tree.funcsAndClasses.emplace_back(make_shared<ClassNode>(move(class_)));
 }
 
 static inline void addArgsToScope(vector<Nesting>& funcScope, FuncDeclaration& funcDecl)

@@ -21,7 +21,14 @@ class f;
 
 func test(i32 foo, mut f64[] bar): str& 
 {
+    i32 assingVar;
+    assingVar = 1 + 2;//(2 * (2 + 3));
+    assingVar += 1;
 
+    f64 initVar = 2.1;//((6 * (6 * 7 + 5)) % 15) / 2.36;
+    i8 typeConvertion = assingVar;
+
+    assertFail(idk == 10, f"value:{foo}, should be 10")
 }
 
 func main(): i32

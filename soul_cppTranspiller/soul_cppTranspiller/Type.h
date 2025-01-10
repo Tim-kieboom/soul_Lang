@@ -105,6 +105,21 @@ public:
 		return {};
 	}
 
+	PrimitiveType toPrimitiveType() const
+	{
+		return getPrimitiveType(rawType);
+	}
+
+	TypeCategory toTypeCategory() const
+	{	
+		return getTypeCategory(getPrimitiveType(rawType));
+	}
+
+	DuckType toDuckType() const
+	{
+		return getDuckType(getPrimitiveType(rawType));
+	}
+
 	bool getType(std::unordered_map<std::string, ClassInfo>& classStore, Result<PrimitiveType, ClassInfo>& type) const
 	{
 		Result<PrimitiveType, ClassInfo> result;
@@ -167,6 +182,8 @@ public:
 		return lastWrapper == TypeWrapper::pointer;
 	}
 };
+
+DuckType getDuckType(RawType& type);
 
 std::string toString(const RawType& type);
 Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore);

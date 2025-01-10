@@ -1,6 +1,107 @@
 #pragma once
 #include "SyntaxTree_Operator.h"
 
+uint32_t getOperator_Priority(const std::string& opType)
+{
+	return getOperator_Priority(getSyntax_Operator(opType));
+}
+
+uint32_t getOperator_Priority(SyntaxTree_Operator opType)
+{
+	switch (opType)
+	{
+	case SyntaxTree_Operator::Mul:
+	case SyntaxTree_Operator::Div:
+	case SyntaxTree_Operator::Modulo:
+		return 6;
+
+	case SyntaxTree_Operator::Add:
+	case SyntaxTree_Operator::Sub:
+		return 5;
+
+	case SyntaxTree_Operator::IsSmaller:
+	case SyntaxTree_Operator::IsSmaller_Equals:
+	case SyntaxTree_Operator::IsBigger:
+	case SyntaxTree_Operator::IsBigger_Equals:
+		return 4;
+
+	case SyntaxTree_Operator::Equals:
+	case SyntaxTree_Operator::NotEquals:
+		return 3;
+
+	case SyntaxTree_Operator::BitWise_OR:
+	case SyntaxTree_Operator::BitWise_AND:
+	case SyntaxTree_Operator::BitWise_XOR:
+		return 2;
+
+	case SyntaxTree_Operator::Logical_OR:
+	case SyntaxTree_Operator::Logical_AND:
+		return 1;
+
+	default:
+	case SyntaxTree_Operator::Invalid:
+		return 0;
+	}
+}
+
+SyntaxTree_Operator getSyntax_Operator(const std::string& token)
+{
+	if (token == toString(SyntaxTree_Operator::Equals))
+		return SyntaxTree_Operator::Equals;
+
+	if (token == toString(SyntaxTree_Operator::NotEquals))
+		return SyntaxTree_Operator::NotEquals;
+
+	if (token == toString(SyntaxTree_Operator::IsSmaller))
+		return SyntaxTree_Operator::IsSmaller;
+
+	if (token == toString(SyntaxTree_Operator::IsSmaller_Equals))
+		return SyntaxTree_Operator::IsSmaller_Equals;
+
+	if (token == toString(SyntaxTree_Operator::IsSmaller_Equals))
+		return SyntaxTree_Operator::IsSmaller_Equals;
+
+	if (token == toString(SyntaxTree_Operator::IsBigger))
+		return SyntaxTree_Operator::IsBigger;
+
+	if (token == toString(SyntaxTree_Operator::IsBigger_Equals))
+		return SyntaxTree_Operator::IsBigger_Equals;
+
+
+	if (token == toString(SyntaxTree_Operator::Add))
+		return SyntaxTree_Operator::Add;
+
+	if (token == toString(SyntaxTree_Operator::Sub))
+		return SyntaxTree_Operator::Sub;
+
+	if (token == toString(SyntaxTree_Operator::Mul))
+		return SyntaxTree_Operator::Mul;
+
+	if (token == toString(SyntaxTree_Operator::Div))
+		return SyntaxTree_Operator::Div;
+
+	if (token == toString(SyntaxTree_Operator::Modulo))
+		return SyntaxTree_Operator::Modulo;
+
+
+	if (token == toString(SyntaxTree_Operator::BitWise_OR))
+		return SyntaxTree_Operator::BitWise_OR;
+
+	if (token == toString(SyntaxTree_Operator::BitWise_AND))
+		return SyntaxTree_Operator::BitWise_AND;
+
+	if (token == toString(SyntaxTree_Operator::BitWise_XOR))
+		return SyntaxTree_Operator::BitWise_XOR;
+
+	if (token == toString(SyntaxTree_Operator::Logical_OR))
+		return SyntaxTree_Operator::Logical_OR;
+
+	if (token == toString(SyntaxTree_Operator::Logical_AND))
+		return SyntaxTree_Operator::Logical_AND;
+
+	return SyntaxTree_Operator::Invalid;
+}
+
 std::string toString(SyntaxTree_Operator op)
 {
 	switch (op)
@@ -18,15 +119,15 @@ std::string toString(SyntaxTree_Operator op)
 	case SyntaxTree_Operator::IsBigger_Equals:
 		return ">=";
 
-	case SyntaxTree_Operator::add:
+	case SyntaxTree_Operator::Add:
 		return "+";
-	case SyntaxTree_Operator::sub:
+	case SyntaxTree_Operator::Sub:
 		return "-";
-	case SyntaxTree_Operator::mul:
+	case SyntaxTree_Operator::Mul:
 		return "*";
-	case SyntaxTree_Operator::div:
+	case SyntaxTree_Operator::Div:
 		return "/";
-	case SyntaxTree_Operator::modulo:
+	case SyntaxTree_Operator::Modulo:
 		return "%";
 
 	case SyntaxTree_Operator::BitWise_OR:
@@ -39,8 +140,6 @@ std::string toString(SyntaxTree_Operator op)
 		return "||";
 	case SyntaxTree_Operator::Logical_AND:
 		return "&&";
-	case SyntaxTree_Operator::Logical_XOR:
-		return "^^";
 
 	default:
 		return "<invalid>";
