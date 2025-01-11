@@ -132,6 +132,7 @@
     <ClCompile Include="convertAssignment.cpp" />
     <ClCompile Include="convertExpression.cpp" />
     <ClCompile Include="convertBody.cpp" />
+    <ClCompile Include="convertFunctionCall.cpp" />
     <ClCompile Include="convertInitVariable.cpp" />
     <ClCompile Include="DuckType.cpp" />
     <ClCompile Include="getAbstractSyntaxTree.cpp" />
@@ -163,9 +164,13 @@
     <ClInclude Include="convertAssignment.h" />
     <ClInclude Include="convertExpression.h" />
     <ClInclude Include="convertBody.h" />
+    <ClInclude Include="convertFunctionCall.h" />
     <ClInclude Include="convertInitVariable.h" />
     <ClInclude Include="CurrentContext.h" />
     <ClInclude Include="DuckType.h" />
+    <ClInclude Include="EmptyExpression.h" />
+    <ClInclude Include="FunctionCall.h" />
+    <ClInclude Include="FunctionCallStatment.h" />
     <ClInclude Include="getAbstractSyntaxTree.h" />
     <ClInclude Include="ArgumentInfo.h" />
     <ClInclude Include="Assignment.h" />

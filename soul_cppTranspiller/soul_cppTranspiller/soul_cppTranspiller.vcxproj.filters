@@ -101,6 +101,9 @@
     <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression">
       <UniqueIdentifier>{6f33b6c6-8d01-43f8-99c7-4b4a81e0c2b5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertFunctionCall">
+      <UniqueIdentifier>{394e33e3-ff4f-4141-855c-96142efda78d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -180,6 +183,9 @@
     </ClCompile>
     <ClCompile Include="convertExpression.cpp">
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression</Filter>
+    </ClCompile>
+    <ClCompile Include="convertFunctionCall.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertFunctionCall</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -352,6 +358,18 @@
     </ClInclude>
     <ClInclude Include="convertExpression.h">
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression</Filter>
+    </ClInclude>
+    <ClInclude Include="convertFunctionCall.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertFunctionCall</Filter>
+    </ClInclude>
+    <ClInclude Include="FunctionCall.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
+    <ClInclude Include="FunctionCallStatment.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Statements</Filter>
+    </ClInclude>
+    <ClInclude Include="EmptyExpression.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,9 +1,11 @@
 #include "convertBody.h"
+#include "Increment.h"
 #include "Assignment.h"
 #include "stringTools.h"
-#include "Increment.h"
 #include "convertAssignment.h"
 #include "convertInitVariable.h"
+#include "convertFunctionCall.h"
+#include "FunctionCallStatment.h"
 using namespace std;
 
 static inline ErrorInfo ERROR_convertBody_outOfBounds(FuncDeclaration& funcInfo, TokenIterator& iterator)
@@ -100,12 +102,6 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 			if (assignResult.hasError)
 				return assignResult.error;
 
-			for (auto& ptr : assignResult.value())
-			{
-				ptr->print();
-				cout << endl;
-			}
-
 			body->addStatment(assignResult.value());
 		}
 		else if(isVariable(varResult))
@@ -114,10 +110,19 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 			if (assignResult.hasError)
 				return assignResult.error;
 
-			assignResult.value()->print();
-			cout << endl;
-
 			body->addStatment(assignResult.value());
+		}
+		else if(metaData.isFunction(token))
+		{
+			RawType noneType = RawType(toString(PrimitiveType::none), true);
+			Result<shared_ptr<FunctionCall>> funcResult = convertFunctionCall(iterator, metaData, context, token, noneType);
+			if (funcResult.hasError)
+				return funcResult.error;
+
+			body->addStatment
+			(
+				make_shared<FunctionCallStatment>(FunctionCallStatment(*funcResult.value()))
+			);
 		}
 	}
 

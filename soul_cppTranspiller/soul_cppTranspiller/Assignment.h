@@ -24,7 +24,7 @@ public:
     std::string printToString() const
     {
         std::stringstream ss;
-        std::cout << "Assignment(" << varName << " = " << expression->printToString() << ")";
+        ss << "Assignment(" << varName << " = " << expression->printToString() << ")";
         return ss.str();
     }
 

@@ -9,6 +9,7 @@ enum class SyntaxNodeId
 	InitializeVariable,
 	FuncNode,
 	BodyNode,
+	FunctionCallStatment,
 
 	/*expressions*/
 	Variable,
@@ -16,6 +17,8 @@ enum class SyntaxNodeId
 	BinairyExpression,
 	Increment,
 	NoExpression,
+	FunctionCall,
+	EmptyExpresion,
 
 	/*classNodes*/
 	ClassNode,

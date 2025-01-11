@@ -2,6 +2,7 @@
 #include "soulChecker.h"
 #include "Literal.h"
 #include "Variable.h"
+#include "EmptyExpression.h"
 using namespace std;
 
 template <typename T>
@@ -87,26 +88,28 @@ Result<shared_ptr<SuperExpression>> convertExpression(TokenIterator& iterator, M
     string& token = iterator.currentToken;
     Stack<shared_ptr<SuperExpression>> nodeStack;
     Stack<string> SymboolStack;
+    int64_t openBrackets = 0;
 
     while(iterator.nextToken())
     {
         Result<VarInfo> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 
-        if(initListEquals(endTokens, token))
-        {
-            break;
-        }
         if(token == "(")
         {
+            openBrackets++;
             SymboolStack.push(token);
         }
-        else if(token == ")")
+        else if(token == ")" && --openBrackets >= 0)
         {
             while(!SymboolStack.topEquals("("))
                 makeAndPush_BinairyExpression(/*out*/nodeStack, SymboolStack);
 
             if (SymboolStack.topEquals("("))
                 SymboolStack.pop();
+        }
+        else if (initListEquals(endTokens, token))
+        {
+            break;
         }
         else if(isOperator(token))
         {
@@ -142,6 +145,9 @@ Result<shared_ptr<SuperExpression>> convertExpression(TokenIterator& iterator, M
 
     while (!SymboolStack.empty())
         makeAndPush_BinairyExpression(nodeStack, SymboolStack);
+
+    if (nodeStack.empty())
+        return dynamic_pointer_cast<SuperExpression>(make_shared<EmptyExpression>(EmptyExpression()));
 
     return nodeStack.pop();
 }

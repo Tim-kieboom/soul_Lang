@@ -22,10 +22,12 @@ struct FuncDeclaration
 		for (uint32_t i = 0; i < args.size(); i++)
 		{
 			auto& arg = args.at(i);
-			ss << "ArgumentType::" << toString(arg.argType);
+			ss << "ArgumentType(" << toString(arg.argType);
 			if (arg.isOptional)
 				ss << "_optional";
-			ss << " type::" << toString(arg.valueType) << ' ' << arg.argName;
+			ss << ')';
+
+			ss << " Type(" << toString(arg.valueType) << ") " << arg.argName;
 
 			if ((uint64_t)i + 1 < args.size())
 				ss << ", ";

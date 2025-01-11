@@ -45,6 +45,11 @@ public:
 		return true;
 	}
 
+	bool isFunction(const std::string& funcName)
+	{
+		return funcStore.find(funcName) != funcStore.end();
+	}
+
 	bool isClass(const std::string& token)
 	{
 		return classStore.find(token) != classStore.end();

@@ -99,6 +99,7 @@ static inline shared_ptr<SuperExpression> addCompountAssignment(const std::strin
 {
 	shared_ptr<SuperExpression> expression = right;
 	shared_ptr<SuperExpression> left = make_shared<Variable>(varName);
+
 	if (symbool == "+=")
 		expression = make_shared<BinaryExpression>(BinaryExpression(left, SyntaxTree_Operator::Add, right));
 	else if (symbool == "-=")
