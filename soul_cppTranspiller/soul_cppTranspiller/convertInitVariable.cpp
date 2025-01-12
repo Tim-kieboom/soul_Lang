@@ -1,6 +1,5 @@
 #include "convertInitVariable.h"
 #include "soulChecker.h"
-#include "NoExpression.h"
 #include "convertAssignment.h"
 using namespace std;
 

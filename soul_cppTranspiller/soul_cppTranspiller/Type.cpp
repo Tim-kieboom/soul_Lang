@@ -6,6 +6,7 @@
 #include "TypeWrapper.h"
 #include "PrimitiveType.h"
 #include "stringTools.h"
+#include "soulChecker.h"
 using namespace std;
 
 DuckType getDuckType(RawType& type)
@@ -40,7 +41,11 @@ Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawTyp
         return ErrorInfo("type is <empty>", currentLine);
 
     uint64_t i = 0;
-    vector<string> strTypes = string_splitOn(strType, { "const", "[]", "*", "&" });
+    vector<string> strTypes = string_splitOn(strType, {"const", "[]", "*", "&" });
+
+    //if first element is empty remove element
+    if (strTypes.front().empty())
+        strTypes.erase(strTypes.begin());
 
     bool isMutable = true;
     RawType rawType;
@@ -58,7 +63,7 @@ Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawTyp
 
     rawType = RawType(strTypes.at(i), isMutable);
 
-    if (strTypes.size() == 1)
+    if (i == strTypes.size()-1)
         return rawType;
 
     Result<void> result;
@@ -76,7 +81,18 @@ Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawTyp
             return result.error;
     }
 
-    return ErrorInfo("unexpected end while trying to get TypeInfo", currentLine);
+    return rawType;
+}
+
+Result<RawType> getRawType_fromLiteralValue(const std::string& value, const uint64_t currentLine)
+{
+    PrimitiveType valueType = getPrimitiveType_fromValue(value);
+    if (valueType == PrimitiveType::invalid)
+        return ErrorInfo("value is not a LiteralValue", currentLine);
+
+    std::string rawType = toString(valueType);
+
+    return RawType(rawType, false);
 }
 
 Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore)

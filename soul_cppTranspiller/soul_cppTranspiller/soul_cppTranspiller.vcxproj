@@ -134,6 +134,7 @@
     <ClCompile Include="convertBody.cpp" />
     <ClCompile Include="convertFunctionCall.cpp" />
     <ClCompile Include="convertInitVariable.cpp" />
+    <ClCompile Include="convertReturnStatment.cpp" />
     <ClCompile Include="DuckType.cpp" />
     <ClCompile Include="getAbstractSyntaxTree.cpp" />
     <ClCompile Include="getFunctionDeclaration.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="convertBody.h" />
     <ClInclude Include="convertFunctionCall.h" />
     <ClInclude Include="convertInitVariable.h" />
+    <ClInclude Include="convertReturnStatment.h" />
     <ClInclude Include="CurrentContext.h" />
     <ClInclude Include="DuckType.h" />
     <ClInclude Include="EmptyExpression.h" />
@@ -181,9 +183,11 @@
     <ClInclude Include="C_strPair.h" />
     <ClInclude Include="getFunctionDeclaration.h" />
     <ClInclude Include="Increment.h" />
+    <ClInclude Include="internalFuntions.h" />
     <ClInclude Include="Nesting.h" />
-    <ClInclude Include="NoExpression.h" />
+    <ClInclude Include="Optional.h" />
     <ClInclude Include="PrimitiveType.h" />
+    <ClInclude Include="ReturnStatment.h" />
     <ClInclude Include="ScopeIterator.h" />
     <ClInclude Include="soulChecker.h" />
     <ClInclude Include="storeArguments.h" />

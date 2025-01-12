@@ -7,6 +7,15 @@
 #include "ClassInfo.h"
 #include "TypeWrapper.h"
 
+class RawType;
+
+DuckType getDuckType(RawType& type);
+
+std::string toString(const RawType& type);
+Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore);
+Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, const uint64_t currentLine);
+Result<RawType> getRawType_fromLiteralValue(const std::string& value, const uint64_t currentLine);
+
 class RawType
 {
 private:
@@ -71,6 +80,15 @@ public:
 		return child;
 	}
 
+	Result<void> areTypeCompatible(const std::string& other, std::unordered_map<std::string, ClassInfo>& classStore, uint64_t currentLine) const
+	{
+		Result<RawType> type = getRawType_fromStringedRawType(other, classStore, currentLine);
+		if (type.hasError)
+			return type.error;
+		
+		return areTypeCompatible(type.value(), classStore, currentLine);
+	}
+
 	Result<void> areTypeCompatible(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, uint64_t currentLine) const
 	{
 		Result<PrimitiveType, ClassInfo> trueType;
@@ -91,6 +109,9 @@ public:
 		{
 			PrimitiveType primType = trueType.value();
 			PrimitiveType primType_other = trueType_other.value();
+			if (primType == PrimitiveType::compile_dynamic || primType_other == PrimitiveType::compile_dynamic)
+				return {};
+
 			if(getDuckType(primType) != getDuckType(primType_other))
 				return ErrorInfo("types '" + rawType + "' and '" + other.rawType + "' are not compatible", currentLine);
 		}
@@ -118,6 +139,11 @@ public:
 	DuckType toDuckType() const
 	{
 		return getDuckType(getPrimitiveType(rawType));
+	}
+
+	bool isEmpty()
+	{
+		return rawType.empty();
 	}
 
 	bool getType(std::unordered_map<std::string, ClassInfo>& classStore, Result<PrimitiveType, ClassInfo>& type) const
@@ -157,7 +183,7 @@ public:
 		return false;
 	}
 
-	bool isEqual(const RawType& other) const
+	bool isEqual(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore) const
 	{
 		if (typeWrappers.size() != other.typeWrappers.size())
 			return false;
@@ -168,8 +194,11 @@ public:
 				return false;
 		}
 
-		return isMutable == other.isMutable && 
-			   rawType == other.rawType;
+		Result<void> result = areTypeCompatible(other, classStore, 0);
+		if (result.hasError)
+			return false;
+
+		return isMutable == other.isMutable;
 	}
 
 	bool isArray() const 
@@ -182,9 +211,3 @@ public:
 		return lastWrapper == TypeWrapper::pointer;
 	}
 };
-
-DuckType getDuckType(RawType& type);
-
-std::string toString(const RawType& type);
-Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore);
-Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, const uint64_t currentLine);

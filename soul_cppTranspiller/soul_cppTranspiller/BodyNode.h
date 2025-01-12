@@ -33,7 +33,7 @@ public:
 		ss << "{\n";
 
 		for (const std::shared_ptr<SuperStatement>& node : statements)
-			ss << node->printToString() << ",\n";
+			ss << '\t' << node->printToString() << ",\n";
 
 		ss << "\n}";
 		return ss.str();

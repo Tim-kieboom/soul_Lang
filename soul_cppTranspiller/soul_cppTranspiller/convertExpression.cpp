@@ -3,6 +3,7 @@
 #include "Literal.h"
 #include "Variable.h"
 #include "EmptyExpression.h"
+#include "convertFunctionCall.h"
 using namespace std;
 
 template <typename T>
@@ -51,6 +52,8 @@ public:
     }
 };
 
+static const shared_ptr<EmptyExpression> emptyExpression = make_shared<EmptyExpression>(EmptyExpression());
+
 static inline ErrorInfo ERROR_convertExpression_outOfBounds(TokenIterator& iterator)
 {
     return ErrorInfo("unexpected end while parsing BinaryExpression", iterator.currentLine);
@@ -60,27 +63,33 @@ static inline bool isVariable(Result<VarInfo>& varResult)
 {
     return !varResult.hasError;
 }
-static inline bool isLiteral(const string& token, RawType& assignVar_Type, MetaData& metaData)
+static inline bool isLiteral(Result<RawType>& LiteralType)
 {
-    return checkValue(token, assignVar_Type, metaData);
+    return !LiteralType.hasError;
 }
 static inline bool isOperator(const string& token)
 {
     return getSyntax_Operator(token) != SyntaxTree_Operator::Invalid;
 }
 
-static inline void makeAndPush_BinairyExpression(Stack<shared_ptr<SuperExpression>>& nodeStack, Stack<string>& SymboolStack)
+static inline Result<void> makeAndPush_BinairyExpression(Stack<shared_ptr<SuperExpression>>& nodeStack, Stack<string>& SymboolStack, int64_t currentLine)
 {
     SyntaxTree_Operator oparator = getSyntax_Operator(SymboolStack.pop());
     auto right = nodeStack.pop();
     auto left = nodeStack.pop();
+
+    if (right->getId() == SyntaxNodeId::EmptyExpresion || left->getId() == SyntaxNodeId::EmptyExpresion)
+        return ErrorInfo("EmptyExpression can not go into a BinairyExpression", currentLine);
+
     nodeStack.push
     (
         make_shared<BinaryExpression>(BinaryExpression(left, oparator, right))
     );
+
+    return {};
 }
 
-Result<shared_ptr<SuperExpression>> convertExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& shouldBeType, initializer_list<const char*> endTokens)
+static inline Result<shared_ptr<SuperExpression>> _convertExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, initializer_list<const char*> endTokens, RawType* shouldBeType, RawType* isType)
 {
     if (!iterator.nextToken(/*steps:*/-1))
         return ERROR_convertExpression_outOfBounds(iterator);
@@ -90,19 +99,24 @@ Result<shared_ptr<SuperExpression>> convertExpression(TokenIterator& iterator, M
     Stack<string> SymboolStack;
     int64_t openBrackets = 0;
 
-    while(iterator.nextToken())
+    while (iterator.nextToken())
     {
+        Result<RawType> literalType = getRawType_fromLiteralValue(token, iterator.currentLine);
         Result<VarInfo> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 
-        if(token == "(")
+        if (token == "(")
         {
             openBrackets++;
             SymboolStack.push(token);
         }
-        else if(token == ")" && --openBrackets >= 0)
+        else if (token == ")" && --openBrackets >= 0)
         {
-            while(!SymboolStack.topEquals("("))
-                makeAndPush_BinairyExpression(/*out*/nodeStack, SymboolStack);
+            while (!SymboolStack.topEquals("("))
+            {
+                Result<void> result = makeAndPush_BinairyExpression(/*out*/nodeStack, SymboolStack, iterator.currentLine);
+                if (result.hasError)
+                    return result.error;
+            }
 
             if (SymboolStack.topEquals("("))
                 SymboolStack.pop();
@@ -111,12 +125,33 @@ Result<shared_ptr<SuperExpression>> convertExpression(TokenIterator& iterator, M
         {
             break;
         }
-        else if(isOperator(token))
+        else if (isOperator(token))
         {
-            while(!SymboolStack.empty() && getOperator_Priority(SymboolStack.peek()) >= getOperator_Priority(token))
-                makeAndPush_BinairyExpression(/*out*/nodeStack, SymboolStack);
+            while (!SymboolStack.empty() && getOperator_Priority(SymboolStack.peek()) >= getOperator_Priority(token))
+            {
+                Result<void> result = makeAndPush_BinairyExpression(/*out*/nodeStack, SymboolStack, iterator.currentLine);
+                if (result.hasError)
+                    return result.error;
+            }
 
             SymboolStack.push(token);
+        }
+        else if (metaData.isFunction(token))
+        {
+            Result<shared_ptr<FunctionCall>> funcCall = convertFunctionCall(iterator, metaData, context, token);
+            if (funcCall.hasError)
+                return funcCall.error;
+
+            if (isType != nullptr)
+            {
+                Result<RawType> type = getRawType_fromStringedRawType(funcCall.value()->getReturnType(), metaData.classStore, iterator.currentLine);
+                if (type.hasError)
+                    return type.error;
+
+                *isType = type.value();
+            }
+
+            nodeStack.push(funcCall.value());
         }
         else
         {
@@ -126,28 +161,54 @@ Result<shared_ptr<SuperExpression>> convertExpression(TokenIterator& iterator, M
                 if (varType.hasError)
                     return varType.error;
 
-                Result<void> isCompatible = varType.value().areTypeCompatible(shouldBeType, metaData.classStore, iterator.currentLine);
-                if (isCompatible.hasError)
-                    return isCompatible.error;
+                if (isType != nullptr)
+                    *isType = varType.value();
+
+                if (shouldBeType != nullptr)
+                {
+                    Result<void> isCompatible = varType.value().areTypeCompatible(*shouldBeType, metaData.classStore, iterator.currentLine);
+                    if (isCompatible.hasError)
+                        return isCompatible.error;
+                }
 
                 nodeStack.push(make_shared<Variable>(Variable(token)));
             }
-            else if(isLiteral(token, shouldBeType, metaData))
+            else if (isLiteral(literalType))
             {
+                if (literalType.value().toDuckType() == DuckType::invalid)
+                    return ErrorInfo("Literal has to be one of the primitiveTypes", iterator.currentLine);
+
+                if (isType != nullptr)
+                    *isType = literalType.value();
+
                 nodeStack.push(make_shared<Literal>(token));
             }
             else
             {
-                return ErrorInfo("token: \'" + token + "\' is not allowed in this BinairyExpression", iterator.currentLine);
+                return ErrorInfo("token: \'" + token + "\' is not allowed as an Expression", iterator.currentLine);
             }
         }
     }
 
     while (!SymboolStack.empty())
-        makeAndPush_BinairyExpression(nodeStack, SymboolStack);
+    {
+        Result<void> result = makeAndPush_BinairyExpression(/*out*/nodeStack, SymboolStack, iterator.currentLine);
+        if (result.hasError)
+            return result.error;
+    }
 
     if (nodeStack.empty())
-        return dynamic_pointer_cast<SuperExpression>(make_shared<EmptyExpression>(EmptyExpression()));
+        return dynamic_pointer_cast<SuperExpression>(emptyExpression);
 
     return nodeStack.pop();
+}
+
+Result<shared_ptr<SuperExpression>> convertExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, initializer_list<const char*> endTokens, RawType* isType)
+{
+    return _convertExpression(iterator, metaData, context, endTokens, nullptr, isType);
+}
+
+Result<shared_ptr<SuperExpression>> convertExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& shouldBeType, initializer_list<const char*> endTokens, RawType* isType)
+{
+    return _convertExpression(iterator, metaData, context, endTokens, &shouldBeType, isType);
 }

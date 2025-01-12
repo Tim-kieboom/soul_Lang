@@ -107,7 +107,7 @@ std::string toString(SyntaxTree_Operator op)
 	switch (op)
 	{
 	case SyntaxTree_Operator::Equals:
-		return "=";
+		return "==";
 	case SyntaxTree_Operator::NotEquals:
 		return "!=";
 	case SyntaxTree_Operator::IsSmaller:

@@ -5,22 +5,22 @@
 class FunctionCallStatment : public SuperStatement
 {
 public:
-	FunctionCall functionCall;
+	std::shared_ptr<FunctionCall> functionCall;
 
 	FunctionCallStatment() = default;
-	FunctionCallStatment(FunctionCall& functionCall)
+	FunctionCallStatment(std::shared_ptr<FunctionCall>& functionCall)
 		: functionCall(functionCall)
 	{
 	}
 
 	void print() const override
 	{
-		functionCall.print();
+		functionCall->print();
 	}
 
 	std::string printToString() const override
 	{
-		return functionCall.printToString();
+		return functionCall->printToString();
 	}
 
 	SyntaxNodeId getId() const override

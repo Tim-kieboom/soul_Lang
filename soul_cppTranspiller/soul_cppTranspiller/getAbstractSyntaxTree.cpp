@@ -1,6 +1,7 @@
 #include "getAbstractSyntaxTree.h"
 #include "Nesting.h"
 #include "convertBody.h"
+#include "internalFuntions.h"
 #include "getFunctionDeclaration.h"
 
 using namespace std;
@@ -26,7 +27,7 @@ static inline void addArgsToScope(vector<Nesting>& funcScope, FuncDeclaration& f
     }
 }
 
-static void addC_strToGlobalScope(MetaData& metaData)
+static inline void addC_strToGlobalScope(MetaData& metaData, SyntaxTree& tree)
 {
     for (const auto& pair : metaData.c_strStore)
     {
@@ -37,7 +38,18 @@ static void addC_strToGlobalScope(MetaData& metaData)
             /*isOpional:*/false
         );
         metaData.addToGlobalScope(c_str);
+
+        tree.globalVariables.push_back
+        (
+            make_shared<InitializeVariable>(InitializeVariable("const str", pair.second.name))
+        );
     }
+}
+
+static inline void addInternalFunctionsToMetaData(MetaData& metaData)
+{
+    for (const FuncDeclaration& func : internalFunctions)
+        metaData.addFunction(func.functionName, func);
 }
 
 Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& metaData)
@@ -45,8 +57,9 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
     string& token = iterator.currentToken;
     SyntaxTree tree;
 
-    addC_strToGlobalScope(metaData);
-
+    addInternalFunctionsToMetaData(/*out*/metaData);
+    addC_strToGlobalScope(/*out*/metaData, /*out*/tree);
+     
     while (iterator.nextToken())
     {
         if(token == "func")
@@ -69,6 +82,7 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
         else if(token == "class")
         {
             throw exception("not yet implemented");
+
             Result<ClassNode> classResult;// = convertClass();
             if (classResult.hasError)
                 return classResult.error;

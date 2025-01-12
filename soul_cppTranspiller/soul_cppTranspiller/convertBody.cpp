@@ -6,11 +6,27 @@
 #include "convertInitVariable.h"
 #include "convertFunctionCall.h"
 #include "FunctionCallStatment.h"
+#include "convertReturnStatment.h"
 using namespace std;
 
 static inline ErrorInfo ERROR_convertBody_outOfBounds(FuncDeclaration& funcInfo, TokenIterator& iterator)
 {
 	return ErrorInfo("unexpected en in functionBody, funcName: \'" + string(funcInfo.functionName) + '\'', iterator.currentLine);
+}
+
+static inline bool isType(Result<RawType>& typeResult)
+{
+	return !typeResult.hasError;
+}
+
+static inline bool isVariable(Result<VarInfo>& varResult)
+{
+	return !varResult.hasError;
+}
+
+static inline bool hasMissingReturnStatment(const std::string& functionName, const RawType& returnType, bool hasReturnStatment)
+{
+	return functionName != "main" && returnType.toPrimitiveType() != PrimitiveType::none && !hasReturnStatment;
 }
 
 static inline Result<shared_ptr<Assignment>> _convertBeforeVarIncrement(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context)
@@ -34,23 +50,12 @@ static inline Result<shared_ptr<Assignment>> _convertBeforeVarIncrement(TokenIte
 	if (getDuckType(typeResult.value()) != DuckType::number)
 		return ErrorInfo("variable: \'" + var.name + "\' has to be of DuckType::number to use de/increment", iterator.currentLine);
 
-	shared_ptr<Increment> increment =
-		make_shared<Increment>
+	Increment increment = Increment(true, (token == "--"), 1);
+
+	return make_shared<Assignment>
 		(
-			Increment(true, (token == "--"), 1)
+			Assignment(var.name, make_shared<Increment>(increment))
 		);
-
-	return make_shared<Assignment>(Assignment(var.name, increment));
-}
-
-static inline bool isType(Result<RawType>& typeResult)
-{
-	return !typeResult.hasError;
-}
-
-static inline bool isVariable(Result<VarInfo>& varResult)
-{
-	return !varResult.hasError;
 }
 
 Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context)
@@ -66,10 +71,20 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 
 	string& token = iterator.currentToken;
 
+	Result<RawType> returnTypeResult = getRawType_fromStringedRawType(funcInfo.returnType, metaData.classStore, iterator.currentLine);
+	if (returnTypeResult.hasError)
+		return returnTypeResult.error;
+
+	RawType& returnType = returnTypeResult.value();
+
+	bool hasReturnStatment = false;
 	Result<string> result;
 	uint32_t openCurlyBracketCounter = 0;
 	while (iterator.nextToken())
 	{
+		if (iterator.currentLine == 21)
+			int f = 0;
+
 		if (token == "{")
 		{
 			openCurlyBracketCounter++;
@@ -81,6 +96,9 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 
 			if (openCurlyBracketCounter != 0)
 				continue;
+
+			if (hasMissingReturnStatment(funcInfo.functionName, returnType, hasReturnStatment))
+				return ErrorInfo("Function needs to return something", iterator.currentLine);
 
 			return FuncNode(funcInfo, move(body));
 		}
@@ -121,8 +139,17 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 
 			body->addStatment
 			(
-				make_shared<FunctionCallStatment>(FunctionCallStatment(*funcResult.value()))
+				make_shared<FunctionCallStatment>(FunctionCallStatment(funcResult.value()))
 			);
+		}
+		else if(token == "return")
+		{
+			Result<shared_ptr<ReturnStatment>> returnResult = convertReturnStatment(iterator, metaData, context, returnType);
+			if (returnResult.hasError)
+				return returnResult.error;
+
+			body->addStatment(returnResult.value());
+			hasReturnStatment = true;
 		}
 	}
 

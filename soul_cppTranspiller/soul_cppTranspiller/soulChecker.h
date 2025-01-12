@@ -15,4 +15,4 @@ bool checkValue(const std::string& value, TypeCategory category);
 bool checkValue(const std::string& value, const RawType& type, MetaData& metaData);
 
 DuckType getDuckType_fromValue(const std::string& value);
-
+PrimitiveType getPrimitiveType_fromValue(const std::string& value);

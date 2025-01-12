@@ -83,6 +83,11 @@ bool checkValue(const std::string& value, TypeCategory category)
 	}
 }
 
+PrimitiveType getPrimitiveType_fromValue(const std::string& value)
+{
+	return DuckToPrimitive(getDuckType_fromValue(value));
+}
+
 DuckType getDuckType_fromValue(const std::string& value)
 {
 	if (checkValue(value, DuckType::character))

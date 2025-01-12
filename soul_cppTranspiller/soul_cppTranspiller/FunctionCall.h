@@ -8,14 +8,20 @@ class FunctionCall : public SuperExpression
 private:
     std::string funcName;
     std::string returnType;
+    FuncDeclaration funcInfo;
     std::vector<std::shared_ptr<SuperExpression>> args;
 
 public:
     FunctionCall() = default;
 
-    FunctionCall(const std::string& funcName, const std::string& returnType, std::vector<std::shared_ptr<SuperExpression>>& args)
-        : funcName(funcName), returnType(returnType), args(args)
+    FunctionCall(const std::string& funcName, const std::string& returnType, FuncDeclaration funcInfo, std::vector<std::shared_ptr<SuperExpression>>& args)
+        : funcName(funcName), returnType(returnType), funcInfo(funcInfo), args(args)
     {
+    }
+
+    std::string getReturnType()
+    {
+        return returnType;
     }
 
     void print() const override

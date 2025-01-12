@@ -1,5 +1,6 @@
 #include "storeArguments.h"
 #include "soulChecker.h"
+#include "convertExpression.h"
 
 using namespace std;
 
@@ -7,19 +8,21 @@ struct StoreArgsInfo
 {
     ArgumentType argType = ArgumentType::default_;
     uint32_t openBracketCounter = 1;
-    string defaultValue = "";
     bool isOptional = false;
+    shared_ptr<SuperExpression> defaultValue;
     string argName = "";
     RawType type;
 
     uint64_t argumentPosition = 1;
 
-    void reset()
+    void reset(bool isOptional)
     {
         this->type;
         this->argName = "";
-        this->defaultValue = "";
-        this->argumentPosition++;
+        
+        if(!isOptional)
+            this->argumentPosition++;
+        
         this->isOptional = false;
         this->argType = ArgumentType::default_;
     }
@@ -30,7 +33,8 @@ static inline Result<void> storeArgument
     TokenIterator& iterator,
     StoreArgsInfo& storeInfo,
     MetaData& metaData,
-    vector<ArgumentInfo>& args
+    vector<ArgumentInfo>& args,
+    vector<ArgumentInfo>& optionals
 )
 {
     RawType& type = storeInfo.type;
@@ -44,10 +48,19 @@ static inline Result<void> storeArgument
     if (argName.empty())
         return ErrorInfo("no name given to argument, argument type: \'" + toString(type) + "\'", iterator.currentLine);
 
-    ArgumentInfo arg = ArgumentInfo(storeInfo.isOptional, type, argName, argType);
-    args.push_back(arg);
-
-    storeInfo.reset();
+    ArgumentInfo arg = ArgumentInfo(storeInfo.isOptional, type, argName, argType, argumentPosition);
+    
+    
+    if (arg.isOptional)
+    {
+        arg.defaultValue = storeInfo.defaultValue;
+        optionals.push_back(arg);
+    }
+    else
+    {
+        args.push_back(arg);
+    }
+    storeInfo.reset(arg.isOptional);
     return {};
 }
 
@@ -56,13 +69,14 @@ static inline Result<RawType> storeLastArgument
     TokenIterator& iterator,
     StoreArgsInfo& storeInfo,
     MetaData& metaData,
-    vector<ArgumentInfo>& args
+    vector<ArgumentInfo>& args,
+    vector<ArgumentInfo>& optionals
 )
 {
     string& token = iterator.currentToken;
     if (storeInfo.type.isValid(metaData.classStore))
     {
-        Result<void> result = storeArgument(iterator, storeInfo, metaData, args);
+        Result<void> result = storeArgument(iterator, storeInfo, metaData, args, optionals);
         if (result.hasError)
             return result.error;
     }
@@ -84,12 +98,12 @@ static inline Result<RawType> storeLastArgument
     return returnType.value();
 }
 
-
-Result<vector<ArgumentInfo>> storeArguments(TokenIterator& iterator, MetaData& metaData, RawType& returnType)
+Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& returnType)
 {
     StoreArgsInfo storeInfo;
     uint32_t& openBracketCounter = storeInfo.openBracketCounter;
     vector<ArgumentInfo> args;
+    vector<ArgumentInfo> optionals;
 
     string& token = iterator.currentToken;
     while(iterator.nextToken())
@@ -97,7 +111,7 @@ Result<vector<ArgumentInfo>> storeArguments(TokenIterator& iterator, MetaData& m
         Result<RawType> typeResult = getRawType(iterator, metaData.classStore);
         if (token == ",")
         {
-            Result<void> result = storeArgument(iterator, storeInfo, metaData, args);
+            Result<void> result = storeArgument(iterator, storeInfo, metaData, args, optionals);
             if (result.hasError)
                 return result.error;
         }
@@ -109,12 +123,12 @@ Result<vector<ArgumentInfo>> storeArguments(TokenIterator& iterator, MetaData& m
         {
             if(openBracketCounter <= 1)
             {
-                Result<RawType> result = storeLastArgument(iterator, storeInfo, metaData, args);
+                Result<RawType> result = storeLastArgument(iterator, storeInfo, metaData, args, optionals);
                 if (result.hasError)
                     return result.error;
 
                 returnType = result.value();
-                return args;
+                return StoreArguments_Result(args, optionals);
             }
 
             openBracketCounter--;
@@ -126,6 +140,23 @@ Result<vector<ArgumentInfo>> storeArguments(TokenIterator& iterator, MetaData& m
         else if(token == "=")
         {
             storeInfo.isOptional = true;
+
+            if (!iterator.nextToken())
+                break;
+
+            RawType type;
+            Result<shared_ptr<SuperExpression>> expression = convertExpression(iterator, metaData, context, { ",", ")" }, &type);
+            if (expression.hasError)
+                return expression.error;
+
+            if (!iterator.nextToken(/*steps*/ -1))
+                break;
+
+            Result<void> areCompatible = storeInfo.type.areTypeCompatible(type, metaData.classStore, iterator.currentLine);
+            if (areCompatible.hasError)
+                return ErrorInfo("optional defaultValue:\n" + areCompatible.error.message, areCompatible.error.lineNumber);
+
+            storeInfo.defaultValue = expression.value();
         }
         else if (!typeResult.hasError)
         {

@@ -4,37 +4,59 @@
 func ctor();
 func println(str msg);
 func print(str msg);
-func assertThrow(bool condition, str msg);
-func assertFail(bool condition, str msg);
+func checkThrow(bool condition, str msg);
+func checkFail(bool condition, str msg);
 struct func;
 struct pub;
 struct priv;
 struct delete;
 struct mut;
+class i8;
+class i16;
 class i32;
-class f64;
+class i64;
+class ui8;
+class ui16;
+class ui32;
 class ui64;
+class f32;
+class f64;
 class str;
 class none;
 class f;
 # endInvis
 
-func test(i32 foo, mut f64 bar): str& 
+func test(): str &
+{
+    return "foo";
+}
+
+func test(str foo, mut f64 bar = 2): str&
+{
+    return "foo";
+}
+
+func test(i32 foo, mut f64 bar): str &
 {
     i32 assingVar;
-    assingVar = 1 + 2;//(2 * (2 + 3));
+    assingVar = 1 + 2;
     assingVar += 1;
 
-    f64 initVar = 2.1;//((6 * (6 * 7 + 5)) % 15) / 2.36;
+    f64 initVar = 2.1;
     i8 typeConvertion = assingVar;
 
-    //assertFail(idk == 10, f"value:{foo}, should be 10")
+    checkFail(assingVar == 10, f"value:{foo}, is not 10");
+    return "foo";
 }
 
 func main(): i32
 {
-    test(1 + 2, 2.0);
+    test();
+    str result = test(1 + 2, 2.0);
+
+    test("foo");
+    str result2 = test(bar: 2, "foo");
 
     //print("");
-    //println("hello world");
+    println("hello world");
 }

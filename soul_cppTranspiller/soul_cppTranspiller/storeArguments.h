@@ -6,6 +6,18 @@
 #include "Result.h"
 #include "MetaData.h"
 #include "ArgumentInfo.h"
+#include "CurrentContext.h"
 
+struct StoreArguments_Result
+{
+	std::vector<ArgumentInfo> args;
+	std::vector<ArgumentInfo> optionals;
 
-Result<std::vector<ArgumentInfo>> storeArguments(TokenIterator& iterator, MetaData& metaData, RawType& returnType);
+	StoreArguments_Result() = default;
+	StoreArguments_Result(std::vector<ArgumentInfo>& args, std::vector<ArgumentInfo>& optionals)
+		: args(args), optionals(optionals)
+	{
+	}
+};
+
+Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& returnType);

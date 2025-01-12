@@ -10,7 +10,7 @@ class EmptyExpression : public SuperExpression
 
 	std::string printToString() const override
 	{
-		return "";
+		return "<EmptyExpression>";
 	}
 
 	SyntaxNodeId getId() const override

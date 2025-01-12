@@ -16,9 +16,10 @@ enum class SyntaxNodeId
 	Literal,
 	BinairyExpression,
 	Increment,
-	NoExpression,
 	FunctionCall,
+	ReturnStatment,
 	EmptyExpresion,
+	Optional,
 
 	/*classNodes*/
 	ClassNode,
