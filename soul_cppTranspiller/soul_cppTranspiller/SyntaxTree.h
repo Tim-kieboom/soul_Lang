@@ -8,7 +8,7 @@
 class SyntaxTree : public ISyntaxNode 
 {
 public:
-	std::vector<std::shared_ptr<InitializeVariable>> globalVariables;
+	std::vector<std::shared_ptr<SuperStatement>> globalVariables;
 	std::vector<std::shared_ptr<SuperMainNode>> funcsAndClasses;
 
 	void print() const override

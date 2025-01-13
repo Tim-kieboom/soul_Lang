@@ -132,8 +132,7 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 		}
 		else if(metaData.isFunction(token))
 		{
-			RawType noneType = RawType(toString(PrimitiveType::none), true);
-			Result<shared_ptr<FunctionCall>> funcResult = convertFunctionCall(iterator, metaData, context, token, noneType);
+			Result<shared_ptr<FunctionCall>> funcResult = convertFunctionCall(iterator, metaData, context, token);
 			if (funcResult.hasError)
 				return funcResult.error;
 

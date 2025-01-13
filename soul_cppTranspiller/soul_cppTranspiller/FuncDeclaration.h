@@ -18,16 +18,22 @@ struct FuncDeclaration
 		for (const ArgumentInfo& arg : args_)
 		{
 			if (arg.isOptional)
-				optionals[arg.argName] = arg;
+				pushOptional(arg);
 			else
 				args.push_back(arg);
 		}
 	}
 
-	void pushOptionals(std::vector<ArgumentInfo>& optionals_)
+	void pushOptional(ArgumentInfo arg)
 	{
-		for(auto& arg : optionals_)
-			optionals[arg.argName] = arg;
+		arg.argPosition = optionals.size();
+		optionals[arg.argName] = arg;
+	}
+
+	void pushOptionals(const std::vector<ArgumentInfo>& optionals_)
+	{
+		for (const ArgumentInfo& arg : optionals_)
+			pushOptional(arg);
 	}
 
 	void print() const

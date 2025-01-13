@@ -386,5 +386,8 @@
     <ClInclude Include="Optional.h">
       <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
     </ClInclude>
+    <ClInclude Include="StringLiteral.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

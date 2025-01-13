@@ -14,6 +14,7 @@ enum class SyntaxNodeId
 	/*expressions*/
 	Variable,
 	Literal,
+	StringLiteral,
 	BinairyExpression,
 	Increment,
 	FunctionCall,

@@ -191,6 +191,7 @@
     <ClInclude Include="ScopeIterator.h" />
     <ClInclude Include="soulChecker.h" />
     <ClInclude Include="storeArguments.h" />
+    <ClInclude Include="StringLiteral.h" />
     <ClInclude Include="SuperExpression.h" />
     <ClInclude Include="FieldNode.h" />
     <ClInclude Include="FuncDeclaration.h" />

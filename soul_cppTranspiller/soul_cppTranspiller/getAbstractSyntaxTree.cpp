@@ -1,6 +1,8 @@
 #include "getAbstractSyntaxTree.h"
 #include "Nesting.h"
+#include "Assignment.h"
 #include "convertBody.h"
+#include "StringLiteral.h"
 #include "internalFuntions.h"
 #include "getFunctionDeclaration.h"
 
@@ -25,6 +27,13 @@ static inline void addArgsToScope(vector<Nesting>& funcScope, FuncDeclaration& f
         VarInfo var = VarInfo(arg.argName, toString(arg.valueType), arg.isOptional);
         funcNesting.addVariable(var);
     }
+
+    for (const auto& kv : funcDecl.optionals)
+    {
+        const auto& arg = kv.second;
+        VarInfo var = VarInfo(arg.argName, toString(arg.valueType), arg.isOptional);
+        funcNesting.addVariable(var);
+    }
 }
 
 static inline void addC_strToGlobalScope(MetaData& metaData, SyntaxTree& tree)
@@ -42,6 +51,11 @@ static inline void addC_strToGlobalScope(MetaData& metaData, SyntaxTree& tree)
         tree.globalVariables.push_back
         (
             make_shared<InitializeVariable>(InitializeVariable("const str", pair.second.name))
+        );
+
+        tree.globalVariables.push_back
+        (
+            make_shared<Assignment>(Assignment(pair.second.name, make_shared<StringLiteral>(StringLiteral(pair.second.value))))
         );
     }
 }

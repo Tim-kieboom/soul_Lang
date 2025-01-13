@@ -26,6 +26,11 @@ class none;
 class f;
 # endInvis
 
+//func increment(out i32 foo): none
+//{
+//    foo++;
+//}
+
 func test(): str &
 {
     return "foo";
@@ -33,6 +38,8 @@ func test(): str &
 
 func test(str foo, mut f64 bar = 2): str&
 {
+    println(bar);
+
     return "foo";
 }
 
@@ -49,14 +56,31 @@ func test(i32 foo, mut f64 bar): str &
     return "foo";
 }
 
+func testOptional(i32 bar, str name = "tim", f32 float, i32 optional = 2): none 
+{
+
+}
+
 func main(): i32
 {
-    test();
-    str result = test(1 + 2, 2.0);
+    testOptional(1, 2);
+    testOptional(name: "bob", 1, optional: 3, 2);
 
-    test("foo");
-    str result2 = test(bar: 2, "foo");
+    //test();
+    //str result = test(1 + 2, 2.0);
+
+    //test("foo");
+    //str result2 = test("foo", bar: 2.0);
 
     //print("");
-    println("hello world");
+    //println("hello world");
+
+
+    //i32 foo;
+    //increment(out foo);
+
+    //increment(out i32 far);
+
+    //f64 bar;
+    //increment(out bar);
 }

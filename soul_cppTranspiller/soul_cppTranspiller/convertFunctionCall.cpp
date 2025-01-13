@@ -9,12 +9,12 @@ struct GetArgs_Result
 {
     vector<ArgumentInfo> args;
     vector<ArgumentInfo> optionals;
-    vector<shared_ptr<SuperExpression>> expressions;
+    vector<pair<bool, shared_ptr<SuperExpression>>> expressions;
 
     GetArgs_Result() = default;
     void push(RawType& type, int64_t argPosition, const std::string& argName, ArgumentType argType, shared_ptr<SuperExpression>& expression, bool isOptional)
     {
-        expressions.push_back(expression);
+        expressions.emplace_back(isOptional, expression);
 
         if (isOptional)
         {
@@ -82,8 +82,6 @@ static inline Result<GetArgs_Result> _getArgs(TokenIterator& iterator, MetaData&
             return expressionResult.error;
                  
         shared_ptr<SuperExpression> expression = expressionResult.value();
-        if (isOptional)
-            expression = make_shared<Optional>(Optional(expression, argName));
 
         args.push(expressionType, argPosition, argName, argType, expression, isOptional);
         if(!isOptional)
@@ -91,6 +89,46 @@ static inline Result<GetArgs_Result> _getArgs(TokenIterator& iterator, MetaData&
     }
 
     return args;
+}
+
+static inline Result<vector<shared_ptr<SuperExpression>>> getExpressionVector(GetArgs_Result& argsResult, FuncDeclaration& funcInfo)
+{
+    constexpr bool isOptional = true;
+
+    vector<shared_ptr<SuperExpression>> normalExpressions;
+    normalExpressions.reserve(funcInfo.args.size() + funcInfo.optionals.size());
+    vector<shared_ptr<SuperExpression>> optionalExpressions;
+    optionalExpressions.resize(funcInfo.optionals.size());
+
+    for(const auto& kv : funcInfo.optionals)
+    {
+        const ArgumentInfo& arg = kv.second;
+        optionalExpressions.at(arg.argPosition) = arg.defaultValue;
+    }
+
+    ArgumentInfo arg;
+    uint64_t argsI = 0;
+    uint64_t optionalsI = 0;
+    for(uint64_t i = 0; i < argsResult.expressions.size(); i++)
+    {
+        pair<bool, shared_ptr<SuperExpression>>& expression = argsResult.expressions.at(i);
+
+        if(expression.first == isOptional)
+        {
+            arg = argsResult.optionals.at(optionalsI++);
+            uint64_t& argPostion = funcInfo.optionals[arg.argName].argPosition;
+            optionalExpressions.at(argPostion) = expression.second;
+        }
+        else
+        {
+            normalExpressions.push_back(expression.second);
+        }
+    }
+
+    for (shared_ptr<SuperExpression>& optional : optionalExpressions)
+        normalExpressions.push_back(optional);
+
+    return normalExpressions;
 }
 
 static inline Result<std::shared_ptr<FunctionCall>> _convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName, RawType* shouldBeType = nullptr)
@@ -123,9 +161,13 @@ static inline Result<std::shared_ptr<FunctionCall>> _convertFunctionCall(TokenIt
             return isCompatible.error;
     }
 
+    Result<vector<shared_ptr<SuperExpression>>> expressions = getExpressionVector(args, funcInfo);
+    if (expressions.hasError)
+        return expressions.error;
+
     return make_shared<FunctionCall>
         (
-            FunctionCall(funcName, funcInfo.returnType, funcInfo, args.expressions)
+            FunctionCall(funcName, funcInfo.returnType, funcInfo, expressions.value())
         );
 }
 
