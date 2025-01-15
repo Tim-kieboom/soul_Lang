@@ -5,4 +5,4 @@
 #include "Assignment.h"
 #include "CurrentContext.h"
 
-Result<std::shared_ptr<Assignment>> convertAssignment(TokenIterator& iterator, MetaData& metaData, VarInfo& varInfo, CurrentContext& context);
+Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterator, MetaData& metaData, VarInfo* varInfo, CurrentContext& context);

@@ -32,7 +32,7 @@ std::string toString(ArgumentType type)
 	}
 }
 
-std::string toString(ArgumentInfo& arg)
+std::string toString(const ArgumentInfo& arg)
 {
 	stringstream ss;
 	if (arg.argType != ArgumentType::invalid && arg.argType != ArgumentType::default_)
@@ -41,7 +41,7 @@ std::string toString(ArgumentInfo& arg)
 	ss << toString(arg.valueType) << ' ' << arg.argName;
 
 	if (arg.isOptional)
-		ss << ' ' << "= <value>";
+		ss << ' ' << "= " << arg.defaultValue->printToString();
 
 	return ss.str();
 }

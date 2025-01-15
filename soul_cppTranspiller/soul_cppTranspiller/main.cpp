@@ -152,7 +152,7 @@ int main(int argc, char* argv[])
         Result<SyntaxTree> syntaxTreeResult = getAbstractSyntaxTree(TokenIterator(tokens), metaData);
         if (syntaxTreeResult.hasError)
         {
-            cout << "transpillerError: " << syntaxTreeResult.error.message << ", onLine: " << syntaxTreeResult.error.lineNumber;
+            cout << "transpillerError: \n" << syntaxTreeResult.error.message << ", onLine: " << syntaxTreeResult.error.lineNumber;
             exit(1);
         }
 

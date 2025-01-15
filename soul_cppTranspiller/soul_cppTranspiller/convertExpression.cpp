@@ -59,7 +59,7 @@ static inline ErrorInfo ERROR_convertExpression_outOfBounds(TokenIterator& itera
     return ErrorInfo("unexpected end while parsing BinaryExpression", iterator.currentLine);
 }
 
-static inline bool isVariable(Result<VarInfo>& varResult)
+static inline bool isVariable(Result<VarInfo*>& varResult)
 {
     return !varResult.hasError;
 }
@@ -89,10 +89,12 @@ static inline Result<void> makeAndPush_BinairyExpression(Stack<shared_ptr<SuperE
     return {};
 }
 
-static inline Result<shared_ptr<SuperExpression>> _convertExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, initializer_list<const char*> endTokens, RawType* shouldBeType, RawType* isType)
+static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, initializer_list<const char*> endTokens, RawType* shouldBeType, RawType* isType, bool shouldBeMutable)
 {
     if (!iterator.nextToken(/*steps:*/-1))
         return ERROR_convertExpression_outOfBounds(iterator);
+
+    BodyStatment_Result<SuperExpression> bodyResult;
 
     string& token = iterator.currentToken;
     Stack<shared_ptr<SuperExpression>> nodeStack;
@@ -102,7 +104,7 @@ static inline Result<shared_ptr<SuperExpression>> _convertExpression(TokenIterat
     while (iterator.nextToken())
     {
         Result<RawType> literalType = getRawType_fromLiteralValue(token, iterator.currentLine);
-        Result<VarInfo> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
+        Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 
         if (token == "(")
         {
@@ -138,29 +140,37 @@ static inline Result<shared_ptr<SuperExpression>> _convertExpression(TokenIterat
         }
         else if (metaData.isFunction(token))
         {
-            Result<shared_ptr<FunctionCall>> funcCall = convertFunctionCall(iterator, metaData, context, token);
-            if (funcCall.hasError)
-                return funcCall.error;
+            Result<BodyStatment_Result<FunctionCall>> funcCallResult = convertFunctionCall(iterator, metaData, context, token);
+            if (funcCallResult.hasError)
+                return funcCallResult.error;
+
+            bodyResult.addToBodyResult(funcCallResult.value());
+            shared_ptr<FunctionCall> funcCall = funcCallResult.value().expression;
 
             if (isType != nullptr)
             {
-                Result<RawType> type = getRawType_fromStringedRawType(funcCall.value()->getReturnType(), metaData.classStore, iterator.currentLine);
+                Result<RawType> type = getRawType_fromStringedRawType(funcCall->getReturnType(), metaData.classStore, iterator.currentLine);
                 if (type.hasError)
                     return type.error;
 
                 *isType = type.value();
             }
 
-            nodeStack.push(funcCall.value());
+            nodeStack.push(funcCall);
         }
         else
         {
             if (isVariable(varResult))
             {
-                Result<RawType> varType = getRawType_fromStringedRawType(varResult.value().stringedRawType, metaData.classStore, iterator.currentLine);
+
+                Result<RawType> varType = getRawType_fromStringedRawType(varResult.value()->stringedRawType, metaData.classStore, iterator.currentLine);
                 if (varType.hasError)
                     return varType.error;
 
+                bool canMutate = varType.value().isMutable || !varResult.value()->isAssigned;
+                if(shouldBeMutable && !canMutate)
+                    return ErrorInfo("can not change a const value, var: \'" + varResult.value()->name + "\', type: \'" + varResult.value()->stringedRawType + "\'", iterator.currentLine);
+                
                 if (isType != nullptr)
                     *isType = varType.value();
 
@@ -198,17 +208,21 @@ static inline Result<shared_ptr<SuperExpression>> _convertExpression(TokenIterat
     }
 
     if (nodeStack.empty())
-        return dynamic_pointer_cast<SuperExpression>(emptyExpression);
+    {
+        bodyResult.expression = dynamic_pointer_cast<SuperExpression>(emptyExpression);
+        return bodyResult;
+    }
 
-    return nodeStack.pop();
+    bodyResult.expression = nodeStack.pop();
+    return bodyResult;
 }
 
-Result<shared_ptr<SuperExpression>> convertExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, initializer_list<const char*> endTokens, RawType* isType)
+Result<BodyStatment_Result<SuperExpression>> convertExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, initializer_list<const char*> endTokens, bool shouldBeMutable, RawType* isType)
 {
-    return _convertExpression(iterator, metaData, context, endTokens, nullptr, isType);
+    return _convertExpression(iterator, metaData, context, endTokens, nullptr, isType, shouldBeMutable);
 }
 
-Result<shared_ptr<SuperExpression>> convertExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& shouldBeType, initializer_list<const char*> endTokens, RawType* isType)
+Result<BodyStatment_Result<SuperExpression>> convertExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& shouldBeType, initializer_list<const char*> endTokens, bool shouldBeMutable, RawType* isType)
 {
-    return _convertExpression(iterator, metaData, context, endTokens, &shouldBeType, isType);
+    return _convertExpression(iterator, metaData, context, endTokens, &shouldBeType, isType, shouldBeMutable);
 }

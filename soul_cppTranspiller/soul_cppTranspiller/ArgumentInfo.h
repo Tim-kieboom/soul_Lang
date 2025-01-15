@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "Type.h"
+#include "Result.h"
 #include "SuperExpression.h"
 
 enum class ArgumentType
@@ -12,8 +13,12 @@ enum class ArgumentType
 	out
 };
 
+struct ArgumentInfo;
+
 ArgumentType getArgumentType(const std::string& token);
 std::string toString(ArgumentType type);
+std::string toString(const ArgumentInfo& arg);
+std::string toString(std::vector<ArgumentInfo>& args);
 
 struct ArgumentInfo
 {
@@ -32,21 +37,26 @@ struct ArgumentInfo
 		: isOptional(isOptional), valueType(valueType), argName(argName), argType(argType), argPosition(argPosition), canBeMultiple(canBeMultiple)
 	{
 	}
-
-	bool Compatible(const ArgumentInfo& other, std::unordered_map<std::string, ClassInfo>& classStore) const
+	 
+	Result<void> Compatible(const ArgumentInfo& other, std::unordered_map<std::string, ClassInfo>& classStore, int64_t currentLine) const
 	{
 		if (isOptional != other.isOptional)
-			return false;
-			
-		if (argType == ArgumentType::out && other.argType != ArgumentType::out)
-			return false;
+		{
+			return ErrorInfo("Argument1 is and Argument2 both need to be optional", currentLine);
+		}
 
-		if (valueType.areTypeCompatible(other.valueType, classStore, 0).hasError)
-			return false;
+		if(argType == ArgumentType::out)
+		{
+			if (other.argType != ArgumentType::out)
+				return ErrorInfo();
 
-		return true;
+			return other.valueType.isEqual(valueType, classStore, currentLine);
+		}
+
+		Result<void> result = valueType.areTypeCompatible(other.valueType, classStore, currentLine);
+		if (result.hasError)
+			return result.error;
+	
+		return {};
 	}
 };
-
-std::string toString(ArgumentInfo& arg);
-std::string toString(std::vector<ArgumentInfo>& args);

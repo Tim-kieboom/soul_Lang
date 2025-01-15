@@ -5,4 +5,4 @@
 #include "CurrentContext.h"
 #include "ReturnStatment.h"
 
-Result<std::shared_ptr<ReturnStatment>> convertReturnStatment(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& returnType);
+Result<BodyStatment_Result<ReturnStatment>> convertReturnStatment(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& returnType);

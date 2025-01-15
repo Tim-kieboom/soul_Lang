@@ -54,12 +54,12 @@ struct Nesting
         vars.push_back(info);
     }
 
-    Result<VarInfo> tryGetVariable(const std::string& name, const std::vector<Nesting>& scope, const std::vector<VarInfo>& globalScope)
+    Result<VarInfo*> tryGetVariable(const std::string& name, std::vector<Nesting>& scope, std::vector<VarInfo>& globalScope)
     {
-        for (const VarInfo& varInfo : vars)
+        for (VarInfo& varInfo : vars)
         {
             if (varInfo.name == name)
-                return varInfo;
+                return &varInfo;
         }
 
         int64_t prevIndex = INT64_MIN;
@@ -72,21 +72,21 @@ struct Nesting
             if (currentIndex == this->selfIndex)
                 throw std::exception("Nesting ref's itself");
 
-            const Nesting& parent = scope.at(currentIndex);
-            for (const VarInfo& varInfo : parent.vars)
+            Nesting& parent = scope.at(currentIndex);
+            for (VarInfo& varInfo : parent.vars)
             {
                 if (varInfo.name == name)
-                    return varInfo;
+                    return &varInfo;
             }
 
             prevIndex = currentIndex;
             currentIndex = parent.parentIndex;
         }
 
-        for (const VarInfo& varInfo : globalScope)
+        for (VarInfo& varInfo : globalScope)
         {
             if (varInfo.name == name)
-                return varInfo;
+                return &varInfo;
         }
 
         return ErrorInfo("tryGetVariable(): varNotFound", 0);

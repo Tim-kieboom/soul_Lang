@@ -2,7 +2,7 @@
 #include "convertExpression.h"
 using namespace std;
 
-Result<std::shared_ptr<ReturnStatment>> convertReturnStatment(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& returnType)
+Result<BodyStatment_Result<ReturnStatment>> convertReturnStatment(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& returnType)
 {
     string& token = iterator.currentToken;
 
@@ -13,12 +13,18 @@ Result<std::shared_ptr<ReturnStatment>> convertReturnStatment(TokenIterator& ite
         return ErrorInfo("unexpected end while parsing ReturnStatment", iterator.currentLine);
 
     RawType type;
-    Result<std::shared_ptr<SuperExpression>> expression = convertExpression(iterator, metaData, context, { ";" }, /*isType:*/&type);
+    Result<BodyStatment_Result<SuperExpression>> expression = convertExpression(iterator, metaData, context, { ";" }, false, /*isType:*/&type);
     if (expression.hasError)
         return expression.error;
 
     if (type.areTypeCompatible(returnType, metaData.classStore, iterator.currentLine).hasError)
         return ErrorInfo("trying to return type: \'" + toString(type) + "\', while return type is returnType: \'" + toString(returnType) + "\'", iterator.currentLine);
 
-    return make_shared<ReturnStatment>(ReturnStatment(expression.value()));
+    BodyStatment_Result<ReturnStatment> bodyResult
+    (
+        make_shared<ReturnStatment>(ReturnStatment(expression.value().expression))
+    );
+
+    bodyResult.addToBodyResult(expression.value());
+    return bodyResult;
 }

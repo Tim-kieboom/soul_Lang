@@ -42,14 +42,16 @@ static inline Result<void> storeArgument
     ArgumentType& argType = storeInfo.argType;
     uint64_t& argumentPosition = storeInfo.argumentPosition;
 
-    if(!type.isValid(metaData.classStore))
-        return ErrorInfo("valueType of argument is invalid argumentNumber: \'" + argumentPosition + string("\'"), iterator.currentLine);
-
     if (argName.empty())
-        return ErrorInfo("no name given to argument, argument type: \'" + toString(type) + "\'", iterator.currentLine);
+        return ErrorInfo("no name given to argument, argumentNumber: \'" + argumentPosition + string("\',") + "argument type : \'" + toString(type) + "\'", iterator.currentLine);
+
+    if (!type.isValid(metaData.classStore))
+        return ErrorInfo("valueType of argument is invalid, argument: \'" + argName + "\'", iterator.currentLine);
+
+    if (type.isRefrence())
+        return ErrorInfo("Argument type can not be a refrence, argument: \'" + argName + "\'", iterator.currentLine);
 
     ArgumentInfo arg = ArgumentInfo(storeInfo.isOptional, type, argName, argType, argumentPosition);
-    
     
     if (arg.isOptional)
     {
@@ -145,7 +147,7 @@ Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& 
                 break;
 
             RawType type;
-            Result<shared_ptr<SuperExpression>> expression = convertExpression(iterator, metaData, context, { ",", ")" }, &type);
+            Result<BodyStatment_Result<SuperExpression>> expression = convertExpression(iterator, metaData, context, { ",", ")" }, false, &type);
             if (expression.hasError)
                 return expression.error;
 
@@ -156,7 +158,7 @@ Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& 
             if (areCompatible.hasError)
                 return ErrorInfo("optional defaultValue:\n" + areCompatible.error.message, areCompatible.error.lineNumber);
 
-            storeInfo.defaultValue = expression.value();
+            storeInfo.defaultValue = expression.value().expression;
         }
         else if (!typeResult.hasError)
         {

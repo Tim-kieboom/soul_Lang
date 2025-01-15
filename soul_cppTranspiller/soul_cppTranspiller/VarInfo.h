@@ -6,6 +6,7 @@ struct VarInfo
 	std::string name;
 	std::string stringedRawType;
 	bool isOption = false;
+	bool isAssigned = false;
 
 	VarInfo() = default;
 	

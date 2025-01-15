@@ -5,4 +5,4 @@
 #include "InitVariable.h"
 #include "CurrentContext.h"
 
-Result<std::vector<std::shared_ptr<SuperStatement>>> convertInitVariable(TokenIterator& iterator, MetaData& metaData, RawType& type, CurrentContext& context);
+Result<BodyStatment_Result<InitializeVariable>> convertInitVariable(TokenIterator& iterator, MetaData& metaData, RawType& type, CurrentContext& context);

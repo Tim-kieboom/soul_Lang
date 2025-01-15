@@ -150,6 +150,7 @@
     <ClCompile Include="string_remove.cpp" />
     <ClCompile Include="string_replace.cpp" />
     <ClCompile Include="string_split.cpp" />
+    <ClCompile Include="SyntaxNodeId.cpp" />
     <ClCompile Include="SyntaxTree_Operator.cpp" />
     <ClCompile Include="tokenizer.cpp" />
     <ClCompile Include="Type.cpp" />
@@ -162,6 +163,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClassInfo.h" />
+    <ClInclude Include="CompileConstVariable.h" />
     <ClInclude Include="convertAssignment.h" />
     <ClInclude Include="convertExpression.h" />
     <ClInclude Include="convertBody.h" />
@@ -187,6 +189,7 @@
     <ClInclude Include="Nesting.h" />
     <ClInclude Include="Optional.h" />
     <ClInclude Include="PrimitiveType.h" />
+    <ClInclude Include="Refrence.h" />
     <ClInclude Include="ReturnStatment.h" />
     <ClInclude Include="ScopeIterator.h" />
     <ClInclude Include="soulChecker.h" />

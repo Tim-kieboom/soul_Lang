@@ -19,7 +19,7 @@ static inline bool isType(Result<RawType>& typeResult)
 	return !typeResult.hasError;
 }
 
-static inline bool isVariable(Result<VarInfo>& varResult)
+static inline bool isVariable(Result<VarInfo*>& varResult)
 {
 	return !varResult.hasError;
 }
@@ -37,25 +37,37 @@ static inline Result<shared_ptr<Assignment>> _convertBeforeVarIncrement(TokenIte
 	if (!iterator.nextToken())
 		return ERROR_convertBody_outOfBounds(funcInfo, iterator);
 
-	Result<VarInfo> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
+	Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 	if (varResult.hasError)
 		return ErrorInfo("token after \'" + incrementToken + "\' has to be a variable", iterator.currentLine);
 
-	VarInfo& var = varResult.value();
+	VarInfo* var = varResult.value();
 
-	Result<RawType> typeResult = getRawType_fromStringedRawType(var.stringedRawType, metaData.classStore, iterator.currentLine);
+	Result<RawType> typeResult = getRawType_fromStringedRawType((*var).stringedRawType, metaData.classStore, iterator.currentLine);
 	if (typeResult.hasError)
 		return typeResult.error;
 
 	if (getDuckType(typeResult.value()) != DuckType::number)
-		return ErrorInfo("variable: \'" + var.name + "\' has to be of DuckType::number to use de/increment", iterator.currentLine);
+		return ErrorInfo("variable: \'" + (*var).name + "\' has to be of DuckType::number to use de/increment", iterator.currentLine);
 
 	Increment increment = Increment(true, (token == "--"), 1);
 
 	return make_shared<Assignment>
 		(
-			Assignment(var.name, make_shared<Increment>(increment))
+			Assignment((*var).name, make_shared<Increment>(increment))
 		);
+}
+
+template <typename T>
+static inline void addBodyResult_ToBody(/*out*/shared_ptr<BodyNode>& body, BodyStatment_Result<T>& bodyResult, shared_ptr<SuperStatement> statment)
+{
+	for (auto& statment_ : bodyResult.beforeStatment)
+		body->addStatment(statment_);
+
+	body->addStatment(statment);
+
+	for (auto& statment_ : bodyResult.afterStatment)
+		body->addStatment(statment_);
 }
 
 Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context)
@@ -82,7 +94,7 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 	uint32_t openCurlyBracketCounter = 0;
 	while (iterator.nextToken())
 	{
-		if (iterator.currentLine == 21)
+		if (iterator.currentLine == 74)
 			int f = 0;
 
 		if (token == "{")
@@ -104,7 +116,7 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 		}
 
 		Result<RawType> typeResult = getRawType(iterator, metaData.classStore);
-		Result<VarInfo> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
+		Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 
 		if (initListEquals({ "++", "--" }, token))
 		{
@@ -116,39 +128,49 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 		}
 		else if(isType(typeResult))
 		{
-			Result<vector<shared_ptr<SuperStatement>>> assignResult = convertInitVariable(iterator, metaData, typeResult.value(), context);
-			if (assignResult.hasError)
-				return assignResult.error;
+			Result<BodyStatment_Result<InitializeVariable>> initResult = convertInitVariable(iterator, metaData, typeResult.value(), context);
+			if (initResult.hasError)
+				return initResult.error;
 
-			body->addStatment(assignResult.value());
+			BodyStatment_Result<InitializeVariable>& init = initResult.value();
+			addBodyResult_ToBody(/*out*/body, init, init.expression);
 		}
 		else if(isVariable(varResult))
 		{
-			Result<shared_ptr<Assignment>> assignResult = convertAssignment(iterator, metaData, varResult.value(), context);
+			Result<BodyStatment_Result<Assignment>> assignResult = convertAssignment(iterator, metaData, varResult.value(), context);
 			if (assignResult.hasError)
 				return assignResult.error;
 
-			body->addStatment(assignResult.value());
+			BodyStatment_Result<Assignment>& assign = assignResult.value();
+			addBodyResult_ToBody(/*out*/body, assign, assign.expression);
 		}
 		else if(metaData.isFunction(token))
 		{
-			Result<shared_ptr<FunctionCall>> funcResult = convertFunctionCall(iterator, metaData, context, token);
+			Result<BodyStatment_Result<FunctionCall>> funcResult = convertFunctionCall(iterator, metaData, context, token);
 			if (funcResult.hasError)
 				return funcResult.error;
 
-			body->addStatment
-			(
-				make_shared<FunctionCallStatment>(FunctionCallStatment(funcResult.value()))
-			);
+			BodyStatment_Result<FunctionCall>& funcCall = funcResult.value();
+			shared_ptr<FunctionCallStatment> funcStatment = make_shared<FunctionCallStatment>(FunctionCallStatment(funcCall.expression));
+			addBodyResult_ToBody(/*out*/body, funcCall, funcStatment);
+
+			if (!iterator.nextToken())
+				break;
 		}
 		else if(token == "return")
 		{
-			Result<shared_ptr<ReturnStatment>> returnResult = convertReturnStatment(iterator, metaData, context, returnType);
+			Result<BodyStatment_Result<ReturnStatment>> returnResult = convertReturnStatment(iterator, metaData, context, returnType);
 			if (returnResult.hasError)
 				return returnResult.error;
 
-			body->addStatment(returnResult.value());
+			BodyStatment_Result<ReturnStatment>& returnStatment = returnResult.value();
+			addBodyResult_ToBody(/*out*/body, returnStatment, returnStatment.expression);
+
 			hasReturnStatment = true;
+		}
+		else
+		{
+			return ErrorInfo("unknown token: \'" +token+ "\'", iterator.currentLine);
 		}
 	}
 

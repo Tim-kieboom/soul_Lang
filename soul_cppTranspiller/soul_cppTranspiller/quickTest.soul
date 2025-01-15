@@ -26,20 +26,20 @@ class none;
 class f;
 # endInvis
 
-//func increment(out i32 foo): none
-//{
-//    foo++;
-//}
+func increment(out i32 foo): none
+{
+    foo++;
+}
 
-func test(): str &
+func test(): str
 {
     return "foo";
 }
 
-func test(str foo, mut f64 bar = 2): str&
+func test(mut str foo, mut f64 bar = 2): str&
 {
     println(bar);
-
+    foo = 2;
     return "foo";
 }
 
@@ -61,10 +61,18 @@ func testOptional(i32 bar, str name = "tim", f32 float, i32 optional = 2): none
 
 }
 
+func function(out i32 ref): none { }
+
 func main(): i32
 {
+    i32 constexpre = 1; 
+
     testOptional(1, 2);
     testOptional(name: "bob", 1, optional: 3, 2);
+
+    i32 int = 1;
+    i32& ref = int;
+function(out ref);
 
     //test();
     //str result = test(1 + 2, 2.0);
@@ -76,11 +84,9 @@ func main(): i32
     //println("hello world");
 
 
-    //i32 foo;
-    //increment(out foo);
+    i32 foo = 0;
+    increment(out foo);
+    println(foo);
 
-    //increment(out i32 far);
-
-    //f64 bar;
-    //increment(out bar);
+    increment(out i32 far);
 }

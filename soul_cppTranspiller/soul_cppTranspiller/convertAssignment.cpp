@@ -19,7 +19,7 @@ static inline ErrorInfo ERROR_convertAssignment_outOfBounds(TokenIterator& itera
 	return ErrorInfo("unexpected end while converting Assingment", iterator.currentLine);
 }
 
-static inline Result<void> _isSymboolAllowed(string& symbool, MetaData& metaData, VarInfo& varInfo, RawType& type, const TokenIterator& iterator)
+static inline Result<void> _isSymboolAllowed(string& symbool, MetaData& metaData, VarInfo* varInfo, RawType& type, const TokenIterator& iterator)
 {
 	static const initializer_list<const char*> allowed_ArraySymbols = { "[", "=" };
 	static const initializer_list<const char*> allowed_PointerSymbols = { ".", "=" };
@@ -41,8 +41,9 @@ static inline Result<void> _isSymboolAllowed(string& symbool, MetaData& metaData
 		allowedSymbols = allowed_DefaultSymbols;
 	}
 
-	if (!type.isMutable && !initListEquals(allowed_ConstSymbols, symbool))
-		return ErrorInfo("can not change a const value, var: \'" + varInfo.name + "\', type: \'" + varInfo.stringedRawType + "\'", iterator.currentLine);
+	bool canMutate = type.isMutable || !varInfo->isAssigned;
+	if (!canMutate && !initListEquals(allowed_ConstSymbols, symbool))
+		return ErrorInfo("can not change a const value, var: \'" + varInfo->name + "\', type: \'" + varInfo->stringedRawType + "\'", iterator.currentLine);
 
 	if (!initListEquals(allowedSymbols, symbool))
 		return ErrorInfo("invalid symbol after variable symbool: \'" + symbool + "\'", iterator.currentLine);
@@ -120,9 +121,9 @@ static inline shared_ptr<SuperExpression> addCompountAssignment(const std::strin
 	return expression;
 }
 
-Result<shared_ptr<Assignment>> convertAssignment(TokenIterator& iterator, MetaData& metaData, VarInfo& varInfo, CurrentContext& context)
+Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterator, MetaData& metaData, VarInfo* varInfo, CurrentContext& context)
 {
-	Result<RawType> typeResult = getRawType_fromStringedRawType(varInfo.stringedRawType, metaData.classStore, iterator.currentLine);
+	Result<RawType> typeResult = getRawType_fromStringedRawType(varInfo->stringedRawType, metaData.classStore, iterator.currentLine);
 	if (typeResult.hasError)
 		return typeResult.error;
 
@@ -136,6 +137,8 @@ Result<shared_ptr<Assignment>> convertAssignment(TokenIterator& iterator, MetaDa
 	Result<void> isAllowed = _isSymboolAllowed(symbool, metaData, varInfo, assignVar_type, iterator);
 	if (isAllowed.hasError)
 		return isAllowed.error;
+
+	varInfo->isAssigned = true;
 
 	if (symbool == "[")
 	{
@@ -160,20 +163,23 @@ Result<shared_ptr<Assignment>> convertAssignment(TokenIterator& iterator, MetaDa
 		if (token != ";")
 			return ErrorInfo("variable incomplete atfer \'" + symbool + "\' need ';' but has: " + token, iterator.currentLine);
 
-		return make_shared<Assignment>
-			(
-				Assignment(varInfo.name, make_shared<Increment>(Increment(false, (symbool == "--"), 1)))
-			);
+		return BodyStatment_Result<Assignment>
+		(
+			make_shared<Assignment>(Assignment(varInfo->name, make_shared<Increment>(Increment(false, (symbool == "--"), 1))))
+		);
 	}
 
-	Result<shared_ptr<SuperExpression>> expressionResult = convertExpression(iterator, metaData, context, assignVar_type, { ";" });
+	Result<BodyStatment_Result<SuperExpression>> expressionResult = convertExpression(iterator, metaData, context, assignVar_type, {";"}, /*shouldBeMutable:*/(assignVar_type.isMutable && assignVar_type.isRefrence()));
 	if (expressionResult.hasError)
-		return ErrorInfo("in assingment of Variable: \'" +varInfo.name+ "\'\n" + expressionResult.error.message, expressionResult.error.lineNumber);
+		return ErrorInfo("in assingment of Variable: \'" +varInfo->name+ "\'\n" + expressionResult.error.message, expressionResult.error.lineNumber);
 
-	shared_ptr<SuperExpression> expression = addCompountAssignment(symbool, varInfo.name, expressionResult.value());
+	shared_ptr<SuperExpression> expression = addCompountAssignment(symbool, varInfo->name, expressionResult.value().expression);
 
-	return make_shared<Assignment>
-		(
-			Assignment(varInfo.name, expression)
-		);
+	BodyStatment_Result<Assignment> bodyResult
+	(
+		make_shared<Assignment>(Assignment(varInfo->name, expression))
+	);
+
+	bodyResult.addToBodyResult(expressionResult.value());
+	return bodyResult;
 }

@@ -193,6 +193,9 @@
     <ClCompile Include="convertReturnStatment.cpp">
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertReturnStatment</Filter>
     </ClCompile>
+    <ClCompile Include="SyntaxNodeId.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.soul">
@@ -388,6 +391,12 @@
     </ClInclude>
     <ClInclude Include="StringLiteral.h">
       <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
+    <ClInclude Include="Refrence.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
+    <ClInclude Include="CompileConstVariable.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Statements</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

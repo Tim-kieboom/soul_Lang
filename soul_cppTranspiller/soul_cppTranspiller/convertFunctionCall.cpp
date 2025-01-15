@@ -1,7 +1,9 @@
 #include "convertFunctionCall.h"
+#include "Refrence.h"
 #include "Optional.h"
 #include "soulChecker.h"
 #include "convertExpression.h"
+#include "convertInitVariable.h"
 
 using namespace std;
 
@@ -33,7 +35,20 @@ struct GetArgs_Result
     }
 };
 
-static inline Result<GetArgs_Result> _getArgs(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string& funcName)
+static inline bool isType(Result<RawType>& typeResult)
+{
+    return !typeResult.hasError;
+}
+
+static inline void AddOutInitVariableExpression(const string& varName, RawType& type, vector<shared_ptr<ISyntaxNode>>& functionCallExpression)
+{
+    functionCallExpression.push_back
+    (
+        make_shared<InitializeVariable>(InitializeVariable(toString(type), varName))
+    );
+}
+
+static inline Result<GetArgs_Result> _getArgs(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string& funcName, BodyStatment_Result<FunctionCall>& bodyResult)
 {
     string& token = iterator.currentToken;
     GetArgs_Result args;
@@ -51,7 +66,6 @@ static inline Result<GetArgs_Result> _getArgs(TokenIterator& iterator, MetaData&
         if (!iterator.nextToken())
             return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
        
-        string nextToken;
         bool isOptional = false;
         string argName = "<unknown>";
         ArgumentType argType = ArgumentType::default_;
@@ -73,15 +87,41 @@ static inline Result<GetArgs_Result> _getArgs(TokenIterator& iterator, MetaData&
             if (!iterator.nextToken())
                 return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
 
+            Result<RawType> typeResult = getRawType(iterator, metaData.classStore);
+            bool hasType = isType(typeResult);
+
+            if (!iterator.peekToken(nextToken))
+                return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
+
+            if (hasType && !initListEquals({ ",", ")" }, nextToken))
+            {
+                string typeString = toString(typeResult.value());
+
+                VarInfo var = VarInfo(nextToken, typeString);
+                context.scope.getCurrentNesting().addVariable(var);
+
+                bodyResult.beforeStatment.push_back
+                (
+                    make_shared<InitializeVariable>(InitializeVariable(typeString, nextToken))
+                );
+
+                if (!iterator.nextToken())
+                    return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
+            }
+
             argType = ArgumentType::out;
         }
 
         RawType expressionType;
-        Result<shared_ptr<SuperExpression>> expressionResult = convertExpression(iterator, metaData, context, { ",", ")" }, /*isType:*/&expressionType);
+        Result<BodyStatment_Result<SuperExpression>> expressionResult = convertExpression(iterator, metaData, context, { ",", ")" }, false, /*isType:*/&expressionType);
         if (expressionResult.hasError)
             return expressionResult.error;
-                 
-        shared_ptr<SuperExpression> expression = expressionResult.value();
+        
+        bodyResult.addToBodyResult(expressionResult.value());
+
+        shared_ptr<SuperExpression> expression = expressionResult.value().expression;
+        if (argType == ArgumentType::out)
+            expression = make_shared<Refrence>(Refrence(expression));
 
         args.push(expressionType, argPosition, argName, argType, expression, isOptional);
         if(!isOptional)
@@ -131,9 +171,10 @@ static inline Result<vector<shared_ptr<SuperExpression>>> getExpressionVector(Ge
     return normalExpressions;
 }
 
-static inline Result<std::shared_ptr<FunctionCall>> _convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName, RawType* shouldBeType = nullptr)
+static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName, RawType* shouldBeType = nullptr)
 {
-    std::string& token = iterator.currentToken;
+    BodyStatment_Result<FunctionCall> bodyResult;
+    string& token = iterator.currentToken;
 
     if (!metaData.isFunction(funcName))
         return ErrorInfo("\'" + funcName + "\' is not a function", iterator.currentLine);
@@ -144,15 +185,16 @@ static inline Result<std::shared_ptr<FunctionCall>> _convertFunctionCall(TokenIt
     if (token != "(")
         return ErrorInfo("FunctionCall: \'" + funcName + "\' had to start with '('", iterator.currentLine);
 
-    Result<GetArgs_Result> argsResult = _getArgs(iterator, metaData, context, funcName);
+    Result<GetArgs_Result> argsResult = _getArgs(iterator, metaData, context, funcName, bodyResult);
     if (argsResult.hasError)
         return argsResult.error;
 
     GetArgs_Result& args = argsResult.value();
 
     FuncDeclaration funcInfo;
-    if (!metaData.tryGetFuncInfo(funcName, args.args, args.optionals, /*out*/funcInfo))
-        return ErrorInfo("functionCall: \'" + funcName + "\' not found with given arguments", iterator.currentLine);
+    ErrorInfo error;
+    if (!metaData.tryGetFuncInfo(funcName, args.args, args.optionals, /*out*/funcInfo, iterator.currentLine, error))
+        return ErrorInfo("functionCall: \'" + funcName + "\' not found with given arguments\n" + error.message, iterator.currentLine);
 
     if(shouldBeType != nullptr && shouldBeType->toPrimitiveType() != PrimitiveType::none)
     {
@@ -165,18 +207,23 @@ static inline Result<std::shared_ptr<FunctionCall>> _convertFunctionCall(TokenIt
     if (expressions.hasError)
         return expressions.error;
 
-    return make_shared<FunctionCall>
+    bodyResult.expression =
+        make_shared<FunctionCall>
         (
             FunctionCall(funcName, funcInfo.returnType, funcInfo, expressions.value())
         );
+
+
+
+    return bodyResult;
 }
 
-Result<shared_ptr<FunctionCall>> convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName)
+Result<BodyStatment_Result<FunctionCall>> convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName)
 {
     return _convertFunctionCall(iterator, metaData, context, funcName, nullptr);
 }
 
-Result<std::shared_ptr<FunctionCall>> convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName, RawType& shouldBeType)
+Result<BodyStatment_Result<FunctionCall>> convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName, RawType& shouldBeType)
 {
     return _convertFunctionCall(iterator, metaData, context, funcName, &shouldBeType);
 }

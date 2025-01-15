@@ -80,6 +80,65 @@ public:
 		return child;
 	}
 
+	bool typeWrapperEquals(const RawType& other) const
+	{
+		if (((int64_t)typeWrappers.size()) - refrenceCounter != ((int64_t)other.typeWrappers.size()) - other.refrenceCounter)
+			return false;
+
+		uint8_t maxRef = (refrenceCounter > other.refrenceCounter) ? refrenceCounter : other.refrenceCounter;
+
+		for (int64_t i = 0; i < ((int64_t)typeWrappers.size()) - maxRef; i++)
+		{
+			if (typeWrappers.at(i) != other.typeWrappers.at(i))
+				return false;
+		}
+
+		return true;
+	}
+
+	Result<void> isEqual(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, uint64_t currentLine) const
+	{
+		if (isMutable != other.isMutable)
+			return ErrorInfo("argument: \'" + toString(*this)+ "\' and argument: \'" + toString(other) + "\' have diffrent mutability", currentLine);
+
+		if(!typeWrapperEquals(other))
+			return ErrorInfo("typeWrappers '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+
+		Result<PrimitiveType, ClassInfo> trueType;
+		Result<PrimitiveType, ClassInfo> trueType_other;
+		if (!getType(classStore, trueType))
+			return ErrorInfo("\'" + toString(*this) + "\' is not a reconizeble type", currentLine);
+
+		if (!other.getType(classStore, trueType_other))
+			return ErrorInfo("\'" + toString(other) + "\' is not a reconizeble type", currentLine);
+
+		bool isPrimitiveType = !trueType.hasError;
+		bool isPrimitiveType_other = !trueType_other.hasError;
+
+		if (isPrimitiveType != isPrimitiveType_other)
+			return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+
+		if (isPrimitiveType)
+		{
+			PrimitiveType primType = trueType.value();
+			PrimitiveType primType_other = trueType_other.value();
+			if (primType == PrimitiveType::compile_dynamic || primType_other == PrimitiveType::compile_dynamic)
+				return {};
+
+			if (primType != primType_other)
+				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+		}
+		else
+		{
+			ClassInfo classInfo = trueType.error;
+			ClassInfo classInfo_other = trueType_other.error;
+			if (!classInfo.isEqual(classInfo_other))
+				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+		}
+
+		return {};
+	}
+
 	Result<void> areTypeCompatible(const std::string& other, std::unordered_map<std::string, ClassInfo>& classStore, uint64_t currentLine) const
 	{
 		Result<RawType> type = getRawType_fromStringedRawType(other, classStore, currentLine);
@@ -91,19 +150,22 @@ public:
 
 	Result<void> areTypeCompatible(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, uint64_t currentLine) const
 	{
+		if (!typeWrapperEquals(other))
+			return ErrorInfo("typeWrappers '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+
 		Result<PrimitiveType, ClassInfo> trueType;
 		Result<PrimitiveType, ClassInfo> trueType_other;
 		if (!getType(classStore, trueType))
-			return ErrorInfo("\'" + rawType + "\' is not a reconizeble type", currentLine);
+			return ErrorInfo("\'" + toString(*this) + "\' is not a reconizeble type", currentLine);
 
 		if (!other.getType(classStore, trueType_other))
-			return ErrorInfo("\'" + other.rawType + "\' is not a reconizeble type", currentLine);
+			return ErrorInfo("\'" + toString(other) + "\' is not a reconizeble type", currentLine);
 	
 		bool isPrimitiveType = !trueType.hasError;
 		bool isPrimitiveType_other = !trueType_other.hasError;
 
 		if (isPrimitiveType != isPrimitiveType_other)
-			return ErrorInfo("types '"+rawType+"' and '"+other.rawType+"' are not compatible", currentLine);
+			return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
 
 		if(isPrimitiveType)
 		{
@@ -112,15 +174,23 @@ public:
 			if (primType == PrimitiveType::compile_dynamic || primType_other == PrimitiveType::compile_dynamic)
 				return {};
 
-			if(getDuckType(primType) != getDuckType(primType_other))
-				return ErrorInfo("types '" + rawType + "' and '" + other.rawType + "' are not compatible", currentLine);
+			if (other.isRefrence() || other.isPointer() || other.isArray())
+			{
+				if (primType != primType_other)
+					return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+			}
+			else
+			{
+				if(getDuckType(primType) != getDuckType(primType_other))
+					return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+			}
 		}
 		else
 		{
 			ClassInfo classInfo = trueType.error;
 			ClassInfo classInfo_other = trueType_other.error;
 			if(!classInfo.isEqual(classInfo_other))
-				return ErrorInfo("types '" + rawType + "' and '" + other.rawType + "' are not compatible", currentLine);
+				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
 		}
 
 		return {};
@@ -183,24 +253,6 @@ public:
 		return false;
 	}
 
-	bool isEqual(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore) const
-	{
-		if (typeWrappers.size() != other.typeWrappers.size())
-			return false;
-
-		for (uint64_t i = 0; i < typeWrappers.size(); i++)
-		{
-			if (typeWrappers.at(i) != other.typeWrappers.at(i))
-				return false;
-		}
-
-		Result<void> result = areTypeCompatible(other, classStore, 0);
-		if (result.hasError)
-			return false;
-
-		return isMutable == other.isMutable;
-	}
-
 	bool isArray() const 
 	{
 		return lastWrapper == TypeWrapper::array_;
@@ -209,5 +261,10 @@ public:
 	bool isPointer() const
 	{
 		return lastWrapper == TypeWrapper::pointer;
+	}
+
+	bool isRefrence() const 
+	{
+		return lastWrapper == TypeWrapper::refrence;
 	}
 };

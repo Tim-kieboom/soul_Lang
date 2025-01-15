@@ -17,14 +17,15 @@ struct ScopeIterator
 	{
 	}
 
-	Result<VarInfo> tryGetVariable_fromCurrent(const std::string& name, const std::vector<VarInfo>& globalScope, uint64_t currentLine)
+	Result<VarInfo*> tryGetVariable_fromCurrent(const std::string& name, std::vector<VarInfo>& globalScope, uint64_t currentLine)
 	{
-		Result<VarInfo> result = getCurrentNesting().tryGetVariable(name, this->scope, globalScope);
+		Result<VarInfo*> result = getCurrentNesting().tryGetVariable(name, this->scope, globalScope);
 		if (result.hasError)
 			return ErrorInfo(result.error.message, currentLine);
 
 		return result;
 	}
+
 
 	Nesting& getCurrentNesting()
 	{

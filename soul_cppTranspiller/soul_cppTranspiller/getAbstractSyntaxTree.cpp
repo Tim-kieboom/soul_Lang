@@ -4,6 +4,7 @@
 #include "convertBody.h"
 #include "StringLiteral.h"
 #include "internalFuntions.h"
+#include "CompileConstVariable.h"
 #include "getFunctionDeclaration.h"
 
 using namespace std;
@@ -22,40 +23,45 @@ static inline void addArgsToScope(vector<Nesting>& funcScope, FuncDeclaration& f
 {
     funcScope.emplace_back();
     Nesting& funcNesting = funcScope.back();
-    for (const auto& arg : funcDecl.args)
+    for (auto arg : funcDecl.args)
     {
+        if (arg.argType == ArgumentType::default_)
+            arg.valueType.isMutable = false;
+
         VarInfo var = VarInfo(arg.argName, toString(arg.valueType), arg.isOptional);
+        var.isAssigned = true;
         funcNesting.addVariable(var);
     }
 
     for (const auto& kv : funcDecl.optionals)
     {
-        const auto& arg = kv.second;
+        auto arg = kv.second;
+        if (arg.argType == ArgumentType::default_)
+            arg.valueType.isMutable = false;
+
         VarInfo var = VarInfo(arg.argName, toString(arg.valueType), arg.isOptional);
+        var.isAssigned = true;
         funcNesting.addVariable(var);
     }
 }
 
 static inline void addC_strToGlobalScope(MetaData& metaData, SyntaxTree& tree)
 {
+    string type = "const str";
     for (const auto& pair : metaData.c_strStore)
     {
+
         VarInfo c_str = VarInfo
         (
             pair.second.name,
-            "const str",
+            type,
             /*isOpional:*/false
         );
         metaData.addToGlobalScope(c_str);
 
         tree.globalVariables.push_back
         (
-            make_shared<InitializeVariable>(InitializeVariable("const str", pair.second.name))
-        );
-
-        tree.globalVariables.push_back
-        (
-            make_shared<Assignment>(Assignment(pair.second.name, make_shared<StringLiteral>(StringLiteral(pair.second.value))))
+            make_shared<CompileConstVariable>(CompileConstVariable(pair.second.name, type, pair.second.value))
         );
     }
 }

@@ -36,8 +36,9 @@ Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData
 		funcInfo.pushOptionals(result.value().optionals);
 
 		FuncDeclaration _;
-		if (metaData.tryGetFuncInfo(funcInfo.functionName, funcInfo.args, result.value().optionals, _))
-			return ErrorInfo("function with these arguments already exists, name: \'" + token + "\', args: \'" + toString(funcInfo.args) + "\'", iterator.currentLine);
+		ErrorInfo error;
+		if (metaData.tryGetFuncInfo(funcInfo.functionName, funcInfo.args, result.value().optionals, _, iterator.currentLine, error))
+			return ErrorInfo("function with these arguments already exists, name: \'" + token + "\', args: \'" + toString(funcInfo.args) + "\'\n" + error.message, iterator.currentLine);
 
 		metaData.addFunction(funcInfo.functionName, funcInfo);
 		return funcInfo;

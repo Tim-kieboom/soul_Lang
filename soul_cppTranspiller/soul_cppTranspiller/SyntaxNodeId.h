@@ -3,27 +3,30 @@
 enum class SyntaxNodeId
 {
 	SyntaxTree,
-
-	/*funcNodes*/
-	Assignment,
-	InitializeVariable,
 	FuncNode,
 	BodyNode,
+	ClassNode,
+
+	/*Statment*/
+	FieldNode,
+	Assignment,
+	MethodeNode,
+	ReturnStatment,
+	InitializeVariable,
 	FunctionCallStatment,
+	CompileConstVariable,
 
 	/*expressions*/
 	Variable,
 	Literal,
-	StringLiteral,
-	BinairyExpression,
+	Optional,
+	Refrence,
 	Increment,
 	FunctionCall,
-	ReturnStatment,
+	StringLiteral,
 	EmptyExpresion,
-	Optional,
-
-	/*classNodes*/
-	ClassNode,
-	FieldNode,
-	MethodeNode
+	BinairyExpression
 };
+
+bool isSyntaxTree_Statment(SyntaxNodeId id);
+bool isSyntaxTree_Expression(SyntaxNodeId id);
