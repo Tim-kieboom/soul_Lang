@@ -11,6 +11,7 @@ struct pub;
 struct priv;
 struct delete;
 struct mut;
+struct CompileConst;
 class i8;
 class i16;
 class i32;
@@ -56,33 +57,33 @@ func test(i32 foo, mut f64 bar): str &
     return "foo";
 }
 
-func testOptional(i32 bar, str name = "tim", f32 float, i32 optional = 2): none 
-{
-
-}
+func testOptional(i32 bar, str name = "tim", f32 float, i32 optional = 2): none { }
 
 func function(out i32 ref): none { }
 
 func main(): i32
 {
-    i32 constexpre = 1; 
+    print("");
+i32 var = 1;
+    CompileConst i32 constexpre = var; 
 
     testOptional(1, 2);
     testOptional(name: "bob", 1, optional: 3, 2);
 
-    i32 int = 1;
-    i32& ref = int;
-function(out ref);
+    //if (true)
+    //{
+    //    if(true)
+    //        println("hello world");
+    //}
 
-    //test();
-    //str result = test(1 + 2, 2.0);
+    test();
+    str result = test(1 + 2, 2.0);
 
-    //test("foo");
-    //str result2 = test("foo", bar: 2.0);
+    test("foo");
+    str result2 = test("foo", bar: 2.0);
 
-    //print("");
-    //println("hello world");
-
+    print("");
+    println("hello world");
 
     i32 foo = 0;
     increment(out foo);

@@ -130,6 +130,7 @@
     <ClCompile Include="ArgumentInfo.cpp" />
     <ClCompile Include="ClassAccessLevel.cpp" />
     <ClCompile Include="convertAssignment.cpp" />
+    <ClCompile Include="convertCompileConstVariable.cpp" />
     <ClCompile Include="convertExpression.cpp" />
     <ClCompile Include="convertBody.cpp" />
     <ClCompile Include="convertFunctionCall.cpp" />
@@ -165,6 +166,7 @@
     <ClInclude Include="ClassInfo.h" />
     <ClInclude Include="CompileConstVariable.h" />
     <ClInclude Include="convertAssignment.h" />
+    <ClInclude Include="convertCompileConstVariable.h" />
     <ClInclude Include="convertExpression.h" />
     <ClInclude Include="convertBody.h" />
     <ClInclude Include="convertFunctionCall.h" />

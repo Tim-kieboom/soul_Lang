@@ -61,7 +61,11 @@ static inline void addC_strToGlobalScope(MetaData& metaData, SyntaxTree& tree)
 
         tree.globalVariables.push_back
         (
-            make_shared<CompileConstVariable>(CompileConstVariable(pair.second.name, type, pair.second.value))
+            make_shared<CompileConstVariable>(CompileConstVariable
+            (
+                make_shared<InitializeVariable>(InitializeVariable(type, pair.second.name)),
+                make_shared<Assignment>(Assignment(pair.second.name, make_shared<StringLiteral>(StringLiteral(pair.second.value))))
+            ))
         );
     }
 }

@@ -107,6 +107,9 @@
     <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertReturnStatment">
       <UniqueIdentifier>{8205621a-a425-4766-8ba0-aeedb473689c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertCompileConstVariable">
+      <UniqueIdentifier>{67b254cf-99bc-4db6-8e95-39a8a6da1f1c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -195,6 +198,9 @@
     </ClCompile>
     <ClCompile Include="SyntaxNodeId.cpp">
       <Filter>Source Files\AbstractSyntaxTree\SyntaxTree</Filter>
+    </ClCompile>
+    <ClCompile Include="convertCompileConstVariable.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertCompileConstVariable</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -397,6 +403,9 @@
     </ClInclude>
     <ClInclude Include="CompileConstVariable.h">
       <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Statements</Filter>
+    </ClInclude>
+    <ClInclude Include="convertCompileConstVariable.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertCompileConstVariable</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

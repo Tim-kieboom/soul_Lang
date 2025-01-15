@@ -1,16 +1,16 @@
 #pragma once
 #include "Assignment.h"
+#include "InitVariable.h"
 
 class CompileConstVariable : public SuperStatement
 {
 public:
-	std::string varName;
-	std::string type;
-	std::string value;
+	std::shared_ptr<InitializeVariable> init;
+	std::shared_ptr<Assignment> assign;
 
 	CompileConstVariable() = default;
-	CompileConstVariable(const std::string& varName, const std::string& type, const std::string& value)
-		: varName(varName), type(type), value(value)
+	CompileConstVariable(std::shared_ptr<InitializeVariable> init, std::shared_ptr<Assignment> assign)
+		: init(init), assign(assign)
 	{
 	}
 
@@ -22,7 +22,7 @@ public:
 	std::string printToString() const override
 	{
 		std::stringstream ss;
-		ss << "CompileConstVariable( Type(" << type << ") " << varName << " = " << value << ')';
+		ss << "CompileConstVariable(" << init->printToString() << ", " << assign->printToString() << ')';
 		return ss.str();
 	}
 

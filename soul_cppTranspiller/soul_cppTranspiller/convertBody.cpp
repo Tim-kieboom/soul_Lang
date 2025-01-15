@@ -2,11 +2,14 @@
 #include "Increment.h"
 #include "Assignment.h"
 #include "stringTools.h"
+#include "soulChecker.h"
 #include "convertAssignment.h"
 #include "convertInitVariable.h"
 #include "convertFunctionCall.h"
+#include "CompileConstVariable.h"
 #include "FunctionCallStatment.h"
 #include "convertReturnStatment.h"
+#include "convertCompileConstVariable.h"
 using namespace std;
 
 static inline ErrorInfo ERROR_convertBody_outOfBounds(FuncDeclaration& funcInfo, TokenIterator& iterator)
@@ -94,7 +97,7 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 	uint32_t openCurlyBracketCounter = 0;
 	while (iterator.nextToken())
 	{
-		if (iterator.currentLine == 74)
+		if (iterator.currentLine == 73)
 			int f = 0;
 
 		if (token == "{")
@@ -167,6 +170,14 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 			addBodyResult_ToBody(/*out*/body, returnStatment, returnStatment.expression);
 
 			hasReturnStatment = true;
+		}
+		else if(token == "CompileConst")
+		{
+			Result<BodyStatment_Result<CompileConstVariable>> compileConst = convertCompileConstVariable(iterator, metaData, context);
+			if (compileConst.hasError)
+				return compileConst.error;
+
+			addBodyResult_ToBody(/*out*/body, compileConst.value(), compileConst.value().expression);
 		}
 		else
 		{

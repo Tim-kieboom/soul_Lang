@@ -4,11 +4,10 @@
 
 class Assignment : public SuperStatement
 {
-private:
+public: 
 	std::string varName;
 	std::shared_ptr<SuperExpression> expression;
 
-public:
     Assignment() = default;
 
     Assignment(const std::string& varName, std::shared_ptr<SuperExpression> expression)

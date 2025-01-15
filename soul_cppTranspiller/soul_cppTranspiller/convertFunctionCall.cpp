@@ -185,11 +185,26 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
     if (token != "(")
         return ErrorInfo("FunctionCall: \'" + funcName + "\' had to start with '('", iterator.currentLine);
 
-    Result<GetArgs_Result> argsResult = _getArgs(iterator, metaData, context, funcName, bodyResult);
-    if (argsResult.hasError)
-        return argsResult.error;
+    string nextToken;
+    if (!iterator.peekToken(nextToken))
+        return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
 
-    GetArgs_Result& args = argsResult.value();
+    GetArgs_Result args;
+    if(nextToken == ")")
+    {
+        args = GetArgs_Result();
+
+        if (!iterator.nextToken())
+            return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
+    }
+    else
+    {
+        Result<GetArgs_Result> argsResult = _getArgs(iterator, metaData, context, funcName, bodyResult);
+        if (argsResult.hasError)
+            return argsResult.error;
+
+        args = argsResult.value();
+    }
 
     FuncDeclaration funcInfo;
     ErrorInfo error;
