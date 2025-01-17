@@ -17,6 +17,8 @@ enum class SyntaxTree_Operator
 	Mul,
 	Div,
 	Modulo,
+	Pow,
+	Root,
 
 	BitWise_OR,
 	BitWise_AND,

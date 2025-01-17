@@ -97,7 +97,7 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 	uint32_t openCurlyBracketCounter = 0;
 	while (iterator.nextToken())
 	{
-		if (iterator.currentLine == 73)
+		if (iterator.currentLine == 70)
 			int f = 0;
 
 		if (token == "{")

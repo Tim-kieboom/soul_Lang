@@ -65,12 +65,12 @@ func main(): i32
     CompileConst str strConst = "foo";
     CompileConst i32 CONSTEXPRE = 1;
     CompileConst i32 CONSTEXPRE2 = CONSTEXPRE + CONSTEXPRE;
-//CompileConst i32 constexpre2 = constexpre; 
+    //CompileConst i32 constexpre2 = constexpre; 
 
-//i64 pow  = 2 ** 2;
-//f64 root = 2 </ 2;
+    i64 pow  = 2 ** 2;
+    f64 root = 2 </ 2;
 
-testOptional(1, 2);
+    testOptional(1, 2);
     testOptional(name: "bob", 1, optional: 3, 2);
 
     //if (true)
