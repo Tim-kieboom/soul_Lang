@@ -206,8 +206,8 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
         args = argsResult.value();
     }
 
-    FuncDeclaration funcInfo;
     ErrorInfo error;
+    FuncDeclaration funcInfo;
     if (!metaData.tryGetFuncInfo(funcName, args.args, args.optionals, /*out*/funcInfo, iterator.currentLine, error))
         return ErrorInfo("functionCall: \'" + funcName + "\' not found with given arguments\n" + error.message, iterator.currentLine);
 

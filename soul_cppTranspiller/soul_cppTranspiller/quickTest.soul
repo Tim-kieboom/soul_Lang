@@ -27,6 +27,7 @@ class none;
 class f;
 # endInvis
 
+
 func increment(out i32 foo): none
 {
     foo++;
@@ -57,17 +58,19 @@ func test(i32 foo, mut f64 bar): str &
     return "foo";
 }
 
-func testOptional(i32 bar, str name = "tim", f32 float, i32 optional = 2): none { }
-
-func function(out i32 ref): none { }
-
 func main(): i32
 {
     print("");
-i32 var = 1;
-    CompileConst i32 constexpre = var; 
 
-    testOptional(1, 2);
+    CompileConst str strConst = "foo";
+    CompileConst i32 CONSTEXPRE = 1;
+    CompileConst i32 CONSTEXPRE2 = CONSTEXPRE + CONSTEXPRE;
+//CompileConst i32 constexpre2 = constexpre; 
+
+//i64 pow  = 2 ** 2;
+//f64 root = 2 </ 2;
+
+testOptional(1, 2);
     testOptional(name: "bob", 1, optional: 3, 2);
 
     //if (true)
@@ -91,3 +94,6 @@ i32 var = 1;
 
     increment(out i32 far);
 }
+
+func testOptional(i32 bar, str name = "tim", f32 float, i32 optional = 2): none { }
+

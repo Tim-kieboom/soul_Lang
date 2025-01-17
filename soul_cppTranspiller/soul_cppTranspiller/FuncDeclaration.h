@@ -11,10 +11,11 @@ struct FuncDeclaration
 	std::string functionName;
 	std::vector<ArgumentInfo> args;
 	std::unordered_map<std::string, ArgumentInfo> optionals;
+	bool isForwardDeclared = true;
 
 	FuncDeclaration() = default;
-	FuncDeclaration(const std::string& funcName, const std::string& returnType, std::initializer_list<ArgumentInfo> args_)
-		: returnType(returnType), functionName(funcName), args()
+	FuncDeclaration(const std::string& funcName, const std::string& returnType, std::initializer_list<ArgumentInfo> args_, bool isForwardDeclared = true)
+		: returnType(returnType), functionName(funcName), args(), isForwardDeclared(isForwardDeclared)
 	{
 		for (const ArgumentInfo& arg : args_)
 		{

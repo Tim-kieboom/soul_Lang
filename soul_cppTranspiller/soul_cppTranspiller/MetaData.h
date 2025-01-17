@@ -60,20 +60,29 @@ public:
 		return classStore.find(type.getType_WithoutWrapper()) != classStore.end();
 	}
 
-	bool tryGetFuncInfo(const std::string& funcName, std::vector<ArgumentInfo>& args, std::vector<ArgumentInfo>& optionals, FuncDeclaration& funcInfo, int64_t currentLine, ErrorInfo& error)
+	bool tryGetFuncInfo(const std::string& funcName, std::vector<ArgumentInfo>& args, std::vector<ArgumentInfo>& optionals, FuncDeclaration& funcInfo, int64_t currentLine, ErrorInfo& error, uint64_t* funcInfoIndex = nullptr)
 	{
 		if (funcStore.find(funcName) == funcStore.end())
 			return false;
 
+		uint64_t i = 0;
 		std::vector<FuncDeclaration>& funcs = funcStore.at(funcName);
 		for (FuncDeclaration& func : funcs)
 		{
 			if (func.argsCompatible(args, optionals, classStore, currentLine, error))
 			{
+				if (funcInfoIndex != nullptr)
+					*funcInfoIndex = i;
+
 				funcInfo = func;
 				return true;
 			}
+			i++;
 		}
+
+		if (funcInfoIndex != nullptr)
+			*funcInfoIndex = i;
+
 		return false;
 	}
 

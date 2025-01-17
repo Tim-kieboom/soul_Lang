@@ -57,6 +57,8 @@ static inline void addC_strToGlobalScope(MetaData& metaData, SyntaxTree& tree)
             type,
             /*isOpional:*/false
         );
+        c_str.isAssigned = true;
+        c_str.isCompileConst = true;
         metaData.addToGlobalScope(c_str);
 
         tree.globalVariables.push_back
@@ -76,6 +78,63 @@ static inline void addInternalFunctionsToMetaData(MetaData& metaData)
         metaData.addFunction(func.functionName, func);
 }
 
+static inline Result<void> forwardDeclareFunctions(TokenIterator& iterator, MetaData& metaData)
+{
+    static bool declaredMain = false;
+
+    string& token = iterator.currentToken;
+
+    string funcName;
+    if(!iterator.peekToken(funcName))
+        return ErrorInfo("unexpected end while parsing functionDeclarations", iterator.currentLine);
+
+    bool isMain = (funcName == "main");
+
+    Result<FuncDeclaration> funcDeclResult = getFunctionDeclaration(iterator, metaData, isMain);
+    if (funcDeclResult.hasError)
+        return funcDeclResult.error;
+
+    if(isMain)
+    {
+        if (declaredMain)
+            return ErrorInfo("you can only have one 'func main' per program", iterator.currentLine);
+
+        declaredMain = true;
+    }
+
+    if (iterator.i >= 236)
+        int d = 1;
+
+    string checkBracket;
+    if (!iterator.peekToken(checkBracket))
+        return ErrorInfo("unexpected end while parsing functionDeclarations", iterator.currentLine);
+
+    if (checkBracket != "{")
+        return ErrorInfo("no '{' after function declaration, funcName: \'" + string(funcDeclResult.value().functionName) + '\'', iterator.currentLine);
+
+    int64_t openBracketStack = 0;
+
+    while (iterator.nextToken())
+    {
+        if (token == "{")
+        {
+            openBracketStack++;
+            continue;
+        }
+        else if (token == "}")
+        {
+            openBracketStack--;
+
+            if (openBracketStack <= 0)
+                return {};
+
+            continue;
+        }
+    }
+
+    return ErrorInfo("unexpected end while parsing functionDeclarations", iterator.currentLine);
+}
+
 Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& metaData)
 {
     string& token = iterator.currentToken;
@@ -84,11 +143,31 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
     addInternalFunctionsToMetaData(/*out*/metaData);
     addC_strToGlobalScope(/*out*/metaData, /*out*/tree);
      
+    const int64_t beginI = iterator.i;
+
+    while(iterator.nextToken())
+    {
+        if (iterator.currentLine >= 60)
+            int d = 0;
+
+        if(token == "func")
+        {
+            Result<void> result = forwardDeclareFunctions(iterator, metaData);
+            if (result.hasError)
+                return result.error;
+        }
+        else
+        {
+            return ErrorInfo("unexpected token in global, token: \'" + token + "\'", iterator.currentLine);
+        }
+    }
+
+    iterator.i = beginI;
     while (iterator.nextToken())
     {
         if(token == "func")
         {
-            Result<FuncDeclaration> funcDeclResult = getFunctionDeclaration(iterator, metaData);
+            Result<FuncDeclaration> funcDeclResult = getFunctionDeclaration(iterator, metaData, true);
             if (funcDeclResult.hasError)
                 return funcDeclResult.error;
 

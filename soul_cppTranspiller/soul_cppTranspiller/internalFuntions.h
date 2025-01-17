@@ -8,7 +8,8 @@ static const FuncDeclaration interalFunc_print = FuncDeclaration
 	toString(PrimitiveType::none),
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true), "msg", ArgumentType::default_, 1)
-	}
+	},
+	false
 );
 
 static const FuncDeclaration interalFunc_println = FuncDeclaration
@@ -17,7 +18,8 @@ static const FuncDeclaration interalFunc_println = FuncDeclaration
 	toString(PrimitiveType::none),
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true), "msg", ArgumentType::default_, 1)
-	}
+	},
+	false
 );
 
 static const FuncDeclaration interalFunc__soul_format_string__ = FuncDeclaration
@@ -26,7 +28,8 @@ static const FuncDeclaration interalFunc__soul_format_string__ = FuncDeclaration
 	toString(PrimitiveType::str),
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true), "args", ArgumentType::default_, 1, /*canBeMultiple:*/true)
-	}
+	},
+	false
 );
 
 static const FuncDeclaration interalFunc_Fail = FuncDeclaration
@@ -35,7 +38,8 @@ static const FuncDeclaration interalFunc_Fail = FuncDeclaration
 	toString(PrimitiveType::none),
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), true), "msg", ArgumentType::default_, 1)
-	}
+	},
+	false
 );
 
 static const FuncDeclaration interalFunc_Throw = FuncDeclaration
@@ -44,7 +48,8 @@ static const FuncDeclaration interalFunc_Throw = FuncDeclaration
 	toString(PrimitiveType::none),
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), true), "msg", ArgumentType::default_, 1)
-	}
+	},
+	false
 );
 
 static const FuncDeclaration interalFunc_checkFail_debug = FuncDeclaration
@@ -54,7 +59,8 @@ static const FuncDeclaration interalFunc_checkFail_debug = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::bool_), true), "condition", ArgumentType::default_, 1),
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), true), "msg", ArgumentType::default_, 2)
-	}
+	},
+	false
 );
 
 static const FuncDeclaration interalFunc_checkThrow_debug = FuncDeclaration
@@ -64,7 +70,8 @@ static const FuncDeclaration interalFunc_checkThrow_debug = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::bool_), true), "condition", ArgumentType::default_, 1),
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), true), "msg", ArgumentType::default_, 2)
-	}
+	},
+	false
 );
 
 static const FuncDeclaration interalFunc_checkFail = FuncDeclaration
@@ -74,7 +81,8 @@ static const FuncDeclaration interalFunc_checkFail = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::bool_), true), "condition", ArgumentType::default_, 1),
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), true), "msg", ArgumentType::default_, 2)
-	}
+	},
+	false
 );
 
 static const FuncDeclaration interalFunc_checkThrow = FuncDeclaration
@@ -84,7 +92,8 @@ static const FuncDeclaration interalFunc_checkThrow = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::bool_), true), "condition", ArgumentType::default_, 1),
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), true), "msg", ArgumentType::default_, 2)
-	}
+	},
+	false
 );
 
 static const FuncDeclaration interalFunc_toStr = FuncDeclaration
@@ -93,7 +102,8 @@ static const FuncDeclaration interalFunc_toStr = FuncDeclaration
 	toString(PrimitiveType::none),
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true), "value", ArgumentType::default_, 1)
-	}
+	},
+	false
 );
 
 static const std::initializer_list<FuncDeclaration> internalFunctions =

@@ -4,12 +4,11 @@
 
 class Variable : public SuperExpression
 {
-private:
-	std::string value;
-
 public:
-	explicit Variable(const std::string& value)
-		: value(value)
+	std::string varName;
+
+	explicit Variable(const std::string& varName)
+		: varName(varName)
 	{
 	}
 
@@ -21,7 +20,7 @@ public:
 	std::string printToString() const override
 	{
 		std::stringstream ss;
-		ss << "Variable(" << value << ")";
+		ss << "Variable(" << varName << ")";
 		return ss.str();
 	}
 

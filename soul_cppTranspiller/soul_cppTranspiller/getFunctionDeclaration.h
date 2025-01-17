@@ -4,4 +4,4 @@
 #include "MetaData.h"
 #include "FuncDeclaration.h"
 
-Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData& metaData);
+Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData& metaData, bool isForwardDeclared);

@@ -5,7 +5,7 @@
 
 using namespace std;
 
-Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData& metaData)
+Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData& metaData, bool isForwardDeclared)
 {
 	FuncDeclaration funcInfo;
 	string& token = iterator.currentToken;
@@ -31,16 +31,39 @@ Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData
 		if (result.hasError)
 			return result.error;
 
+		if (funcInfo.functionName == "main")
+		{
+			bool isCorrectType = returnType.typeWrappers.empty() &&
+								 returnType.toPrimitiveType() == PrimitiveType::i32;
+
+			if (!isCorrectType)
+				return ErrorInfo("'func main' needs to have type 'i32'", iterator.currentLine);
+		}
+
 		funcInfo.returnType = toString(returnType);
 		funcInfo.args = result.value().args;
 		funcInfo.pushOptionals(result.value().optionals);
 
-		FuncDeclaration _;
+		uint64_t funcInfoIndex = 0;
 		ErrorInfo error;
-		if (metaData.tryGetFuncInfo(funcInfo.functionName, funcInfo.args, result.value().optionals, _, iterator.currentLine, error))
-			return ErrorInfo("function with these arguments already exists, name: \'" + token + "\', args: \'" + toString(funcInfo.args) + "\'\n" + error.message, iterator.currentLine);
+		FuncDeclaration func;
+		if (metaData.tryGetFuncInfo(funcInfo.functionName, funcInfo.args, result.value().optionals, func, iterator.currentLine, error, &funcInfoIndex))
+		{
+			if(!func.isForwardDeclared)
+				return ErrorInfo("function with these arguments already exists, name: \'" + token + "\', args: \'" + toString(funcInfo.args) + "\'\n" + error.message, iterator.currentLine);
+		}
 
-		metaData.addFunction(funcInfo.functionName, funcInfo);
+		if (isForwardDeclared && funcInfo.functionName != "main")
+		{
+			vector<FuncDeclaration>& funcs = metaData.funcStore[funcInfo.functionName];
+			FuncDeclaration& funcRef = funcs.at(funcInfoIndex);
+			funcRef.isForwardDeclared = false;
+		}
+		else
+		{
+			metaData.addFunction(funcInfo.functionName, funcInfo);
+		}
+
 		return funcInfo;
 	}
 
