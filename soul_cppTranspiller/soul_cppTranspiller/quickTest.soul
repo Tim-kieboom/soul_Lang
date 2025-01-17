@@ -67,8 +67,15 @@ func main(): i32
     CompileConst i32 CONSTEXPRE2 = CONSTEXPRE + CONSTEXPRE;
     //CompileConst i32 constexpre2 = constexpre; 
 
-    i64 pow  = 2 ** 2;
-    f64 root = 2 </ 2;
+    //var pow = 2 </ 9;
+
+    i8 i = 1;
+    i++;
+    ++i;
+    i8 bar = ++i + 1;
+
+    i64 pow  = 2 ** 9;
+    f64 root = 2 </ 9;
 
     testOptional(1, 2);
     testOptional(name: "bob", 1, optional: 3, 2);

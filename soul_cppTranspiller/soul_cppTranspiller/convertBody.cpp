@@ -3,6 +3,7 @@
 #include "Assignment.h"
 #include "stringTools.h"
 #include "soulChecker.h"
+#include "convertExpression.h"
 #include "convertAssignment.h"
 #include "convertInitVariable.h"
 #include "convertFunctionCall.h"
@@ -32,34 +33,34 @@ static inline bool hasMissingReturnStatment(const std::string& functionName, con
 	return functionName != "main" && returnType.toPrimitiveType() != PrimitiveType::none && !hasReturnStatment;
 }
 
-static inline Result<shared_ptr<Assignment>> _convertBeforeVarIncrement(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context)
-{
-	string& token = iterator.currentToken;
-
-	string incrementToken = token;
-	if (!iterator.nextToken())
-		return ERROR_convertBody_outOfBounds(funcInfo, iterator);
-
-	Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
-	if (varResult.hasError)
-		return ErrorInfo("token after \'" + incrementToken + "\' has to be a variable", iterator.currentLine);
-
-	VarInfo* var = varResult.value();
-
-	Result<RawType> typeResult = getRawType_fromStringedRawType((*var).stringedRawType, metaData.classStore, iterator.currentLine);
-	if (typeResult.hasError)
-		return typeResult.error;
-
-	if (getDuckType(typeResult.value()) != DuckType::number)
-		return ErrorInfo("variable: \'" + (*var).name + "\' has to be of DuckType::number to use de/increment", iterator.currentLine);
-
-	Increment increment = Increment(true, (token == "--"), 1);
-
-	return make_shared<Assignment>
-		(
-			Assignment((*var).name, make_shared<Increment>(increment))
-		);
-}
+//static inline Result<shared_ptr<Assignment>> _convertBeforeVarIncrement(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context)
+//{
+//	string& token = iterator.currentToken;
+//
+//	string incrementToken = token;
+//	if (!iterator.nextToken())
+//		return ERROR_convertBody_outOfBounds(funcInfo, iterator);
+//
+//	Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
+//	if (varResult.hasError)
+//		return ErrorInfo("token after \'" + incrementToken + "\' has to be a variable", iterator.currentLine);
+//
+//	VarInfo* var = varResult.value();
+//
+//	Result<RawType> typeResult = getRawType_fromStringedRawType((*var).stringedRawType, metaData.classStore, iterator.currentLine);
+//	if (typeResult.hasError)
+//		return typeResult.error;
+//
+//	if (getDuckType(typeResult.value()) != DuckType::number)
+//		return ErrorInfo("variable: \'" + (*var).name + "\' has to be of DuckType::number to use de/increment", iterator.currentLine);
+//
+//	Increment increment = Increment( true, (token == "--"), 1);
+//
+//	return make_shared<Assignment>
+//		(
+//			Assignment((*var).name, make_shared<Increment>(increment))
+//		);
+//}
 
 template <typename T>
 static inline void addBodyResult_ToBody(/*out*/shared_ptr<BodyNode>& body, BodyStatment_Result<T>& bodyResult, shared_ptr<SuperStatement> statment)
@@ -123,11 +124,20 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 
 		if (initListEquals({ "++", "--" }, token))
 		{
-			Result<shared_ptr<Assignment>> incrementResult = _convertBeforeVarIncrement(iterator, metaData, funcInfo, context);
-			if (incrementResult.hasError)
-				return incrementResult.error;
+			string varName;
+			if (!iterator.peekToken(varName))
+				break;
 
-			body->addStatment(incrementResult.value());
+			varResult = context.scope.tryGetVariable_fromCurrent(varName, metaData.globalScope, iterator.currentLine);
+			if (varResult.hasError)
+				return varResult.error;
+
+			Result<BodyStatment_Result<SuperExpression>> increment = convertExpression(iterator, metaData, context, { ";" }, true);
+			if (increment.hasError)
+				return increment.error;
+
+			auto assignment = make_shared<Assignment>(Assignment(varName, increment.value().expression));
+			addBodyResult_ToBody(/*out*/body, increment.value(), assignment);
 		}
 		else if(isType(typeResult))
 		{

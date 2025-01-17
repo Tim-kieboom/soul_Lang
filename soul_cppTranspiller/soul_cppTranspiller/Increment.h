@@ -1,17 +1,19 @@
 #pragma once
 #include <sstream>
 #include "SuperExpression.h"
+#include "Variable.h"
 
 class Increment : public SuperExpression
 {
 public:
+    std::shared_ptr<Variable> variable;
 	bool isBeforeVar = false;
 	bool isNegative = false;
 	uint64_t incrementAmount = 1;
 
 	Increment() = default;
-	Increment(bool isBeforeVar, bool isNegative, uint64_t incrementAmount)
-		: isBeforeVar(isBeforeVar), isNegative(isNegative), incrementAmount(incrementAmount)
+	Increment(std::shared_ptr<Variable> variable, bool isBeforeVar, bool isNegative, uint64_t incrementAmount)
+		: variable(variable), isBeforeVar(isBeforeVar), isNegative(isNegative), incrementAmount(incrementAmount)
 	{
 	}
 
@@ -32,10 +34,10 @@ public:
 		ss << incrementAmount << ' ';
 
 		if (isBeforeVar)
-			ss << "beforeVar";
+			ss << "beforeVar: ";
 		else
-			ss << "afterVar";
-		ss << ")";
+			ss << "afterVar: ";
+		ss << variable->printToString() << ")";
 
 		return ss.str();
 	}

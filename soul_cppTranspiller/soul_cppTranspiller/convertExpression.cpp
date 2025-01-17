@@ -1,7 +1,9 @@
 #include "convertExpression.h"
-#include "soulChecker.h"
 #include "Literal.h"
 #include "Variable.h"
+#include "Assignment.h"
+#include "soulChecker.h"
+#include "Increment.h"
 #include "EmptyExpression.h"
 #include "convertFunctionCall.h"
 using namespace std;
@@ -89,6 +91,38 @@ static inline Result<void> makeAndPush_BinairyExpression(Stack<shared_ptr<SuperE
     return {};
 }
 
+static inline Result<shared_ptr<Increment>> _convertBeforeVarIncrement(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType* type)
+{
+    string& token = iterator.currentToken;
+
+    string incrementToken = token;
+    if (!iterator.nextToken())
+        return ERROR_convertExpression_outOfBounds(iterator);
+
+    Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
+    if (varResult.hasError)
+        return ErrorInfo("token after \'" + incrementToken + "\' has to be a variable", iterator.currentLine);
+
+    VarInfo* var = varResult.value();
+    Result<RawType> varType = getRawType_fromStringedRawType(var->stringedRawType, metaData.classStore, iterator.currentLine);
+    if (varType.hasError)
+        return varType.error;
+
+    *type = varType.value();
+
+    Result<RawType> typeResult = getRawType_fromStringedRawType((*var).stringedRawType, metaData.classStore, iterator.currentLine);
+    if (typeResult.hasError)
+        return typeResult.error;
+
+    if (getDuckType(typeResult.value()) != DuckType::number)
+        return ErrorInfo("variable: \'" + (*var).name + "\' has to be of DuckType::number to use de/increment", iterator.currentLine);
+
+    return make_shared<Increment>
+        (
+            Increment(make_shared<Variable>(Variable(var->name)), true, (token == "--"), 1)
+        );
+}
+
 static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, initializer_list<const char*> endTokens, RawType* shouldBeType, RawType* isType, bool shouldBeMutable)
 {
     if (!iterator.nextToken(/*steps:*/-1))
@@ -126,6 +160,23 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
         else if (initListEquals(endTokens, token))
         {
             break;
+        }
+        else if (initListEquals({ "++", "--" }, token))
+        {
+            RawType type;
+            string symbool = token;
+            Result<shared_ptr<Increment>> incrementResult = _convertBeforeVarIncrement(iterator, metaData, context, &type);
+            if (incrementResult.hasError)
+                return incrementResult.error;
+
+            shared_ptr<Increment> increment = incrementResult.value();
+
+            if (isType != nullptr)
+            {
+                *isType = type;
+            }
+
+            nodeStack.push(increment);
         }
         else if (isOperator(token))
         {

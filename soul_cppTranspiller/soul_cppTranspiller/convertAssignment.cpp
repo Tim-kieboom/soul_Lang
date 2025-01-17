@@ -165,7 +165,7 @@ Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterato
 
 		return BodyStatment_Result<Assignment>
 		(
-			make_shared<Assignment>(Assignment(varInfo->name, make_shared<Increment>(Increment(false, (symbool == "--"), 1))))
+			make_shared<Assignment>(Assignment(varInfo->name, make_shared<Increment>(Increment(make_shared<Variable>(Variable(varInfo->name)), false, (symbool == "--"), 1))))
 		);
 	}
 
