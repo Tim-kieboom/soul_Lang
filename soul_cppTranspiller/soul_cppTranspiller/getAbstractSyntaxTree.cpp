@@ -4,8 +4,10 @@
 #include "convertBody.h"
 #include "StringLiteral.h"
 #include "internalFuntions.h"
+#include "convertInitVariable.h"
 #include "CompileConstVariable.h"
 #include "getFunctionDeclaration.h"
+#include "convertCompileConstVariable.h"
 
 using namespace std;
 
@@ -45,7 +47,7 @@ static inline void addArgsToScope(vector<Nesting>& funcScope, FuncDeclaration& f
     }
 }
 
-static inline void addC_strToGlobalScope(MetaData& metaData, SyntaxTree& tree)
+static inline void _addC_strToGlobalScope(MetaData& metaData, SyntaxTree& tree)
 {
     string type = "const str";
     for (const auto& pair : metaData.c_strStore)
@@ -72,10 +74,15 @@ static inline void addC_strToGlobalScope(MetaData& metaData, SyntaxTree& tree)
     }
 }
 
-static inline void addInternalFunctionsToMetaData(MetaData& metaData)
+static inline void _addInternalFunctionsToMetaData(MetaData& metaData)
 {
     for (const FuncDeclaration& func : internalFunctions)
         metaData.addFunction(func.functionName, func);
+}
+
+static inline bool isType(Result<RawType>& type)
+{
+    return !type.hasError;
 }
 
 static inline Result<void> forwardDeclareFunctions(TokenIterator& iterator, MetaData& metaData)
@@ -135,37 +142,72 @@ static inline Result<void> forwardDeclareFunctions(TokenIterator& iterator, Meta
     return ErrorInfo("unexpected end while parsing functionDeclarations", iterator.currentLine);
 }
 
+static inline Result<void> _goToEndOfAssignStatment(TokenIterator& iterator)
+{
+    string& token = iterator.currentToken;
+    while (token != ";")
+    {
+        if (!iterator.nextToken())
+            return ErrorInfo("unexpected token in global, token: \'" + token + "\'", iterator.currentLine);
+    }
+
+    return {};
+}
+
 Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& metaData)
 {
     string& token = iterator.currentToken;
     SyntaxTree tree;
 
-    addInternalFunctionsToMetaData(/*out*/metaData);
-    addC_strToGlobalScope(/*out*/metaData, /*out*/tree);
+    _addInternalFunctionsToMetaData(/*out*/metaData);
+    _addC_strToGlobalScope(/*out*/metaData, /*out*/tree);
      
     const int64_t beginI = iterator.i;
+    Result<RawType> typeResult;
+    Result<void> result;
 
     while(iterator.nextToken())
     {
         if (iterator.currentLine >= 60)
             int d = 0;
-
         if(token == "func")
         {
             Result<void> result = forwardDeclareFunctions(iterator, metaData);
             if (result.hasError)
                 return result.error;
         }
-        else
-        {
-            return ErrorInfo("unexpected token in global, token: \'" + token + "\'", iterator.currentLine);
-        }
     }
 
     iterator.i = beginI;
     while (iterator.nextToken())
     {
-        if(token == "func")
+        typeResult = getRawType(iterator, metaData.classStore);
+
+        if(isType(typeResult))
+        {
+            Result<BodyStatment_Result<InitializeVariable>> globalInit = convertInitVariable_inGlobal(iterator, metaData, typeResult.value());
+            if (globalInit.hasError)
+                return globalInit.error;
+
+            BodyStatment_Result<InitializeVariable>& globalInitBody = globalInit.value();
+
+            for (auto& statment : globalInitBody.beforeStatment)
+                tree.globalVariables.push_back(statment);
+
+            tree.globalVariables.push_back(globalInitBody.expression);
+
+            for (auto& statment : globalInitBody.afterStatment)
+                tree.globalVariables.push_back(statment);
+        }
+        else if (token == "CompileConst")
+        {
+            Result<shared_ptr<CompileConstVariable>> globalInit = convertCompileConstVariable_inGlobal(iterator, metaData);
+            if (globalInit.hasError)
+                return globalInit.error;
+
+            tree.globalVariables.push_back(globalInit.value());
+        }
+        else if(token == "func")
         {
             Result<FuncDeclaration> funcDeclResult = getFunctionDeclaration(iterator, metaData, true);
             if (funcDeclResult.hasError)

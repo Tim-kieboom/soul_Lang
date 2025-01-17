@@ -66,7 +66,7 @@ static inline bool isExpression_CompileConstant(shared_ptr<SuperExpression>& exp
 	}
 }
 
-Result<BodyStatment_Result<CompileConstVariable>> convertCompileConstVariable(TokenIterator& iterator, MetaData& metaData, CurrentContext& context)
+static inline Result<BodyStatment_Result<CompileConstVariable>> _convertCompileConstVariable(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, bool isGlobalScope)
 {
 	string& token = iterator.currentToken;
 
@@ -112,4 +112,25 @@ Result<BodyStatment_Result<CompileConstVariable>> convertCompileConstVariable(To
 	bodyResult.addToBodyResult(assignResult.value());
 
 	return bodyResult;
+}
+
+Result<shared_ptr<CompileConstVariable>> convertCompileConstVariable_inGlobal(TokenIterator& iterator, MetaData& metaData)
+{
+	vector<Nesting> nestings;
+	nestings.emplace_back();
+	CurrentContext context = CurrentContext(ScopeIterator(nestings));
+	Result<BodyStatment_Result<CompileConstVariable>> bodyResult = _convertCompileConstVariable(iterator, metaData, context, true);
+	if (bodyResult.hasError)
+		return bodyResult.error;
+
+	BodyStatment_Result<CompileConstVariable>& initBody = bodyResult.value();
+	if (!initBody.afterStatment.empty() || !initBody.beforeStatment.empty())
+		return ErrorInfo("illigal global variable assignment", iterator.currentLine);
+
+	return initBody.expression;
+}
+
+Result<BodyStatment_Result<CompileConstVariable>> convertCompileConstVariable(TokenIterator& iterator, MetaData& metaData, CurrentContext& context)
+{
+	return _convertCompileConstVariable(iterator, metaData, context, false);
 }

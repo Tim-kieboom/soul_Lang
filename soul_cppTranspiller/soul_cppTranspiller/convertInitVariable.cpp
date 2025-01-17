@@ -8,7 +8,7 @@ static inline ErrorInfo ERROR_convertInitVariable_outOfBounds(TokenIterator& ite
 	return ErrorInfo("enexpaced end while converting InitVariable", iterator.currentLine);
 }
 
-Result<BodyStatment_Result<InitializeVariable>> convertInitVariable(TokenIterator& iterator, MetaData& metaData, RawType& type, CurrentContext& context)
+static inline Result<BodyStatment_Result<InitializeVariable>> _convertInitVariable(TokenIterator& iterator, MetaData& metaData, RawType& type, CurrentContext& context, bool isInGlobalScope)
 {
 	string& token = iterator.currentToken;
 	vector<shared_ptr<SuperStatement>> statments;
@@ -26,7 +26,11 @@ Result<BodyStatment_Result<InitializeVariable>> convertInitVariable(TokenIterato
 		return ErrorInfo("varName: \'" + token + "\' already exsists", iterator.currentLine);
 
 	VarInfo var = VarInfo(token, toString(type));
-	context.scope.getCurrentNesting().addVariable(var);
+	
+	if (isInGlobalScope)
+		metaData.addToGlobalScope(var);
+	else
+		context.scope.getCurrentNesting().addVariable(var);
 
 	if (!iterator.nextToken())
 		return ERROR_convertInitVariable_outOfBounds(iterator);
@@ -56,4 +60,21 @@ Result<BodyStatment_Result<InitializeVariable>> convertInitVariable(TokenIterato
 	bodyResult.addToBodyResult(assignResult.value());
 	bodyResult.afterStatment.push_back(assignResult.value().expression);
 	return bodyResult;
+}
+
+Result<BodyStatment_Result<InitializeVariable>> convertInitVariable_inGlobal(TokenIterator& iterator, MetaData& metaData, RawType& type)
+{
+	vector<Nesting> nestings;
+	nestings.emplace_back();
+	CurrentContext context = CurrentContext(ScopeIterator(nestings));
+	Result<BodyStatment_Result<InitializeVariable>> bodyResult = _convertInitVariable(iterator, metaData, type, context, true);
+	if (bodyResult.hasError)
+		return bodyResult.error;
+
+	return bodyResult.value();
+}
+
+Result<BodyStatment_Result<InitializeVariable>> convertInitVariable(TokenIterator& iterator, MetaData& metaData, RawType& type, CurrentContext& context)
+{
+	return _convertInitVariable(iterator, metaData, type, context, false);
 }
