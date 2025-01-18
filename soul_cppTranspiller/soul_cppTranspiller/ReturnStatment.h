@@ -8,7 +8,7 @@ public:
 	std::shared_ptr<SuperExpression> expression;
 
 	ReturnStatment() = default;
-	ReturnStatment(std::shared_ptr<SuperExpression>& expression)
+	ReturnStatment(std::shared_ptr<SuperExpression> expression)
 		: expression(expression)
 	{
 	}

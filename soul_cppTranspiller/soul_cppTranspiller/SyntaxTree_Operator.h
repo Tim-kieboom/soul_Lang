@@ -29,5 +29,7 @@ enum class SyntaxTree_Operator
 uint32_t getOperator_Priority(const std::string& opType);
 uint32_t getOperator_Priority(SyntaxTree_Operator opType);
 
+bool isOperator_booleanOp(SyntaxTree_Operator opType);
+
 SyntaxTree_Operator getSyntax_Operator(const std::string& token);
 std::string toString(SyntaxTree_Operator op);

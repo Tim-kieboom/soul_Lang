@@ -48,6 +48,8 @@ public:
 
     T pop()
     {
+
+
         T value = vec.back();
         vec.pop_back();
         return value;
@@ -74,10 +76,13 @@ static inline bool isOperator(const string& token)
     return getSyntax_Operator(token) != SyntaxTree_Operator::Invalid;
 }
 
-static inline Result<void> makeAndPush_BinairyExpression(Stack<shared_ptr<SuperExpression>>& nodeStack, Stack<string>& SymboolStack, int64_t currentLine)
+static inline Result<void> makeAndPush_BinairyExpression(Stack<shared_ptr<SuperExpression>>& nodeStack, Stack<string>& SymboolStack, int64_t currentLine, SyntaxTree_Operator& opType)
 {
     SyntaxTree_Operator oparator = getSyntax_Operator(SymboolStack.pop());
     auto right = nodeStack.pop();
+    if (nodeStack.empty())
+        return ErrorInfo("BinairyEpression invalid at: \'" + right->printToString() + toString(oparator) + "\'", currentLine);
+
     auto left = nodeStack.pop();
 
     if (right->getId() == SyntaxNodeId::EmptyExpresion || left->getId() == SyntaxNodeId::EmptyExpresion)
@@ -149,9 +154,13 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
         {
             while (!SymboolStack.topEquals("("))
             {
-                Result<void> result = makeAndPush_BinairyExpression(/*out*/nodeStack, SymboolStack, iterator.currentLine);
+                SyntaxTree_Operator opType;
+                Result<void> result = makeAndPush_BinairyExpression(/*out*/nodeStack, SymboolStack, iterator.currentLine, opType);
                 if (result.hasError)
                     return result.error;
+
+                if(isType != nullptr && isOperator_booleanOp(opType))
+                    *isType = RawType("bool", false);
             }
 
             if (SymboolStack.topEquals("("))
@@ -172,9 +181,7 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
             shared_ptr<Increment> increment = incrementResult.value();
 
             if (isType != nullptr)
-            {
                 *isType = type;
-            }
 
             nodeStack.push(increment);
         }
@@ -182,9 +189,13 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
         {
             while (!SymboolStack.empty() && getOperator_Priority(SymboolStack.peek()) >= getOperator_Priority(token))
             {
-                Result<void> result = makeAndPush_BinairyExpression(/*out*/nodeStack, SymboolStack, iterator.currentLine);
+                SyntaxTree_Operator opType;
+                Result<void> result = makeAndPush_BinairyExpression(/*out*/nodeStack, SymboolStack, iterator.currentLine, opType);
                 if (result.hasError)
                     return result.error;
+
+                if (isType != nullptr && isOperator_booleanOp(opType))
+                    *isType = RawType("bool", false);
             }
 
             SymboolStack.push(token);
@@ -213,7 +224,6 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
         {
             if (isVariable(varResult))
             {
-
                 Result<RawType> varType = getRawType_fromStringedRawType(varResult.value()->stringedRawType, metaData.classStore, iterator.currentLine);
                 if (varType.hasError)
                     return varType.error;
@@ -253,9 +263,13 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
 
     while (!SymboolStack.empty())
     {
-        Result<void> result = makeAndPush_BinairyExpression(/*out*/nodeStack, SymboolStack, iterator.currentLine);
+        SyntaxTree_Operator opType;
+        Result<void> result = makeAndPush_BinairyExpression(/*out*/nodeStack, SymboolStack, iterator.currentLine, opType);
         if (result.hasError)
             return result.error;
+
+        if (isType != nullptr && isOperator_booleanOp(opType))
+            *isType = RawType("bool", false);
     }
 
     if (nodeStack.empty())

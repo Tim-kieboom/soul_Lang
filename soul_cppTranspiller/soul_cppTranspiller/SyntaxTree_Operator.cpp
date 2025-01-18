@@ -48,6 +48,35 @@ uint32_t getOperator_Priority(SyntaxTree_Operator opType)
 	}
 }
 
+bool isOperator_booleanOp(SyntaxTree_Operator opType)
+{
+	switch (opType)
+	{
+		case SyntaxTree_Operator::IsBigger:
+		case SyntaxTree_Operator::NotEquals:
+		case SyntaxTree_Operator::IsSmaller:
+		case SyntaxTree_Operator::Logical_OR:
+		case SyntaxTree_Operator::Logical_AND:
+		case SyntaxTree_Operator::IsBigger_Equals:
+		case SyntaxTree_Operator::IsSmaller_Equals:
+			return true;
+
+		case SyntaxTree_Operator::Pow:
+		case SyntaxTree_Operator::Mul:
+		case SyntaxTree_Operator::Div:
+		case SyntaxTree_Operator::Add:
+		case SyntaxTree_Operator::Sub:
+		case SyntaxTree_Operator::Root:
+		case SyntaxTree_Operator::Modulo:
+		case SyntaxTree_Operator::Invalid:
+		case SyntaxTree_Operator::BitWise_OR:
+		case SyntaxTree_Operator::BitWise_AND:
+		case SyntaxTree_Operator::BitWise_XOR:
+		default:
+			return false;
+	}
+}
+
 SyntaxTree_Operator getSyntax_Operator(const std::string& token)
 {
 	if (token == toString(SyntaxTree_Operator::Equals))

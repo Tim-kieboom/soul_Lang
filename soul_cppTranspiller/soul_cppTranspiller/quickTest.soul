@@ -3,14 +3,16 @@
 //for syntax highlighting
 func ctor();
 func println(str msg);
+func println();
 func print(str msg);
 func checkThrow(bool condition, str msg);
 func checkFail(bool condition, str msg);
-struct func;
 struct pub;
+struct mut;
+struct func;
 struct priv;
 struct delete;
-struct mut;
+struct Funcional;
 struct CompileConst;
 class i8;
 class i16;
@@ -27,9 +29,46 @@ class none;
 class f;
 # endInvis
 
-CompileConst i32 CONSTEXPRE = 1;
-i32 variable = 1;
+//CompileConst _Funcional_pow(f64 base, ui32 exponent, f64 result): f64
+//{
+//    return  if(exponent <= 0) 
+//                result 
+//            else
+//                _Funcional_pow
+//                (
+//                    base, 
+//                    (exponent - 1), 
+//                    (result * base)
+//                );
+//}
 
+//CompileConst Funcional_pow(f64 base, i64 exponent): f64
+//{
+//    CompileConst f64 result = base;
+//    CompileConst ui32 uiExp = if(exponent < 0) 
+//                                  ((exponent * -1) - 1) 
+//                              else 
+//                                  (exponent - 1);
+
+//    return  if(exponent < 0) 
+//                1.0 / _Functional_pow
+//                (
+//                    base,
+//                    uiExp,
+//                    result
+//                )
+//            else
+//                _Functional_pow
+//                (
+//                    base,
+//                    uiExp,
+//                    result
+//                );
+//}
+
+CompileConst i32 CONSTEXPRE  = 2 </ 9; // root(9, 2)
+CompileConst i32 CONSTEXPRE2 = 3 ** 2; // pow(3, 2)
+i32 variable = 1;
 
 func increment(out i32 foo): none
 {
@@ -41,7 +80,7 @@ func test(): str
     return "foo";
 }
 
-func test(mut str foo, mut f64 bar = 2): str&
+func test(mut str foo, mut f64 bar = 2): str &
 {
     println(bar);
     foo = 2;
@@ -63,16 +102,28 @@ func test(i32 foo, mut f64 bar): str &
 
 func main(): i32
 {
-    print("");
+    println();
 
     testOptional(1, 2);
     testOptional(name: "bob", 1, optional: 3, 2);
 
-    //if (true)
-    //{
-    //    if(true)
-    //        println("hello world");
-    //}
+
+    if (true)
+    {
+        if (true)
+            println("hello world");
+    }
+    else if (5 == 5)
+    {
+        println();
+    }
+    else 
+    {
+        println();
+    }
+
+    bool condition = true;
+    //bool compountIfResult = if(condition == true) true else false; 
 
     test();
     str result = test(1 + 2, 2.0);

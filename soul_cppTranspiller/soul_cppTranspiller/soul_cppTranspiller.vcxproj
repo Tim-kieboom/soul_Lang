@@ -134,6 +134,7 @@
     <ClCompile Include="convertExpression.cpp" />
     <ClCompile Include="convertBody.cpp" />
     <ClCompile Include="convertFunctionCall.cpp" />
+    <ClCompile Include="convertIf_else_elseIfStatments.cpp" />
     <ClCompile Include="convertInitVariable.cpp" />
     <ClCompile Include="convertReturnStatment.cpp" />
     <ClCompile Include="DuckType.cpp" />
@@ -165,16 +166,19 @@
   <ItemGroup>
     <ClInclude Include="ClassInfo.h" />
     <ClInclude Include="CompileConstVariable.h" />
+    <ClInclude Include="ConditionalStatmentsId.h" />
     <ClInclude Include="convertAssignment.h" />
     <ClInclude Include="convertCompileConstVariable.h" />
     <ClInclude Include="convertExpression.h" />
     <ClInclude Include="convertBody.h" />
     <ClInclude Include="convertFunctionCall.h" />
+    <ClInclude Include="convertIf_else_elseIfStatments.h" />
     <ClInclude Include="convertInitVariable.h" />
     <ClInclude Include="convertReturnStatment.h" />
     <ClInclude Include="CurrentContext.h" />
     <ClInclude Include="DuckType.h" />
     <ClInclude Include="EmptyExpression.h" />
+    <ClInclude Include="EmptyStatment.h" />
     <ClInclude Include="FunctionCall.h" />
     <ClInclude Include="FunctionCallStatment.h" />
     <ClInclude Include="getAbstractSyntaxTree.h" />
@@ -186,6 +190,7 @@
     <ClInclude Include="ClassNode.h" />
     <ClInclude Include="C_strPair.h" />
     <ClInclude Include="getFunctionDeclaration.h" />
+    <ClInclude Include="If_else_elseIf_Statments.h" />
     <ClInclude Include="Increment.h" />
     <ClInclude Include="internalFuntions.h" />
     <ClInclude Include="Nesting.h" />
@@ -197,6 +202,7 @@
     <ClInclude Include="soulChecker.h" />
     <ClInclude Include="storeArguments.h" />
     <ClInclude Include="StringLiteral.h" />
+    <ClInclude Include="SuperConditionalStatment.h" />
     <ClInclude Include="SuperExpression.h" />
     <ClInclude Include="FieldNode.h" />
     <ClInclude Include="FuncDeclaration.h" />

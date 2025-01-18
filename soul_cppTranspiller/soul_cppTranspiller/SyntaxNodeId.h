@@ -10,8 +10,12 @@ enum class SyntaxNodeId
 	/*Statment*/
 	FieldNode,
 	Assignment,
+	IfStatment,
 	MethodeNode,
+	ElseStatment,
+	EmptyStatment,
 	ReturnStatment,
+	ElseIfStatment,
 	InitializeVariable,
 	FunctionCallStatment,
 	CompileConstVariable,

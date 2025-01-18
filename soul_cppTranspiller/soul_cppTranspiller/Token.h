@@ -29,7 +29,7 @@ struct TokenIterator
 
 	bool peekToken(std::string& token, int64_t step = 1)
 	{
-		if (i + step > (int64_t)tokens.size())
+		if (i + step >= (int64_t)tokens.size())
 			return false;
 
 		token = tokens.at(i + step).text;
@@ -50,7 +50,7 @@ struct TokenIterator
 
 	bool skipToken(int64_t step = 1)
 	{
-		if (i + step > (int64_t)tokens.size())
+		if (i + step >= (int64_t)tokens.size())
 			return false;
 
 		i += step;
@@ -61,7 +61,7 @@ struct TokenIterator
 
 	bool at(int64_t index)
 	{
-		if (index < 0 || index >(int64_t)tokens.size())
+		if (index < 0 || index >= (int64_t)tokens.size())
 			return false;
 
 		const Token& token = tokens.at(i);

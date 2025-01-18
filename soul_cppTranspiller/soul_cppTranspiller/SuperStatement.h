@@ -19,6 +19,13 @@ struct BodyStatment_Result
 	}
 
 	template <typename K>
+	BodyStatment_Result(std::shared_ptr<T> expression, BodyStatment_Result<K>& other)
+		: expression(expression)
+	{
+		addToBodyResult(other);
+	}
+
+	template <typename K>
 	void addToBodyResult(BodyStatment_Result<K>& other)
 	{
 		for (auto& stament : other.beforeStatment)

@@ -3,6 +3,7 @@
 #include "Assignment.h"
 #include "stringTools.h"
 #include "soulChecker.h"
+#include "EmptyStatment.h"
 #include "convertExpression.h"
 #include "convertAssignment.h"
 #include "convertInitVariable.h"
@@ -10,8 +11,12 @@
 #include "CompileConstVariable.h"
 #include "FunctionCallStatment.h"
 #include "convertReturnStatment.h"
+#include "ConditionalStatmentsId.h"
+#include "SuperConditionalStatment.h"
 #include "convertCompileConstVariable.h"
+#include "convertIf_else_elseIfStatments.h"
 using namespace std;
+
 
 static inline ErrorInfo ERROR_convertBody_outOfBounds(FuncDeclaration& funcInfo, TokenIterator& iterator)
 {
@@ -33,49 +38,166 @@ static inline bool hasMissingReturnStatment(const std::string& functionName, con
 	return functionName != "main" && returnType.toPrimitiveType() != PrimitiveType::none && !hasReturnStatment;
 }
 
-//static inline Result<shared_ptr<Assignment>> _convertBeforeVarIncrement(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context)
-//{
-//	string& token = iterator.currentToken;
-//
-//	string incrementToken = token;
-//	if (!iterator.nextToken())
-//		return ERROR_convertBody_outOfBounds(funcInfo, iterator);
-//
-//	Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
-//	if (varResult.hasError)
-//		return ErrorInfo("token after \'" + incrementToken + "\' has to be a variable", iterator.currentLine);
-//
-//	VarInfo* var = varResult.value();
-//
-//	Result<RawType> typeResult = getRawType_fromStringedRawType((*var).stringedRawType, metaData.classStore, iterator.currentLine);
-//	if (typeResult.hasError)
-//		return typeResult.error;
-//
-//	if (getDuckType(typeResult.value()) != DuckType::number)
-//		return ErrorInfo("variable: \'" + (*var).name + "\' has to be of DuckType::number to use de/increment", iterator.currentLine);
-//
-//	Increment increment = Increment( true, (token == "--"), 1);
-//
-//	return make_shared<Assignment>
-//		(
-//			Assignment((*var).name, make_shared<Increment>(increment))
-//		);
-//}
-
-template <typename T>
-static inline void addBodyResult_ToBody(/*out*/shared_ptr<BodyNode>& body, BodyStatment_Result<T>& bodyResult, shared_ptr<SuperStatement> statment)
+static inline Result<BodyStatment_Result<SuperConditionalStatment>> _convertConditionStatment(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, ConditionalStatmentsId conditionStatmentId)
 {
-	for (auto& statment_ : bodyResult.beforeStatment)
-		body->addStatment(statment_);
+	switch(conditionStatmentId)
+	{
+	case ConditionalStatmentsId::if_:
+		return convertIfStatment(iterator, metaData, funcInfo, context);
+	case ConditionalStatmentsId::else_:
+		return convertElseStatment(iterator, metaData, funcInfo, context);
+	case ConditionalStatmentsId::else_if_:
+		return convertElseIfStatment(iterator, metaData, funcInfo, context);
 
-	body->addStatment(statment);
+	case ConditionalStatmentsId::for_:
+		return {};
+	case ConditionalStatmentsId::while_:
+		return {};
 
-	for (auto& statment_ : bodyResult.afterStatment)
-		body->addStatment(statment_);
+	case ConditionalStatmentsId::switch_:
+		return {};
+
+	case ConditionalStatmentsId::invalid:
+	default:
+		return ErrorInfo("conditional statment type unknown", iterator.currentLine);
+	}
 }
 
-Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context)
+Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context)
 {
+	uint32_t openCurlyBracketCounter = 0;
+	return convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, false);
+}
+
+Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, uint32_t& openCurlyBracketCounter, bool isFuncBody)
+{
+	string& token = iterator.currentToken;
+
+	if (token == "{")
+	{
+		openCurlyBracketCounter++;
+		if (!iterator.nextToken())
+			return ERROR_convertBody_outOfBounds(funcInfo, iterator);
+	}
+	else if (token == "}")
+	{
+		openCurlyBracketCounter--;
+
+		if (openCurlyBracketCounter != 0)
+		{
+			if (!iterator.nextToken())
+				return ERROR_convertBody_outOfBounds(funcInfo, iterator);
+		}
+
+		Result<RawType> returnTypeResult = getRawType_fromStringedRawType(funcInfo.returnType, metaData.classStore, iterator.currentLine);
+		if (returnTypeResult.hasError)
+			return returnTypeResult.error;
+
+		RawType& returnType = returnTypeResult.value();
+
+		if (isFuncBody && hasMissingReturnStatment(funcInfo.functionName, returnType, funcInfo.hasReturnStament))
+			return ErrorInfo("Function needs to return something", iterator.currentLine);
+
+		return BodyStatment_Result<SuperStatement>(make_shared<EmptyStatment>(EmptyStatment()));
+	}
+
+	Result<RawType> typeResult = getRawType(iterator, metaData.classStore);
+	Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
+
+	string nextToken;
+	if (!iterator.peekToken(nextToken))
+		nextToken = "";
+
+	if (initListEquals({ "++", "--" }, token))
+	{
+		string varName;
+		if (!iterator.peekToken(varName))
+			return ERROR_convertBody_outOfBounds(funcInfo, iterator);
+
+		varResult = context.scope.tryGetVariable_fromCurrent(varName, metaData.globalScope, iterator.currentLine);
+		if (varResult.hasError)
+			return varResult.error;
+
+		Result<BodyStatment_Result<SuperExpression>> increment = convertExpression(iterator, metaData, context, { ";" }, true);
+		if (increment.hasError)
+			return increment.error;
+
+		auto assignment = make_shared<Assignment>(Assignment(varName, increment.value().expression));
+		auto res = BodyStatment_Result<SuperStatement>(assignment);
+		res.addToBodyResult(increment.value());
+		return res;
+	}
+	else if (isType(typeResult))
+	{
+		Result<BodyStatment_Result<InitializeVariable>> initResult = convertInitVariable(iterator, metaData, typeResult.value(), context);
+		if (initResult.hasError)
+			return initResult.error;
+
+		BodyStatment_Result<InitializeVariable>& init = initResult.value();
+		return BodyStatment_Result<SuperStatement>(init.expression, init);
+	}
+	else if (isVariable(varResult))
+	{
+		Result<BodyStatment_Result<Assignment>> assignResult = convertAssignment(iterator, metaData, varResult.value(), context);
+		if (assignResult.hasError)
+			return assignResult.error;
+
+		BodyStatment_Result<Assignment>& assign = assignResult.value();
+		return BodyStatment_Result<SuperStatement>(assign.expression, assign);
+	}
+	else if (metaData.isFunction(token))
+	{
+		Result<BodyStatment_Result<FunctionCall>> funcResult = convertFunctionCall(iterator, metaData, context, token);
+		if (funcResult.hasError)
+			return funcResult.error;
+
+		BodyStatment_Result<FunctionCall>& funcCall = funcResult.value();
+		shared_ptr<FunctionCallStatment> funcStatment = make_shared<FunctionCallStatment>(FunctionCallStatment(funcCall.expression));
+
+		if (!iterator.nextToken())
+			return ERROR_convertBody_outOfBounds(funcInfo, iterator);
+
+		return BodyStatment_Result<SuperStatement>(funcStatment, funcCall);
+	}
+	else if (token == "return")
+	{
+		Result<BodyStatment_Result<ReturnStatment>> returnResult = convertReturnStatment(iterator, metaData, context, funcInfo);
+		if (returnResult.hasError)
+			return returnResult.error;
+
+		BodyStatment_Result<ReturnStatment>& returnStatment = returnResult.value();
+
+		funcInfo.hasReturnStament = true;
+		return BodyStatment_Result<SuperStatement>(returnStatment.expression, returnStatment);
+	}
+	else if (token == "CompileConst")
+	{
+		Result<BodyStatment_Result<CompileConstVariable>> compileConst = convertCompileConstVariable(iterator, metaData, context);
+		if (compileConst.hasError)
+			return compileConst.error;
+
+		return BodyStatment_Result<SuperStatement>(compileConst.value().expression, compileConst.value());
+	}
+	else if (getConditionStatment(token, nextToken) != ConditionalStatmentsId::invalid)
+	{
+		ConditionalStatmentsId conditionStatment = getConditionStatment(token, nextToken);
+
+		Result<BodyStatment_Result<SuperConditionalStatment>> conditionalstatmentResult = _convertConditionStatment(iterator, metaData, funcInfo, context, conditionStatment);
+		if (conditionalstatmentResult.hasError)
+			return conditionalstatmentResult.error;
+
+		BodyStatment_Result<SuperConditionalStatment>& conditionalStatment = conditionalstatmentResult.value();
+		return BodyStatment_Result<SuperStatement>(conditionalStatment.expression, conditionalStatment);
+	}
+	else
+	{
+		return ErrorInfo("unknown token: \'" + token + "\'", iterator.currentLine);
+	}
+}
+
+Result<shared_ptr<BodyNode>> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, bool isFuncBody)
+{
+	static const shared_ptr<BodyNode> emptyBodyNode = make_shared<BodyNode>(BodyNode());
 	shared_ptr<BodyNode> body = make_unique<BodyNode>();
 
 	string checkBracket;
@@ -85,114 +207,42 @@ Result<FuncNode> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDe
 	if (checkBracket != "{")
 		return ErrorInfo("no '{' after function declaration, funcName: \'" + string(funcInfo.functionName) + '\'', iterator.currentLine);
 
+	if (!iterator.peekToken(checkBracket, /*steps:*/2))
+		return ERROR_convertBody_outOfBounds(funcInfo, iterator);
+
+	if (checkBracket == "}")
+	{
+		if (!iterator.nextToken(/*steps:*/2))
+			return ERROR_convertBody_outOfBounds(funcInfo, iterator);
+
+		return emptyBodyNode;
+	}
+
 	string& token = iterator.currentToken;
-
-	Result<RawType> returnTypeResult = getRawType_fromStringedRawType(funcInfo.returnType, metaData.classStore, iterator.currentLine);
-	if (returnTypeResult.hasError)
-		return returnTypeResult.error;
-
-	RawType& returnType = returnTypeResult.value();
 
 	bool hasReturnStatment = false;
 	Result<string> result;
 	uint32_t openCurlyBracketCounter = 0;
 	while (iterator.nextToken())
 	{
-		if (iterator.currentLine == 70)
-			int f = 0;
+		if (iterator.currentLine == 148)
+			int d = 0;
 
-		if (token == "{")
-		{
-			openCurlyBracketCounter++;
-			continue;
-		}
-		else if (token == "}")
-		{
-			openCurlyBracketCounter--;
+		Result<BodyStatment_Result<SuperStatement>> bodyElementResult = convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, isFuncBody);
+		if (bodyElementResult.hasError)
+			return bodyElementResult.error;
 
-			if (openCurlyBracketCounter != 0)
-				continue;
+		BodyStatment_Result<SuperStatement>& bodyElement = bodyElementResult.value();
+		if (bodyElement.expression->getId() == SyntaxNodeId::EmptyStatment)
+			return body;
 
-			if (hasMissingReturnStatment(funcInfo.functionName, returnType, hasReturnStatment))
-				return ErrorInfo("Function needs to return something", iterator.currentLine);
+		for (auto& statment_ : bodyElement.beforeStatment)
+			body->addStatment(statment_);
 
-			return FuncNode(funcInfo, move(body));
-		}
+		body->addStatment(bodyElement.expression);
 
-		Result<RawType> typeResult = getRawType(iterator, metaData.classStore);
-		Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
-
-		if (initListEquals({ "++", "--" }, token))
-		{
-			string varName;
-			if (!iterator.peekToken(varName))
-				break;
-
-			varResult = context.scope.tryGetVariable_fromCurrent(varName, metaData.globalScope, iterator.currentLine);
-			if (varResult.hasError)
-				return varResult.error;
-
-			Result<BodyStatment_Result<SuperExpression>> increment = convertExpression(iterator, metaData, context, { ";" }, true);
-			if (increment.hasError)
-				return increment.error;
-
-			auto assignment = make_shared<Assignment>(Assignment(varName, increment.value().expression));
-			addBodyResult_ToBody(/*out*/body, increment.value(), assignment);
-		}
-		else if(isType(typeResult))
-		{
-			Result<BodyStatment_Result<InitializeVariable>> initResult = convertInitVariable(iterator, metaData, typeResult.value(), context);
-			if (initResult.hasError)
-				return initResult.error;
-
-			BodyStatment_Result<InitializeVariable>& init = initResult.value();
-			addBodyResult_ToBody(/*out*/body, init, init.expression);
-		}
-		else if(isVariable(varResult))
-		{
-			Result<BodyStatment_Result<Assignment>> assignResult = convertAssignment(iterator, metaData, varResult.value(), context);
-			if (assignResult.hasError)
-				return assignResult.error;
-
-			BodyStatment_Result<Assignment>& assign = assignResult.value();
-			addBodyResult_ToBody(/*out*/body, assign, assign.expression);
-		}
-		else if(metaData.isFunction(token))
-		{
-			Result<BodyStatment_Result<FunctionCall>> funcResult = convertFunctionCall(iterator, metaData, context, token);
-			if (funcResult.hasError)
-				return funcResult.error;
-
-			BodyStatment_Result<FunctionCall>& funcCall = funcResult.value();
-			shared_ptr<FunctionCallStatment> funcStatment = make_shared<FunctionCallStatment>(FunctionCallStatment(funcCall.expression));
-			addBodyResult_ToBody(/*out*/body, funcCall, funcStatment);
-
-			if (!iterator.nextToken())
-				break;
-		}
-		else if(token == "return")
-		{
-			Result<BodyStatment_Result<ReturnStatment>> returnResult = convertReturnStatment(iterator, metaData, context, returnType);
-			if (returnResult.hasError)
-				return returnResult.error;
-
-			BodyStatment_Result<ReturnStatment>& returnStatment = returnResult.value();
-			addBodyResult_ToBody(/*out*/body, returnStatment, returnStatment.expression);
-
-			hasReturnStatment = true;
-		}
-		else if(token == "CompileConst")
-		{
-			Result<BodyStatment_Result<CompileConstVariable>> compileConst = convertCompileConstVariable(iterator, metaData, context);
-			if (compileConst.hasError)
-				return compileConst.error;
-
-			addBodyResult_ToBody(/*out*/body, compileConst.value(), compileConst.value().expression);
-		}
-		else
-		{
-			return ErrorInfo("unknown token: \'" +token+ "\'", iterator.currentLine);
-		}
+		for (auto& statment_ : bodyElement.afterStatment)
+			body->addStatment(statment_);
 	}
 
 	return ERROR_convertBody_outOfBounds(funcInfo, iterator);

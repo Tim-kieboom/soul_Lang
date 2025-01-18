@@ -22,6 +22,14 @@ static const FuncDeclaration interalFunc_println = FuncDeclaration
 	false
 );
 
+static const FuncDeclaration interalFunc_println_empty = FuncDeclaration
+(
+	"println",
+	toString(PrimitiveType::none),
+	{},
+	false
+);
+
 static const FuncDeclaration interalFunc__soul_format_string__ = FuncDeclaration
 (
 	"__soul_format_string__",
@@ -115,6 +123,7 @@ static const std::initializer_list<FuncDeclaration> internalFunctions =
 	interalFunc_println,
 	interalFunc_checkFail,
 	interalFunc_checkThrow,
+	interalFunc_println_empty,
 	interalFunc_checkFail_debug,
 	interalFunc_checkThrow_debug,
 	interalFunc__soul_format_string__

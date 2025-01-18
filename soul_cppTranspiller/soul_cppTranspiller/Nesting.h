@@ -29,7 +29,7 @@ struct Nesting
             this->vars.push_back(var);
     }
 
-    static Nesting makeChild(Nesting* parent, std::vector<Nesting>& scope)
+    static Nesting makeChild(Nesting* parent)
     {
         if (parent == nullptr)
             return Nesting(0);
@@ -40,9 +40,9 @@ struct Nesting
         return child;
     }
 
-    static Nesting makeChild(Nesting* parent, std::vector<Nesting>& scope, std::initializer_list<VarInfo> vars)
+    static Nesting makeChild(Nesting* parent, std::initializer_list<VarInfo> vars)
     {
-        Nesting child = Nesting::makeChild(parent, scope);
+        Nesting child = Nesting::makeChild(parent);
         for (const auto& var : vars)
             child.vars.push_back(var);
 

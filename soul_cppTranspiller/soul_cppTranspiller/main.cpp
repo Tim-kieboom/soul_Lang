@@ -59,7 +59,7 @@ void printTokenizer(const string& sourceFile, const vector<Token>& tokens, const
 static string execAndPrint(const char* cmd)
 {
     if (cmd == nullptr)
-        return nullptr;
+        return string();
 
     string result;
 

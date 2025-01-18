@@ -11,7 +11,7 @@
 
 using namespace std;
 
-static inline void addFunc(SyntaxTree& tree, FuncNode& func)
+static inline void addFunc(SyntaxTree& tree, FuncNode&& func)
 {
     tree.funcsAndClasses.emplace_back(make_shared<FuncNode>(move(func)));
 }
@@ -209,20 +209,21 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
         }
         else if(token == "func")
         {
-            Result<FuncDeclaration> funcDeclResult = getFunctionDeclaration(iterator, metaData, true);
+            Result<FuncDeclaration> funcDeclResult = getFunctionDeclaration(iterator, metaData, /*isForwardDeclared:*/true);
             if (funcDeclResult.hasError)
                 return funcDeclResult.error;
 
+            FuncDeclaration funcInfo = funcDeclResult.value();
             vector<Nesting> funcScope;
             addArgsToScope(funcScope, funcDeclResult.value());
 
             CurrentContext context = CurrentContext(ScopeIterator(funcScope));
 
-            Result<FuncNode> funcResult = convertBody(iterator, metaData, funcDeclResult.value(), context);
+            Result<shared_ptr<BodyNode>> funcResult = convertBody(iterator, metaData, funcInfo, context, /*isFuncBody:*/true);
             if (funcResult.hasError)
                 return funcResult.error;
 
-            addFunc(/*out*/tree, funcResult.value());
+            addFunc(/*out*/tree, FuncNode(funcInfo, funcResult.value()));
         }
         else if(token == "class")
         {
