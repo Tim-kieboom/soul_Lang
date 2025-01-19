@@ -115,14 +115,16 @@ func main(): i32
         println(i);
     }
 
-for (i32 i = 0; i < 10; i++) 
+    for (i32 i = 0; i < 10; i++) 
     {
         println();
+        break;
     }
 
     i32 i = 0;
     for (; i < 10; i++)
     {
+        continue;
         println();
     }
 

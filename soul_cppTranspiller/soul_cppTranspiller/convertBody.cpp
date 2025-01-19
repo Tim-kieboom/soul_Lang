@@ -14,6 +14,7 @@
 #include "FunctionCallStatment.h"
 #include "convertReturnStatment.h"
 #include "ConditionalStatmentsId.h"
+#include "Continue_Break_Statments.h"
 #include "SuperConditionalStatment.h"
 #include "convertCompileConstVariable.h"
 #include "convertIf_else_elseIfStatments.h"
@@ -65,13 +66,23 @@ static inline Result<BodyStatment_Result<SuperConditionalStatment>> _convertCond
 	}
 }
 
-Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context)
+static inline bool isFuncNode(SyntaxNodeId parentNode)
 {
-	uint32_t openCurlyBracketCounter = 0;
-	return convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, false);
+	return parentNode == SyntaxNodeId::FuncNode;
 }
 
-Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, uint32_t& openCurlyBracketCounter, bool isFuncBody)
+static inline bool isIteratorNode(SyntaxNodeId parentNode)
+{
+	return parentNode == SyntaxNodeId::ForStatment || parentNode == SyntaxNodeId::WhileStatment;
+}
+
+Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, SyntaxNodeId parentNode)
+{
+	uint32_t openCurlyBracketCounter = 0;
+	return convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, parentNode);
+}
+
+Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, uint32_t& openCurlyBracketCounter, SyntaxNodeId parentNode)
 {
 	string& token = iterator.currentToken;
 
@@ -97,7 +108,7 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 
 		RawType& returnType = returnTypeResult.value();
 
-		if (isFuncBody && hasMissingReturnStatment(funcInfo.functionName, returnType, funcInfo.hasReturnStament))
+		if (isFuncNode(parentNode) && hasMissingReturnStatment(funcInfo.functionName, returnType, funcInfo.hasReturnStament))
 			return ErrorInfo("Function needs to return something", iterator.currentLine);
 
 		return BodyStatment_Result<SuperStatement>(make_shared<EmptyStatment>(EmptyStatment()));
@@ -191,13 +202,31 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 		BodyStatment_Result<SuperConditionalStatment>& conditionalStatment = conditionalstatmentResult.value();
 		return BodyStatment_Result<SuperStatement>(conditionalStatment.expression, conditionalStatment);
 	}
+	else if (initListEquals({"continue", "break"}, token))
+	{
+		if (!isIteratorNode(parentNode))
+			return ErrorInfo("\'" + token + "'\', is only allowed in Iterators", iterator.currentLine);
+
+		string iterationStatment = token;
+
+		if (!iterator.nextToken())
+			return ERROR_convertBody_outOfBounds(funcInfo, iterator);
+
+		if (token != ";")
+			return ErrorInfo("after \'" +token+ "\' only ';' is allowed", iterator.currentLine);
+
+		if(iterationStatment == "continue")
+			return BodyStatment_Result<SuperStatement>(make_shared<ContinueStatment>(ContinueStatment()));
+		else
+			return BodyStatment_Result<SuperStatement>(make_shared<BreakStatment>(BreakStatment()));
+	}
 	else
 	{
 		return ErrorInfo("unknown token: \'" + token + "\'", iterator.currentLine);
 	}
 }
 
-Result<shared_ptr<BodyNode>> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, bool isFuncBody)
+Result<shared_ptr<BodyNode>> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, SyntaxNodeId parentNode)
 {
 	static const shared_ptr<BodyNode> emptyBodyNode = make_shared<BodyNode>(BodyNode());
 	shared_ptr<BodyNode> body = make_unique<BodyNode>();
@@ -230,7 +259,7 @@ Result<shared_ptr<BodyNode>> convertBody(TokenIterator& iterator, MetaData& meta
 		if (iterator.currentLine == 110)
 			int d = 0;
 
-		Result<BodyStatment_Result<SuperStatement>> bodyElementResult = convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, isFuncBody);
+		Result<BodyStatment_Result<SuperStatement>> bodyElementResult = convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, parentNode);
 		if (bodyElementResult.hasError)
 			return bodyElementResult.error;
 

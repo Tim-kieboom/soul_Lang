@@ -169,6 +169,7 @@
     <ClInclude Include="ClassInfo.h" />
     <ClInclude Include="CompileConstVariable.h" />
     <ClInclude Include="ConditionalStatmentsId.h" />
+    <ClInclude Include="Continue_Break_Statments.h" />
     <ClInclude Include="convertAssignment.h" />
     <ClInclude Include="convertCompileConstVariable.h" />
     <ClInclude Include="convertExpression.h" />

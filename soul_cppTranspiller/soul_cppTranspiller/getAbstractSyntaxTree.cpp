@@ -219,7 +219,7 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
 
             CurrentContext context = CurrentContext(ScopeIterator(funcScope));
 
-            Result<shared_ptr<BodyNode>> funcResult = convertBody(iterator, metaData, funcInfo, context, /*isFuncBody:*/true);
+            Result<shared_ptr<BodyNode>> funcResult = convertBody(iterator, metaData, funcInfo, context, /*parentNode:*/SyntaxNodeId::FuncNode);
             if (funcResult.hasError)
                 return funcResult.error;
 

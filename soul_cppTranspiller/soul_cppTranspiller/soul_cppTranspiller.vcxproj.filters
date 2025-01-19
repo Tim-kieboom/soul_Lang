@@ -449,5 +449,8 @@
     <ClInclude Include="convertForStatment.h">
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\ConditionalStatment</Filter>
     </ClInclude>
+    <ClInclude Include="Continue_Break_Statments.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Statements</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

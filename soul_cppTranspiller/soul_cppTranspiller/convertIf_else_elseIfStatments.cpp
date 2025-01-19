@@ -26,7 +26,7 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertCondition(Tok
     return expression.value();
 }
 
-static inline Result<shared_ptr<BodyNode>> _convertStatmentBody(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context)
+static inline Result<shared_ptr<BodyNode>> _convertStatmentBody(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, SyntaxNodeId parentNode)
 {
     ScopeIterator& scope = context.scope;
     uint64_t statementNestingIndex = scope.scope.size();
@@ -46,7 +46,7 @@ static inline Result<shared_ptr<BodyNode>> _convertStatmentBody(TokenIterator& i
         if (!iterator.nextToken())
             return ErrorInfo("unexpected end while parsing if statment", iterator.currentLine);
 
-        Result<BodyStatment_Result<SuperStatement>> statmentResult = convertBodyElement(iterator, metaData, funcInfo, ifContext);
+        Result<BodyStatment_Result<SuperStatement>> statmentResult = convertBodyElement(iterator, metaData, funcInfo, ifContext, parentNode);
         if (statmentResult.hasError)
             return statmentResult.error;
 
@@ -64,7 +64,7 @@ static inline Result<shared_ptr<BodyNode>> _convertStatmentBody(TokenIterator& i
         return body;
     }
 
-    Result<shared_ptr<BodyNode>> ifBodyResult = convertBody(iterator, metaData, funcInfo, ifContext, /*isFuncBody:*/false);
+    Result<shared_ptr<BodyNode>> ifBodyResult = convertBody(iterator, metaData, funcInfo, ifContext, parentNode);
     if (ifBodyResult.hasError)
         return ifBodyResult.error;
 
@@ -73,7 +73,7 @@ static inline Result<shared_ptr<BodyNode>> _convertStatmentBody(TokenIterator& i
 
 Result<BodyStatment_Result<SuperConditionalStatment>> convertElseStatment(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context)
 {
-    Result<shared_ptr<BodyNode>> ifBodyResult = _convertStatmentBody(iterator, metaData, funcInfo, context);
+    Result<shared_ptr<BodyNode>> ifBodyResult = _convertStatmentBody(iterator, metaData, funcInfo, context, SyntaxNodeId::ElseStatment);
     if (ifBodyResult.hasError)
         return ifBodyResult.error;
 
@@ -92,7 +92,7 @@ Result<BodyStatment_Result<SuperConditionalStatment>> convertElseIfStatment(Toke
     if (conditionResult.hasError)
         return conditionResult.error;
 
-    Result<shared_ptr<BodyNode>> ifBodyResult = _convertStatmentBody(iterator, metaData, funcInfo, context);
+    Result<shared_ptr<BodyNode>> ifBodyResult = _convertStatmentBody(iterator, metaData, funcInfo, context, SyntaxNodeId::ElseIfStatment);
     if (ifBodyResult.hasError)
         return ifBodyResult.error;
 
@@ -111,7 +111,7 @@ Result<BodyStatment_Result<SuperConditionalStatment>> convertIfStatment(TokenIte
     if (conditionResult.hasError)
         return conditionResult.error;
 
-    Result<shared_ptr<BodyNode>> ifBodyResult = _convertStatmentBody(iterator, metaData, funcInfo, context);
+    Result<shared_ptr<BodyNode>> ifBodyResult = _convertStatmentBody(iterator, metaData, funcInfo, context, SyntaxNodeId::IfStatment);
     if (ifBodyResult.hasError)
         return ifBodyResult.error;
 

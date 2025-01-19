@@ -46,7 +46,7 @@ static inline Result<shared_ptr<BodyNode>> _convertStatmentBody(TokenIterator& i
         if (!iterator.nextToken())
             return ErrorInfo("unexpected end while parsing if statment", iterator.currentLine);
 
-        Result<BodyStatment_Result<SuperStatement>> statmentResult = convertBodyElement(iterator, metaData, funcInfo, ifContext);
+        Result<BodyStatment_Result<SuperStatement>> statmentResult = convertBodyElement(iterator, metaData, funcInfo, ifContext, SyntaxNodeId::WhileStatment);
         if (statmentResult.hasError)
             return statmentResult.error;
 
@@ -64,7 +64,7 @@ static inline Result<shared_ptr<BodyNode>> _convertStatmentBody(TokenIterator& i
         return body;
     }
 
-    Result<shared_ptr<BodyNode>> ifBodyResult = convertBody(iterator, metaData, funcInfo, ifContext, /*isFuncBody:*/false);
+    Result<shared_ptr<BodyNode>> ifBodyResult = convertBody(iterator, metaData, funcInfo, ifContext, SyntaxNodeId::WhileStatment);
     if (ifBodyResult.hasError)
         return ifBodyResult.error;
 
