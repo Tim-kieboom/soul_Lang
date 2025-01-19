@@ -208,6 +208,12 @@
     <ClCompile Include="convertIf_else_elseIfStatments.cpp">
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\ConditionalStatment</Filter>
     </ClCompile>
+    <ClCompile Include="convertWhileStatment.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\ConditionalStatment</Filter>
+    </ClCompile>
+    <ClCompile Include="convertForStatment.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\ConditionalStatment</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.soul">
@@ -427,6 +433,21 @@
     </ClInclude>
     <ClInclude Include="EmptyStatment.h">
       <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Statements</Filter>
+    </ClInclude>
+    <ClInclude Include="WhileStatment.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Statements</Filter>
+    </ClInclude>
+    <ClInclude Include="convertWhileStatment.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\ConditionalStatment</Filter>
+    </ClInclude>
+    <ClInclude Include="ForStatment.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Statements</Filter>
+    </ClInclude>
+    <ClInclude Include="Nullable.h">
+      <Filter>Source Files\MetaData</Filter>
+    </ClInclude>
+    <ClInclude Include="convertForStatment.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\ConditionalStatment</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

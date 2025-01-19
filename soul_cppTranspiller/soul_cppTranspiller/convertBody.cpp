@@ -6,8 +6,10 @@
 #include "EmptyStatment.h"
 #include "convertExpression.h"
 #include "convertAssignment.h"
+#include "convertForStatment.h"
 #include "convertInitVariable.h"
 #include "convertFunctionCall.h"
+#include "convertWhileStatment.h"
 #include "CompileConstVariable.h"
 #include "FunctionCallStatment.h"
 #include "convertReturnStatment.h"
@@ -50,12 +52,12 @@ static inline Result<BodyStatment_Result<SuperConditionalStatment>> _convertCond
 		return convertElseIfStatment(iterator, metaData, funcInfo, context);
 
 	case ConditionalStatmentsId::for_:
-		return {};
+		return convertForStatment(iterator, metaData, funcInfo, context);
 	case ConditionalStatmentsId::while_:
-		return {};
+		return convertWhileStatment(iterator, metaData, funcInfo, context);
 
 	case ConditionalStatmentsId::switch_:
-		return {};
+		return ErrorInfo("switch not implemented", iterator.currentLine);
 
 	case ConditionalStatmentsId::invalid:
 	default:
@@ -225,7 +227,7 @@ Result<shared_ptr<BodyNode>> convertBody(TokenIterator& iterator, MetaData& meta
 	uint32_t openCurlyBracketCounter = 0;
 	while (iterator.nextToken())
 	{
-		if (iterator.currentLine == 148)
+		if (iterator.currentLine == 110)
 			int d = 0;
 
 		Result<BodyStatment_Result<SuperStatement>> bodyElementResult = convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, isFuncBody);

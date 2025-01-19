@@ -107,17 +107,26 @@ func main(): i32
     testOptional(1, 2);
     testOptional(name: "bob", 1, optional: 3, 2);
 
-
-    if (true)
+    while (true)
     {
-        if (true)
-            println("hello world");
+        i32 i = 1;
+        println(i);
+        i++;
+        println(i);
     }
-    else if (5 == 5)
+
+for (i32 i = 0; i < 10; i++) 
     {
         println();
     }
-    else 
+
+    i32 i = 0;
+    for (; i < 10; i++)
+    {
+        println();
+    }
+
+    for (; i < 20; i++)
     {
         println();
     }

@@ -133,10 +133,12 @@
     <ClCompile Include="convertCompileConstVariable.cpp" />
     <ClCompile Include="convertExpression.cpp" />
     <ClCompile Include="convertBody.cpp" />
+    <ClCompile Include="convertForStatment.cpp" />
     <ClCompile Include="convertFunctionCall.cpp" />
     <ClCompile Include="convertIf_else_elseIfStatments.cpp" />
     <ClCompile Include="convertInitVariable.cpp" />
     <ClCompile Include="convertReturnStatment.cpp" />
+    <ClCompile Include="convertWhileStatment.cpp" />
     <ClCompile Include="DuckType.cpp" />
     <ClCompile Include="getAbstractSyntaxTree.cpp" />
     <ClCompile Include="getFunctionDeclaration.cpp" />
@@ -171,14 +173,17 @@
     <ClInclude Include="convertCompileConstVariable.h" />
     <ClInclude Include="convertExpression.h" />
     <ClInclude Include="convertBody.h" />
+    <ClInclude Include="convertForStatment.h" />
     <ClInclude Include="convertFunctionCall.h" />
     <ClInclude Include="convertIf_else_elseIfStatments.h" />
     <ClInclude Include="convertInitVariable.h" />
     <ClInclude Include="convertReturnStatment.h" />
+    <ClInclude Include="convertWhileStatment.h" />
     <ClInclude Include="CurrentContext.h" />
     <ClInclude Include="DuckType.h" />
     <ClInclude Include="EmptyExpression.h" />
     <ClInclude Include="EmptyStatment.h" />
+    <ClInclude Include="ForStatment.h" />
     <ClInclude Include="FunctionCall.h" />
     <ClInclude Include="FunctionCallStatment.h" />
     <ClInclude Include="getAbstractSyntaxTree.h" />
@@ -194,6 +199,7 @@
     <ClInclude Include="Increment.h" />
     <ClInclude Include="internalFuntions.h" />
     <ClInclude Include="Nesting.h" />
+    <ClInclude Include="Nullable.h" />
     <ClInclude Include="Optional.h" />
     <ClInclude Include="PrimitiveType.h" />
     <ClInclude Include="Refrence.h" />
@@ -234,6 +240,7 @@
     <ClInclude Include="TypeWrapper.h" />
     <ClInclude Include="Variable.h" />
     <ClInclude Include="VarInfo.h" />
+    <ClInclude Include="WhileStatment.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

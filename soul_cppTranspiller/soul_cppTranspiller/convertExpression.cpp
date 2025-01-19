@@ -229,9 +229,9 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
                     return varType.error;
 
                 bool canMutate = varType.value().isMutable || !varResult.value()->isAssigned;
-                if(shouldBeMutable && !canMutate)
+                if (shouldBeMutable && !canMutate)
                     return ErrorInfo("can not change a const value, var: \'" + varResult.value()->name + "\', type: \'" + varResult.value()->stringedRawType + "\'", iterator.currentLine);
-                
+
                 if (isType != nullptr)
                     *isType = varType.value();
 
@@ -242,7 +242,23 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
                         return isCompatible.error;
                 }
 
-                nodeStack.push(make_shared<Variable>(Variable(token)));
+                auto variable = make_shared<Variable>(Variable(token));
+
+                string nextToken;
+                if (!iterator.peekToken(nextToken))
+                    return ERROR_convertExpression_outOfBounds(iterator);
+
+                if (initListEquals({ "++", "--" }, nextToken))
+                {
+                    if (!iterator.nextToken())
+                        return ERROR_convertExpression_outOfBounds(iterator);
+
+                    nodeStack.push(make_shared<Increment>(Increment(variable, false, (nextToken == "--"), 1)));
+                }
+                else
+                {
+                    nodeStack.push(variable);
+                }
             }
             else if (isLiteral(literalType))
             {
