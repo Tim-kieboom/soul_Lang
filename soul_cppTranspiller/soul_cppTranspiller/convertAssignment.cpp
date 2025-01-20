@@ -1,12 +1,14 @@
 #include "convertAssignment.h"
 #include <initializer_list>
 
-#include "stringTools.h"
-#include "Increment.h"
-#include "BinairyExpression.h"
-#include "Variable.h"
 #include "Literal.h"
+#include "Variable.h"
+#include "Increment.h"
+#include "IndexArray.h"
+#include "stringTools.h"
 #include "soulChecker.h"
+#include "BinairyExpression.h"
+#include "convertIndexArray.h"
 #include "convertExpression.h"
 
 using namespace std;
@@ -123,6 +125,8 @@ static inline shared_ptr<SuperExpression> addCompountAssignment(const std::strin
 
 Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterator, MetaData& metaData, VarInfo* varInfo, CurrentContext& context)
 {
+	BodyStatment_Result<Assignment> bodyResult;
+
 	Result<RawType> typeResult = getRawType_fromStringedRawType(varInfo->stringedRawType, metaData.classStore, iterator.currentLine);
 	if (typeResult.hasError)
 		return typeResult.error;
@@ -140,14 +144,33 @@ Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterato
 
 	varInfo->isAssigned = true;
 
+	std::shared_ptr<SuperExpression> setVariable;
 	if (symbool == "[")
 	{
-		//indexer
-		throw exception("not yet implemented");
+		if (!iterator.nextToken(/*steps:*/-1))
+			return ERROR_convertAssignment_outOfBounds(iterator);
+
+		Result<BodyStatment_Result<IndexArray>> indexResult = convertIndexArray(iterator, metaData, context);
+		if (indexResult.hasError)
+			return indexResult.error;
+
+		bodyResult.addToBodyResult(indexResult.value());
+
+		setVariable = indexResult.value().expression;
+		if (!iterator.nextToken())
+			return ERROR_convertAssignment_outOfBounds(iterator);
+
+		if (!assignVar_type.isMutable)
+			return ErrorInfo("can not change a const value, var: \'" + indexResult.value().expression->printToString() + "\', type: \'" + toString(assignVar_type) + "\'", iterator.currentLine);
+	}
+	else
+	{
+		setVariable = make_shared<Variable>(Variable(varInfo->name));
 	}
 
 	if (!iterator.nextToken())
 		return ERROR_convertAssignment_outOfBounds(iterator);
+
 
 	if (initListEquals({ "++", "--" }, symbool))
 	{
@@ -165,7 +188,7 @@ Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterato
 
 		return BodyStatment_Result<Assignment>
 		(
-			make_shared<Assignment>(Assignment(varInfo->name, make_shared<Increment>(Increment(make_shared<Variable>(Variable(varInfo->name)), false, (symbool == "--"), 1))))
+			make_shared<Assignment>(Assignment(setVariable, make_shared<Increment>(Increment(make_shared<Variable>(Variable(varInfo->name)), false, (symbool == "--"), 1))))
 		);
 	}
 
@@ -175,10 +198,7 @@ Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterato
 
 	shared_ptr<SuperExpression> expression = addCompountAssignment(symbool, varInfo->name, expressionResult.value().expression);
 
-	BodyStatment_Result<Assignment> bodyResult
-	(
-		make_shared<Assignment>(Assignment(varInfo->name, expression))
-	);
+	bodyResult.expression = make_shared<Assignment>(Assignment(setVariable, expression));
 
 	bodyResult.addToBodyResult(expressionResult.value());
 	return bodyResult;

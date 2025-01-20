@@ -136,6 +136,7 @@
     <ClCompile Include="convertForStatment.cpp" />
     <ClCompile Include="convertFunctionCall.cpp" />
     <ClCompile Include="convertIf_else_elseIfStatments.cpp" />
+    <ClCompile Include="convertIndexArray.cpp" />
     <ClCompile Include="convertInitVariable.cpp" />
     <ClCompile Include="convertReturnStatment.cpp" />
     <ClCompile Include="convertWhileStatment.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="ClassInfo.h" />
     <ClInclude Include="CompileConstVariable.h" />
     <ClInclude Include="ConditionalStatmentsId.h" />
+    <ClInclude Include="ConstructArray.h" />
     <ClInclude Include="Continue_Break_Statments.h" />
     <ClInclude Include="convertAssignment.h" />
     <ClInclude Include="convertCompileConstVariable.h" />
@@ -177,9 +179,11 @@
     <ClInclude Include="convertForStatment.h" />
     <ClInclude Include="convertFunctionCall.h" />
     <ClInclude Include="convertIf_else_elseIfStatments.h" />
+    <ClInclude Include="convertIndexArray.h" />
     <ClInclude Include="convertInitVariable.h" />
     <ClInclude Include="convertReturnStatment.h" />
     <ClInclude Include="convertWhileStatment.h" />
+    <ClInclude Include="CopyExpression.h" />
     <ClInclude Include="CurrentContext.h" />
     <ClInclude Include="DuckType.h" />
     <ClInclude Include="EmptyExpression.h" />
@@ -198,11 +202,13 @@
     <ClInclude Include="getFunctionDeclaration.h" />
     <ClInclude Include="If_else_elseIf_Statments.h" />
     <ClInclude Include="Increment.h" />
+    <ClInclude Include="IndexArray.h" />
     <ClInclude Include="internalFuntions.h" />
     <ClInclude Include="Nesting.h" />
     <ClInclude Include="Nullable.h" />
     <ClInclude Include="Optional.h" />
     <ClInclude Include="PrimitiveType.h" />
+    <ClInclude Include="RangeExpression.h" />
     <ClInclude Include="Refrence.h" />
     <ClInclude Include="ReturnStatment.h" />
     <ClInclude Include="ScopeIterator.h" />

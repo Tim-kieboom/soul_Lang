@@ -4,6 +4,7 @@
 #include "stringTools.h"
 #include "soulChecker.h"
 #include "EmptyStatment.h"
+#include "convertIndexArray.h"
 #include "convertExpression.h"
 #include "convertAssignment.h"
 #include "convertForStatment.h"
@@ -82,6 +83,7 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 	return convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, parentNode);
 }
 
+
 Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, uint32_t& openCurlyBracketCounter, SyntaxNodeId parentNode)
 {
 	string& token = iterator.currentToken;
@@ -131,13 +133,28 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 		if (varResult.hasError)
 			return varResult.error;
 
+		string nextToken;
+		if (!iterator.peekToken(nextToken))
+			return ERROR_convertBody_outOfBounds(funcInfo, iterator);
+
+		shared_ptr<SuperExpression> setVariable;
+		if(nextToken == "[")
+		{
+			throw exception("not yet implemented");
+		}
+		else
+		{
+			setVariable = make_shared<Variable>(Variable(varName));
+		}
+
 		Result<BodyStatment_Result<SuperExpression>> increment = convertExpression(iterator, metaData, context, { ";" }, true);
 		if (increment.hasError)
 			return increment.error;
 
-		auto assignment = make_shared<Assignment>(Assignment(varName, increment.value().expression));
+		auto assignment = make_shared<Assignment>(Assignment(setVariable, increment.value().expression));
 		auto res = BodyStatment_Result<SuperStatement>(assignment);
 		res.addToBodyResult(increment.value());
+
 		return res;
 	}
 	else if (isType(typeResult))
@@ -256,7 +273,7 @@ Result<shared_ptr<BodyNode>> convertBody(TokenIterator& iterator, MetaData& meta
 	uint32_t openCurlyBracketCounter = 0;
 	while (iterator.nextToken())
 	{
-		if (iterator.currentLine == 110)
+		if (iterator.currentLine == 98)
 			int d = 0;
 
 		Result<BodyStatment_Result<SuperStatement>> bodyElementResult = convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, parentNode);

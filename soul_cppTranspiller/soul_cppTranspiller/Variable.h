@@ -1,5 +1,4 @@
 #pragma once
-
 #include "SuperExpression.h"
 
 class Variable : public SuperExpression

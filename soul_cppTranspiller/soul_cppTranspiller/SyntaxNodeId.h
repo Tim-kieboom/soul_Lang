@@ -1,5 +1,25 @@
 #pragma once
 
+enum class SyntaxNodeId_Statment
+{
+	/*Statment*/
+	FieldNode,
+	Assignment,
+	IfStatment,
+	ForStatment,
+	MethodeNode,
+	ElseStatment,
+	WhileStatment,
+	EmptyStatment,
+	BreakStatment,
+	ReturnStatment,
+	ElseIfStatment,
+	ContinueStatment,
+	InitializeVariable,
+	FunctionCallStatment,
+	CompileConstVariable,
+};
+
 enum class SyntaxNodeId
 {
 	SyntaxTree,
@@ -25,15 +45,21 @@ enum class SyntaxNodeId
 	CompileConstVariable,
 
 	/*expressions*/
-	Variable,
 	Literal,
+	Variable,
 	Optional,
 	Refrence,
 	Increment,
+	IndexArray,
 	FunctionCall,
 	StringLiteral,
 	EmptyExpresion,
-	BinairyExpression
+	ConstructArray,
+	CopyExpression,
+	RangeExpression,
+	BinairyExpression,
+
+	invalid
 };
 
 bool isSyntaxTree_Statment(SyntaxNodeId id);

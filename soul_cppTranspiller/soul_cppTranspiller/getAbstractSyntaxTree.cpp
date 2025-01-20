@@ -1,5 +1,6 @@
 #include "getAbstractSyntaxTree.h"
 #include "Nesting.h"
+#include "Variable.h"
 #include "Assignment.h"
 #include "convertBody.h"
 #include "StringLiteral.h"
@@ -68,7 +69,7 @@ static inline void _addC_strToGlobalScope(MetaData& metaData, SyntaxTree& tree)
             make_shared<CompileConstVariable>(CompileConstVariable
             (
                 make_shared<InitializeVariable>(InitializeVariable(type, pair.second.name)),
-                make_shared<Assignment>(Assignment(pair.second.name, make_shared<StringLiteral>(StringLiteral(pair.second.value))))
+                make_shared<Assignment>(Assignment(make_shared<Variable>(pair.second.name), make_shared<StringLiteral>(StringLiteral(pair.second.value))))
             ))
         );
     }

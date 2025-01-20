@@ -5,13 +5,13 @@
 class Assignment : public SuperStatement
 {
 public: 
-	std::string varName;
+	std::shared_ptr<SuperExpression> setVariable;
 	std::shared_ptr<SuperExpression> expression;
 
     Assignment() = default;
 
-    Assignment(const std::string& varName, std::shared_ptr<SuperExpression> expression)
-        : varName(varName), expression(expression)
+    Assignment(std::shared_ptr<SuperExpression> var, std::shared_ptr<SuperExpression> expression)
+        : setVariable(var), expression(expression)
     {
     }
 
@@ -23,7 +23,7 @@ public:
     std::string printToString() const
     {
         std::stringstream ss;
-        ss << "Assignment(" << varName << " = " << expression->printToString() << ")";
+        ss << "Assignment(" << setVariable->printToString() << " = " << expression->printToString() << ")";
         return ss.str();
     }
 

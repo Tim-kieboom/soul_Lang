@@ -57,7 +57,34 @@ public:
 		return {};
 	}
 
-	Result<RawType> getTypeChild(uint64_t currentLine)
+	Result<void> removeRefrences(uint64_t currentLine)
+	{
+		if (refrenceCounter == 0)
+			return {};
+
+		if (refrenceCounter == 1)
+		{
+			if (typeWrappers.empty())
+				return ErrorInfo("InternalERROR!! types refrenceCounter: 1 but typeWarppers is empty", currentLine);
+
+			typeWrappers.pop_back();
+			lastWrapper = (typeWrappers.empty()) ? TypeWrapper::default_ : typeWrappers.back();
+		}
+		else if(refrenceCounter == 2)
+		{
+			if (typeWrappers.size() < 2)
+				return ErrorInfo("InternalERROR!! types refrenceCounter: 2 but typeWarppers < 2", currentLine);
+
+			typeWrappers.pop_back();
+			typeWrappers.pop_back();
+			lastWrapper = (typeWrappers.empty()) ? TypeWrapper::default_ : typeWrappers.back();
+		}
+
+		refrenceCounter = 0;
+		return {};
+	}
+
+	Result<RawType> getTypeChild(uint64_t currentLine) const
 	{
 		const uint64_t wrapSize = typeWrappers.size();
 		if
@@ -73,9 +100,10 @@ public:
 		RawType child = *this;
 		child.typeWrappers.pop_back();
 
-		child.lastWrapper = child.typeWrappers.back();
 		if (child.lastWrapper == TypeWrapper::refrence)
 			child.refrenceCounter--;
+
+		child.lastWrapper = (child.typeWrappers.empty()) ? TypeWrapper::default_ : child.typeWrappers.back();
 
 		return child;
 	}
@@ -96,9 +124,9 @@ public:
 		return true;
 	}
 
-	Result<void> isEqual(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, uint64_t currentLine) const
+	Result<void> isEqual(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, uint64_t currentLine, bool checkMutable = true) const
 	{
-		if (isMutable != other.isMutable)
+		if (checkMutable && isMutable != other.isMutable)
 			return ErrorInfo("argument: \'" + toString(*this)+ "\' and argument: \'" + toString(other) + "\' have diffrent mutability", currentLine);
 
 		if(!typeWrapperEquals(other))
@@ -176,8 +204,9 @@ public:
 
 			if (other.isRefrence() || other.isPointer() || other.isArray())
 			{
-				if (primType != primType_other)
-					return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+				Result<void> result = isEqual(other, classStore, currentLine, false);
+				if (result.hasError)
+					return result.error;
 			}
 			else
 			{
@@ -194,6 +223,11 @@ public:
 		}
 
 		return {};
+	}
+
+	bool isPrimitiveType() const
+	{
+		return getPrimitiveType(rawType) != PrimitiveType::invalid;
 	}
 
 	PrimitiveType toPrimitiveType() const
@@ -255,11 +289,17 @@ public:
 
 	bool isArray() const 
 	{
+		if (lastWrapper == TypeWrapper::refrence && typeWrappers.size() > 1)
+			return typeWrappers.at(typeWrappers.size() - 2) == TypeWrapper::array_;
+
 		return lastWrapper == TypeWrapper::array_;
 	}
 
 	bool isPointer() const
 	{
+		if (lastWrapper == TypeWrapper::refrence && typeWrappers.size() > 1)
+			return typeWrappers.at(typeWrappers.size() - 2) == TypeWrapper::pointer;
+
 		return lastWrapper == TypeWrapper::pointer;
 	}
 

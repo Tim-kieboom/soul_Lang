@@ -113,6 +113,9 @@
     <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\ConditionalStatment">
       <UniqueIdentifier>{5869a061-9807-45ba-933e-43541ee7e879}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression\convertIndexArray">
+      <UniqueIdentifier>{05a98613-b8b3-43f6-b456-6502d00e9c43}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -214,6 +217,9 @@
     <ClCompile Include="convertForStatment.cpp">
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\ConditionalStatment</Filter>
     </ClCompile>
+    <ClCompile Include="convertIndexArray.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression\convertIndexArray</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.soul">
@@ -288,9 +294,6 @@
       <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
     </ClInclude>
     <ClInclude Include="Literal.h">
-      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
-    </ClInclude>
-    <ClInclude Include="Variable.h">
       <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
     </ClInclude>
     <ClInclude Include="BinairyExpression.h">
@@ -451,6 +454,24 @@
     </ClInclude>
     <ClInclude Include="Continue_Break_Statments.h">
       <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Statements</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstructArray.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyExpression.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
+    <ClInclude Include="Variable.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexArray.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
+    <ClInclude Include="convertIndexArray.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression\convertIndexArray</Filter>
+    </ClInclude>
+    <ClInclude Include="RangeExpression.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
