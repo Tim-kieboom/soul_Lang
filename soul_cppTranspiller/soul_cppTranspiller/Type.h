@@ -33,7 +33,14 @@ public:
 		: rawType(rawType), isMutable(isMutable)
 	{
 	}
-	
+
+	RawType(const std::string rawType, bool isMutable, std::initializer_list<TypeWrapper> wrappers)
+		: rawType(rawType), isMutable(isMutable)
+	{
+		for (auto& wrap : wrappers)
+			typeWrappers.push_back(wrap);
+	}
+
 	Result<void> addTypeWrapper(TypeWrapper type, const uint64_t currentLine)
 	{
 		lastWrapper = type;

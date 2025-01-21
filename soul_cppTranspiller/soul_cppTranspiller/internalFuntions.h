@@ -114,6 +114,26 @@ static const FuncDeclaration interalFunc_toStr = FuncDeclaration
 	false
 );
 
+static const FuncDeclaration interalFunc_size_array = FuncDeclaration
+(
+	"size",
+	toString(PrimitiveType::ui64),
+	{
+		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), false, {TypeWrapper::array_}), "array", ArgumentType::default_, 1)
+	},
+	false
+);
+
+static const FuncDeclaration interalFunc_size_str = FuncDeclaration
+(
+	"size",
+	toString(PrimitiveType::ui64),
+	{
+		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), false), "str", ArgumentType::default_, 1)
+	},
+	false
+);
+
 static const std::initializer_list<FuncDeclaration> internalFunctions =
 {
 	interalFunc_Fail,
@@ -121,8 +141,10 @@ static const std::initializer_list<FuncDeclaration> internalFunctions =
 	interalFunc_print,
 	interalFunc_toStr,
 	interalFunc_println,
+	interalFunc_size_str,
 	interalFunc_checkFail,
 	interalFunc_checkThrow,
+	interalFunc_size_array,
 	interalFunc_println_empty,
 	interalFunc_checkFail_debug,
 	interalFunc_checkThrow_debug,
