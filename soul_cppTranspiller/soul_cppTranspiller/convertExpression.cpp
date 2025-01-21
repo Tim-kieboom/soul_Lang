@@ -6,6 +6,7 @@
 #include "soulChecker.h"
 #include "ConstructArray.h"
 #include "CopyExpression.h"
+#include "RangeExpression.h"
 #include "EmptyExpression.h"
 #include "convertIndexArray.h"
 #include "convertFunctionCall.h"
@@ -110,7 +111,7 @@ static inline Result<void> makeAndPush_BinairyExpression(Stack<shared_ptr<SuperE
     SyntaxTree_Operator oparator = getSyntax_Operator(SymboolStack.pop());
     auto right = nodeStack.pop();
     if (nodeStack.empty())
-        return ErrorInfo("BinairyEpression invalid at: \'" + right->printToString() + toString(oparator) + "\'", currentLine);
+        return ErrorInfo("BinairyEpression invalid at: \'" + right->printToString() + " " + toString(oparator) + "\'", currentLine);
 
     auto left = nodeStack.pop();
 
@@ -197,7 +198,7 @@ static inline Result<shared_ptr<ConstructArray>> getConstructArray(TokenIterator
     return make_shared<ConstructArray>(ConstructArray(toString(arrayType), amountElementsExpression));
 }
 
-static inline Result<BodyStatment_Result<SuperExpression>> getVariableExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, Result<VarInfo*> varResult, RawType* shouldBeType, RawType* isType, bool shouldBeMutable)
+static inline Result<BodyStatment_Result<SuperExpression>> _getVariableExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, Result<VarInfo*> varResult, RawType* shouldBeType, RawType* isType, bool shouldBeMutable)
 {
     BodyStatment_Result<SuperExpression> bodyResult;
 
@@ -209,7 +210,7 @@ static inline Result<BodyStatment_Result<SuperExpression>> getVariableExpression
 
     bool canMutate = varType.value().isMutable || !varResult.value()->isAssigned;
     if (shouldBeMutable && !canMutate)
-        return ErrorInfo("can not change a const value, var: \'" + varResult.value()->name + "\', type: \'" + varResult.value()->stringedRawType + "\'", iterator.currentLine);
+            return ErrorInfo("can not change a const value, var: \'" + varResult.value()->name + "\', type: \'" + varResult.value()->stringedRawType + "\'", iterator.currentLine);
 
     if (isType != nullptr)
         *isType = varType.value();
@@ -240,19 +241,26 @@ static inline Result<BodyStatment_Result<SuperExpression>> getVariableExpression
         bodyResult.addToBodyResult(indexResult.value());
         variableExpression = indexResult.value().expression;
         
-        if(indexResult.value().expression->index->getId() != SyntaxNodeId::RangeExpression)
+        if (indexResult.value().expression->index->getId() == SyntaxNodeId::RangeExpression)
+        {
+            if (shouldBeType != nullptr && !varType.value().isMutable && shouldBeType->isMutable)
+                return ErrorInfo("argument: \'" + toString(varType.value()) + "\' and argument: \'" + toString(*shouldBeType) + "\' have diffrent mutability", iterator.currentLine);
+        }
+        else 
+        {
             varType = getArrayItemType(varType.value(), iterator);
+        }
     }
     else
     {
         variableExpression = make_shared<Variable>(Variable(token));
-    }
 
-    if (shouldBeType != nullptr)
-    {
-        Result<void> isCompatible = varType.value().areTypeCompatible(*shouldBeType, metaData.classStore, iterator.currentLine);
-        if (isCompatible.hasError)
-            return isCompatible.error;
+        if (shouldBeType != nullptr)
+        {
+            Result<void> isCompatible = varType.value().areTypeCompatible(*shouldBeType, metaData.classStore, iterator.currentLine);
+            if (isCompatible.hasError)
+                return isCompatible.error;
+        }
     }
 
     bodyResult.expression = variableExpression;
@@ -326,7 +334,7 @@ static inline Result<void> setNegativeExpression
     RawType type;
     if (isVariable(varResult))
     {
-        Result<BodyStatment_Result<SuperExpression>> varExpression = getVariableExpression(iterator, metaData, context, varResult, shouldBeType, &type, shouldBeMutable);
+        Result<BodyStatment_Result<SuperExpression>> varExpression = _getVariableExpression(iterator, metaData, context, varResult, shouldBeType, &type, shouldBeMutable);
         if (varExpression.hasError)
             return varExpression.error;
 
@@ -492,40 +500,37 @@ static inline Result<void> getAllExpressions
 
             nodeStack.push(funcCall);
         }
+        else if (isVariable(varResult))
+        {
+            Result<BodyStatment_Result<SuperExpression>> varExpression = _getVariableExpression(iterator, metaData, context, varResult, shouldBeType, isType, shouldBeMutable);
+            if (varExpression.hasError)
+                return varExpression.error;
+                
+            bodyResult.addToBodyResult(varExpression.value());
+
+            nodeStack.push(varExpression.value().expression);
+        }
+        else if (isLiteral(literalType))
+        {
+            if (literalType.value().toDuckType() == DuckType::invalid)
+                return ErrorInfo("Literal has to be one of the primitiveTypes", iterator.currentLine);
+
+            if (isType != nullptr)
+                *isType = literalType.value();
+
+            nodeStack.push(make_shared<Literal>(token));
+        }
+        else if (token == "new")
+        {
+            Result<shared_ptr<SuperExpression>> newExpression = getNewExpression(iterator, metaData, context, isType);
+            if (newExpression.hasError)
+                return newExpression.error;
+
+            nodeStack.push(newExpression.value());
+        }
         else
         {
-            if (isVariable(varResult))
-            {
-                Result<BodyStatment_Result<SuperExpression>> varExpression = getVariableExpression(iterator, metaData, context, varResult, shouldBeType, isType, shouldBeMutable);
-                if (varExpression.hasError)
-                    return varExpression.error;
-                
-                bodyResult.addToBodyResult(varExpression.value());
-
-                nodeStack.push(varExpression.value().expression);
-            }
-            else if (isLiteral(literalType))
-            {
-                if (literalType.value().toDuckType() == DuckType::invalid)
-                    return ErrorInfo("Literal has to be one of the primitiveTypes", iterator.currentLine);
-
-                if (isType != nullptr)
-                    *isType = literalType.value();
-
-                nodeStack.push(make_shared<Literal>(token));
-            }
-            else if (token == "new")
-            {
-                Result<shared_ptr<SuperExpression>> newExpression = getNewExpression(iterator, metaData, context, isType);
-                if (newExpression.hasError)
-                    return newExpression.error;
-
-                nodeStack.push(newExpression.value());
-            }
-            else
-            {
-                return ErrorInfo("token: \'" + token + "\' is not allowed as an Expression", iterator.currentLine);
-            }
+            return ErrorInfo("token: \'" + token + "\' is not allowed as an Expression", iterator.currentLine);
         }
     }
 

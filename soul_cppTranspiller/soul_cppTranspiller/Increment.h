@@ -6,13 +6,13 @@
 class Increment : public SuperExpression
 {
 public:
-    std::shared_ptr<Variable> variable;
+    std::shared_ptr<SuperExpression> variable;
 	bool isBeforeVar = false;
 	bool isNegative = false;
 	uint64_t incrementAmount = 1;
 
 	Increment() = default;
-	Increment(std::shared_ptr<Variable> variable, bool isBeforeVar, bool isNegative, uint64_t incrementAmount)
+	Increment(std::shared_ptr<SuperExpression> variable, bool isBeforeVar, bool isNegative, uint64_t incrementAmount)
 		: variable(variable), isBeforeVar(isBeforeVar), isNegative(isNegative), incrementAmount(incrementAmount)
 	{
 	}

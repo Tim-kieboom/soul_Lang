@@ -108,7 +108,7 @@ func main(): i32
     println();
 
     testOptional(1, 2);
-    testOptional(name: "bob", 1, optional: 3, 2);
+    testOptional(name: out/*NOT ALLOWED*/ "bob", 1, optional: 3, 2);
 
     bool condition = true;
     //bool compountIfResult = if(condition == true) true else false; 
@@ -117,23 +117,26 @@ func main(): i32
     i32[] refArray = array;
 
     refArray[0] = 1;
-    array[1] = 1;
-    array[2] = 1;
-    array[3] = 1;
+    array[1]++;
+    ++condition;
+    array[3] = refArray[0] + array[1];
     array[4] = 1;
-    i32 & item = refArray[0];
+    i32& item = refArray[0];
+
+    const i32[] constArray = array;
 
     i32[] spanArray = array[1..3];
     i32[] spanArray1 = array[..3];
     i32[] spanArray2 = array[1..];
+    const i32[] spanArray3 = constArray[1..3];
     i32 lastItem = array[-1];
 
-    const i32[] constArray = array;
     i32[] copyArray = copy constArray;
 
     i32[] copySpanArray = copy array[1..3];
     i32[] copySpanArray1 = copy array[..3];
     i32[] copySpanArray2 = copy array[1..];
+    i32[] copySpanArray3 = copy constArray[1..];
 
     //str hello = "hello world";
     //ui64 size = size(array);
@@ -142,7 +145,7 @@ func main(): i32
     //ui64 sizeProp = array.Size;
     //ui64 strSizeProp = hello.Size;
 
-test();
+    test();
     str result = test(1 + 2, 2.0);
 
     test("foo");

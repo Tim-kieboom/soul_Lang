@@ -83,7 +83,6 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 	return convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, parentNode);
 }
 
-
 Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, uint32_t& openCurlyBracketCounter, SyntaxNodeId parentNode)
 {
 	string& token = iterator.currentToken;
@@ -125,6 +124,8 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 
 	if (initListEquals({ "++", "--" }, token))
 	{
+		BodyStatment_Result<SuperStatement> res;
+
 		string varName;
 		if (!iterator.peekToken(varName))
 			return ERROR_convertBody_outOfBounds(funcInfo, iterator);
@@ -134,13 +135,24 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 			return varResult.error;
 
 		string nextToken;
-		if (!iterator.peekToken(nextToken))
+		if (!iterator.peekToken(nextToken, /*steps:*/2))
 			return ERROR_convertBody_outOfBounds(funcInfo, iterator);
 
 		shared_ptr<SuperExpression> setVariable;
 		if(nextToken == "[")
 		{
-			throw exception("not yet implemented");
+			if (!iterator.nextToken())
+				return ERROR_convertBody_outOfBounds(funcInfo, iterator);
+
+			Result<BodyStatment_Result<IndexArray>> index = convertIndexArray(iterator, metaData, context);
+			if (index.hasError)
+				return index.error;
+
+			res.addToBodyResult(index.value());
+			setVariable = index.value().expression;
+
+			if (!iterator.nextToken())
+				return ERROR_convertBody_outOfBounds(funcInfo, iterator);
 		}
 		else
 		{
@@ -151,10 +163,8 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 		if (increment.hasError)
 			return increment.error;
 
-		auto assignment = make_shared<Assignment>(Assignment(setVariable, increment.value().expression));
-		auto res = BodyStatment_Result<SuperStatement>(assignment);
+		res.expression = make_shared<Assignment>(Assignment(setVariable, increment.value().expression));
 		res.addToBodyResult(increment.value());
-
 		return res;
 	}
 	else if (isType(typeResult))
@@ -273,7 +283,7 @@ Result<shared_ptr<BodyNode>> convertBody(TokenIterator& iterator, MetaData& meta
 	uint32_t openCurlyBracketCounter = 0;
 	while (iterator.nextToken())
 	{
-		if (iterator.currentLine == 98)
+		if (iterator.currentLine == 131)
 			int d = 0;
 
 		Result<BodyStatment_Result<SuperStatement>> bodyElementResult = convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, parentNode);
