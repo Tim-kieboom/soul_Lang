@@ -56,7 +56,7 @@ template <typename T>
 class __Soul_ARRAY__
 {
 public:
-    std::shared_ptr<T[]> rawArray;
+    std::vector<T> rawArray;
     uint32_t offset;
     uint32_t size;
 
@@ -64,22 +64,15 @@ public:
     ~__Soul_ARRAY__() = default;
 
     __Soul_ARRAY__(std::initializer_list<T> initList)
-        : rawArray(std::shared_ptr<T[]>(new T[initList.size()], std::default_delete<T[]>())), offset(0), size(initList.size())
+        : rawArray(initList.size()), offset(0), size(initList.size())
     {
         uint32_t i = 0;
         for (const T& el : initList)
-            rawArray[i++] = el;
-    }
-
-    __Soul_ARRAY__(const char* rawStr, uint32_t size)
-        : rawArray(std::shared_ptr<T[]>(new T[size])), offset(0), size(size)
-    {
-        for (uint32_t i = 0; i < size; i++)
-            rawArray[i] = rawStr[i];
+            ((T*)rawArray.get())[i++] = el;
     }
 
     __Soul_ARRAY__(uint32_t size)
-        : rawArray(std::shared_ptr<T[]>(new T[size])), offset(0), size(size)
+        : rawArray(size), offset(0), size(size)
     {
     }
 
@@ -88,6 +81,13 @@ public:
     {
     }
 
+    // __Soul_ARRAY__(const __Soul_ARRAY__& other)
+    //     : rawArray(new T[other.size], std::default_delete<T[]>()), offset(0), size(other.size)
+    // {
+    //     std::copy(other.begin(), other.end(), rawArray.get());
+    // }
+
+
     constexpr T& operator[](int64_t index) noexcept
     {
         if (index < 0)
@@ -95,18 +95,18 @@ public:
 
         index += offset;
 
-        if (index >= size)
+        if (index >= size || index < 0)
         {
             printf("!!ERROR!! index out of range\n");
             exit(1);
         }
 
-        return rawArray[index];
+        return *(rawArray.data() + (uint32_t)index);
     }
 
     constexpr T& __soul_UNSAFE_at__(uint32_t index) noexcept
     {
-        return rawArray[index + offset];
+        return *(rawArray.data() + index + offset);
     }
 
     constexpr __Soul_ARRAY__<T> __soul_makeSpan_fail__(int64_t start, int64_t end) noexcept
@@ -131,22 +131,22 @@ public:
 
     __Soul_ARRAY_Iterator__<T> begin() 
     {
-        return __Soul_ARRAY_Iterator__<T>(rawArray.get() + offset);
+        return __Soul_ARRAY_Iterator__<T>(((T*)rawArray.data()) + offset);
     }
 
     __Soul_ARRAY_Iterator__<T> end()
     {
-        return __Soul_ARRAY_Iterator__<T>(rawArray.get() + size);
+        return __Soul_ARRAY_Iterator__<T>(((T*)rawArray.data()) + size);
     }
 
     __Soul_ARRAY_ConstIterator__<T> begin() const
     {
-        return __Soul_ARRAY_ConstIterator__<T>(rawArray.get() + offset);
+        return __Soul_ARRAY_ConstIterator__<T>(((T*)rawArray.data() + offset));
     }
 
     __Soul_ARRAY_ConstIterator__<T> end() const
     {
-        return __Soul_ARRAY_ConstIterator__<T>(rawArray.get() + size);
+        return __Soul_ARRAY_ConstIterator__<T>(((T*)rawArray.data()) + size);
     }
 };
 
@@ -156,9 +156,10 @@ inline T __Soul_copy__(T other) { return other; }
 template <typename K>
 inline __Soul_ARRAY__<K> __Soul_copy__(__Soul_ARRAY__<K> other)
 {
-    __Soul_ARRAY__<T> copyArray(other.size);
+    __Soul_ARRAY__<K> copyArray(other.size);
+    uint32_t i = 0;
     for(const K& el : other)
-        copyArray.rawArray[i] = __Soul_copy__(el);
+        copyArray.__soul_UNSAFE_at__(i++) = __Soul_copy__(el);
 
     return copyArray;
 }

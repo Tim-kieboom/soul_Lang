@@ -106,27 +106,6 @@ inline __Soul_STR__ __Soul_copy__(__Soul_STR__ other)
     return __Soul_STR__(copyStr);
 }
 
-template <typename T>
-void __soul__append_to_stream__(std::ostringstream& oss, T&& arg)
-{
-    oss << std::forward<T>(arg);
-}
-
-template <typename T, typename... Args>
-void __soul__append_to_stream__(std::ostringstream& oss, T&& arg, Args&&... args)
-{
-    oss << std::forward<T>(arg);
-    __soul__append_to_stream__(oss, std::forward<Args>(args)...);
-}
-
-template <typename ...Args>
-inline __Soul_STR__ __soul_format_string__(Args&&... args)
-{
-    std::ostringstream oss;
-    __soul__append_to_stream__(oss, std::forward<Args>(args)...);
-    return toStr(oss.str());
-}
-
 inline __Soul_STR__ toStr(const char* cppStr) 
 {
     return __Soul_STR__(cppStr);
@@ -154,3 +133,24 @@ inline __Soul_STR__ toStr(const uint16_t value) { return toStr(std::to_string(va
 inline __Soul_STR__ toStr(const uint64_t value) { return toStr(std::to_string(value)); }
 inline __Soul_STR__ toStr(const int8_t value)   { return toStr(std::to_string((int16_t)value)); }
 inline __Soul_STR__ toStr(const uint8_t value)  { return toStr(std::to_string((uint16_t)value)); }
+
+template <typename T>
+void __soul__append_to_stream__(std::ostringstream& oss, T&& arg)
+{
+    oss << std::forward<T>(arg);
+}
+
+template <typename T, typename... Args>
+void __soul__append_to_stream__(std::ostringstream& oss, T&& arg, Args&&... args)
+{
+    oss << std::forward<T>(arg);
+    __soul__append_to_stream__(oss, std::forward<Args>(args)...);
+}
+
+template <typename ...Args>
+inline __Soul_STR__ __soul_format_string__(Args&&... args)
+{
+    std::ostringstream oss;
+    __soul__append_to_stream__(oss, std::forward<Args>(args)...);
+    return toStr(oss.str());
+}

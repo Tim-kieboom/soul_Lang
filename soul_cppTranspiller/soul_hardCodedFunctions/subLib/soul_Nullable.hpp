@@ -2,7 +2,7 @@
 #include "soul_cppLibs.h"
 
 template <typename T>
-class soul_optional
+class __Soul_Nullable__
 {
 private:
     bool has_value_;
@@ -18,28 +18,28 @@ private:
     }
 
 public:
-    ~soul_optional()
+    ~__Soul_Nullable__()
     {
         clearStorage();
     }
 
     // Constructor empty
-    constexpr soul_optional() noexcept : has_value_(false) {}
+    constexpr __Soul_Nullable__() noexcept : has_value_(false) {}
 
     // Constructor from value
-    constexpr soul_optional(const T& value) : has_value_(true)
+    constexpr __Soul_Nullable__(const T& value) : has_value_(true)
     {
         new (storage_) T(value);
     }
 
     // Move constructor
-    constexpr soul_optional(T&& value) : has_value_(true)
+    constexpr __Soul_Nullable__(T&& value) : has_value_(true)
     {
         new (storage_) T(std::move(value));
     }
 
     // Copy constructor
-    constexpr soul_optional(const soul_optional& other) : has_value_(other.has_value_)
+    constexpr __Soul_Nullable__(const __Soul_Nullable__& other) : has_value_(other.has_value_)
     {
         if (has_value_)
         {
@@ -48,7 +48,7 @@ public:
     }
 
     // Assignment operators
-    constexpr soul_optional& operator=(const soul_optional& other)
+    constexpr __Soul_Nullable__& operator=(const __Soul_Nullable__& other)
     {
         if (this != &other)
         {
@@ -62,7 +62,7 @@ public:
         return *this;
     }
 
-    constexpr soul_optional& operator=(soul_optional&& other) noexcept
+    constexpr __Soul_Nullable__& operator=(__Soul_Nullable__&& other) noexcept
     {
         if (this != &other)
         {
