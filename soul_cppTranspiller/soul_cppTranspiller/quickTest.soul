@@ -2,6 +2,7 @@
 #invis
 //for syntax highlighting
 func size(i32[] array);
+func size(str string);
 func ctor();
 func println(str msg);
 func println();
@@ -31,130 +32,11 @@ class none;
 class f;
 # endInvis
 
-//CompileConst _Funcional_pow(f64 base, ui32 exponent, f64 result): f64
-//{
-//    return  if(exponent <= 0) 
-//                result 
-//            else
-//                _Funcional_pow
-//                (
-//                    base, 
-//                    (exponent - 1), 
-//                    (result * base)
-//                );
-//}
-
-//CompileConst Funcional_pow(f64 base, i64 exponent): f64
-//{
-//    CompileConst f64 result = base;
-//    CompileConst ui32 uiExp = if(exponent < 0) 
-//                                  ((exponent * -1) - 1) 
-//                              else 
-//                                  (exponent - 1);
-
-//    return  if(exponent < 0) 
-//                1.0 / _Functional_pow
-//                (
-//                    base,
-//                    uiExp,
-//                    result
-//                )
-//            else
-//                _Functional_pow
-//                (
-//                    base,
-//                    uiExp,
-//                    result
-//                );
-//}
-
-CompileConst i32 CONSTEXPRE  = 2 </ 9; // root(9, 2)
-CompileConst i32 CONSTEXPRE2 = 3 ** 2; // pow(3, 2)
-i32 variable = 1;
-
-func increment(out i32 foo): none
-{
-    foo++;
-}
-
-func test(): str
-{
-    return "foo";
-}
-
-func test(mut str foo, mut f64 bar = 2): str
-{
-    println(bar);
-    foo = 2;
-    return "foo";
-}
-
-func test(i32 foo, mut f64 bar): str
-{
-    i32 assingVar;
-    assingVar = 1 + 2;
-    assingVar += 1;
-
-    f64 initVar = 2.1;
-    i8 typeConvertion = assingVar;
-
-    checkFail(assingVar == 10, f"value:{foo}, is not 10");
-    return "foo";
-}
-
-//func main(str[] args): i32
 func main(): i32
 {
     println();
 
-    testOptional(1, 2);
     testOptional(name: out/*NOT ALLOWED*/ "bob", 1, optional: 3, 2);
-
-    bool condition = true;
-    //bool compountIfResult = if(condition == true) true else false; 
-
-    i32[] array = new i32[5];
-    i32[] refArray = array;
-
-    refArray[0] = 1;
-    array[1]++;
-    ++condition;
-    array[3] = refArray[0] + array[1];
-    array[4] = 1;
-    i32& item = refArray[0];
-
-    const i32[] constArray = array;
-
-    i32[] spanArray = array[1..3];
-    i32[] spanArray1 = array[..3];
-    i32[] spanArray2 = array[1..];
-    const i32[] spanArray3 = constArray[1..3];
-    i32 lastItem = array[-1];
-
-    i32[] copyArray = copy constArray;
-    i32[] copySpanArray = copy array[1..3];
-    i32[] copySpanArray1 = copy array[..3];
-    i32[] copySpanArray2 = copy array[1..];
-    i32[] copySpanArray3 = copy constArray[1..];
-
-    str hello = "hello world";
-    ui64 size = size(array);
-    ui64 strSize = size(hello);
-
-    test();
-    str result = test(1 + 2, 2.0);
-
-    test("foo");
-    str result2 = test("foo", bar: 2.0);
-
-    print("");
-    println("hello world");
-
-    i32 foo = 0;
-    increment(out foo);
-    println(foo);
-
-    increment(out i32 far);
 }
 
 func testOptional(i32 bar, str name = "tim", f32 float, i32 optional = 2): none { }

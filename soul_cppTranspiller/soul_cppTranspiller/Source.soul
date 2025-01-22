@@ -203,6 +203,49 @@ class none;
 //	//} 
 //}
 
+
+
+
+
+
+
+//CompileConst _Funcional_pow(f64 base, ui32 exponent, f64 result): f64
+//{
+//    return  if(exponent <= 0) 
+//                result 
+//            else
+//                _Funcional_pow
+//                (
+//                    base, 
+//                    (exponent - 1), 
+//                    (result * base)
+//                );
+//}
+
+//CompileConst Funcional_pow(f64 base, i64 exponent): f64
+//{
+//    CompileConst f64 result = base;
+//    CompileConst ui32 uiExp = if(exponent < 0) 
+//                                  ((exponent * -1) - 1) 
+//                              else 
+//                                  (exponent - 1);
+
+//    return  if(exponent < 0) 
+//                1.0 / _Functional_pow
+//                (
+//                    base,
+//                    uiExp,
+//                    result
+//                )
+//            else
+//                _Functional_pow
+//                (
+//                    base,
+//                    uiExp,
+//                    result
+//                );
+//}
+
 func sum(i32 a, i32 b): i32
 {
 	return a + b;
@@ -331,9 +374,7 @@ func main(): i32
 	println("\n\n------ testArray ------\n");
 	println(f"array[0]={array[0]} shouldBe=0, array[1]={array[1]} shouldBe=1");
 
-	delete array;
-
-	//increment(out i32 initInOutValue);
-	//println(f"after increment initInOutValue: {value}"); //prints 1
+	increment(out i32 initInOutValue);
+	println(f"after increment initInOutValue: {value}"); //prints 1
 	return 0;
 }
