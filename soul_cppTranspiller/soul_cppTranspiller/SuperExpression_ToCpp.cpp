@@ -141,6 +141,10 @@ static inline Result<string> _convertConstructArray(shared_ptr<SuperExpression> 
 	if (typeResult.hasError)
 		return typeResult.error;
 
+	Result<void> result = typeResult.value().addTypeWrapper(TypeWrapper::array_, 0);
+	if (result.hasError)
+		return result.error;
+
 	Result<string> cppType = soulToCpp_Type(typeResult.value(), metaData);
 	if (cppType.hasError)
 		return cppType.error;

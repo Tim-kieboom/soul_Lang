@@ -79,11 +79,11 @@ func main(mut str[] args): i32
     CompileConst f64 root = 2 </ 4;
 
     str[] array = new str[10];
-array[0] = "tim";
-array[1] = "foo";
-array[2] = "john";
-array[3] = "ellie";
-println(array);
+    array[0] = "tim";
+    array[1] = "foo";
+    array[2] = "john";
+    array[3] = "ellie";
+    println(array);
     //i32[] array2 = copy[20] array;
 
     println(f"log:{log_}, pow:{pow}, root{root}");
