@@ -140,7 +140,15 @@ static inline Result<string> _convertRawArrayToSoulArray(shared_ptr<SuperStateme
 	stringstream ss;
 	shared_ptr<RawArrayToSoulArray> convertArray = dynamic_pointer_cast<RawArrayToSoulArray>(statment);
 
-	auto assignSoulArray = make_shared<Assignment>(convertArray->soulArray, make_shared<ConstructArray>(ConstructArray(convertArray->type, convertArray->arraySize)));
+	Result<RawType> type = getRawType_fromStringedRawType(convertArray->type, metaData.classStore, 0);
+	if (type.hasError)
+		return type.error;
+
+	Result<RawType> arrayLessType = type.value().getTypeChild(0);
+	if (arrayLessType.hasError)
+		return arrayLessType.error;
+
+	auto assignSoulArray = make_shared<Assignment>(convertArray->soulArray, make_shared<ConstructArray>(ConstructArray(toString(arrayLessType.value()), convertArray->arraySize)));
 	auto init = make_shared<InitializeVariable>(InitializeVariable(convertArray->type, convertArray->soulArray->varName, assignSoulArray));
 
 	Result<string> initSoul = convertInitializeVariable_ToCpp(init, metaData, context);
@@ -163,12 +171,16 @@ static inline Result<string> _convertStatment(shared_ptr<SuperStatement>& statme
 
 		case SyntaxNodeId::Assignment:
 			return convertAssignment_ToCpp(statment, metaData, context);
+
 		case SyntaxNodeId::InitializeVariable:
 			return convertInitializeVariable_ToCpp(statment, metaData, context);
+
 		case SyntaxNodeId::CompileConstVariable:
 			return convertCompileConstVariable_ToCpp(statment, metaData, context);
+
 		case SyntaxNodeId::RawArrayToSoulArray:
 			return _convertRawArrayToSoulArray(statment, metaData, context);
+
 		case SyntaxNodeId::FunctionCallStatment:
 		{
 			Result<string> funcCall = SuperExpression_ToCpp(dynamic_pointer_cast<FunctionCallStatment>(statment)->functionCall, metaData, context);
@@ -182,21 +194,28 @@ static inline Result<string> _convertStatment(shared_ptr<SuperStatement>& statme
 
 		case SyntaxNodeId::IfStatment:
 			return _convertIfStatment(statment, metaData, context);
+
 		case SyntaxNodeId::ElseStatment:
 			return _convertElseStatment(statment, metaData, context);
+
 		case SyntaxNodeId::ElseIfStatment:
 			return _convertElseIfStatment(statment, metaData, context);
 
+
 		case SyntaxNodeId::ForStatment:
 			return _convertForStatment(statment, metaData, context);
+
 		case SyntaxNodeId::WhileStatment:
 			return _convertWhileStatment(statment, metaData, context);
 
 
+
 		case SyntaxNodeId::EmptyStatment:
 			return string("");
+
 		case SyntaxNodeId::BreakStatment:
 			return string("break;");
+
 		case SyntaxNodeId::ContinueStatment:
 			return string("continue;");
 
