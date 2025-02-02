@@ -390,6 +390,10 @@ static inline Result<void> getAllExpressions
         Result<RawType> literalType = getRawType_fromLiteralValue(token, iterator.currentLine);
         Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 
+        string nextToken;
+        if (!iterator.peekToken(nextToken))
+            nextToken = "";
+
         if (token == "(")
         {
             openBrackets++;

@@ -37,17 +37,17 @@ PrimitiveType getPrimitiveType(const string& rawType)
 	if (rawType == toString(PrimitiveType::i64))
 		return PrimitiveType::i64;
 
-	if (rawType == toString(PrimitiveType::ui8))
-		return PrimitiveType::ui8;
+	if (rawType == toString(PrimitiveType::u8))
+		return PrimitiveType::u8;
 
-	if (rawType == toString(PrimitiveType::ui16))
-		return PrimitiveType::ui16;
+	if (rawType == toString(PrimitiveType::u16))
+		return PrimitiveType::u16;
 
-	if (rawType == toString(PrimitiveType::ui32))
-		return PrimitiveType::ui32;
+	if (rawType == toString(PrimitiveType::u32))
+		return PrimitiveType::u32;
 
-	if (rawType == toString(PrimitiveType::ui64))
-		return PrimitiveType::ui64;
+	if (rawType == toString(PrimitiveType::u64))
+		return PrimitiveType::u64;
 
 	if (rawType == toString(PrimitiveType::none))
 		return PrimitiveType::none;
@@ -89,17 +89,17 @@ string toString(PrimitiveType type)
 	case PrimitiveType::i64:
 		return "i64";
 
-	case PrimitiveType::ui8:
-		return "ui8";
+	case PrimitiveType::u8:
+		return "u8";
 
-	case PrimitiveType::ui16:
-		return "ui16";
+	case PrimitiveType::u16:
+		return "u16";
 
-	case PrimitiveType::ui32:
-		return "ui32";
+	case PrimitiveType::u32:
+		return "u32";
 
-	case PrimitiveType::ui64:
-		return "ui64";
+	case PrimitiveType::u64:
+		return "u64";
 
 	case PrimitiveType::f32:
 		return "f32";

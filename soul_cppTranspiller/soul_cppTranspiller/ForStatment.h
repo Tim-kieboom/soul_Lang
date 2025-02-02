@@ -9,7 +9,7 @@
 class ForStatment : public SuperConditionalStatment
 {
 public:
-	Nullable<std::pair<std::shared_ptr<InitializeVariable>, std::shared_ptr<Assignment>>> initCounter;
+	Nullable<std::shared_ptr<InitializeVariable>> initCounter;
 
 	std::shared_ptr<SuperExpression> stopCondition;
 	std::shared_ptr<SuperExpression> doAfterEachLoop;
@@ -21,12 +21,12 @@ public:
 	{
 	}
 
-	ForStatment(std::pair<std::shared_ptr<InitializeVariable>, std::shared_ptr<Assignment>> initCounter, std::shared_ptr<SuperExpression> stopCondition, std::shared_ptr<SuperExpression> doAfterEachLoop, std::shared_ptr<BodyNode> body)
+	ForStatment(std::shared_ptr<InitializeVariable> initCounter, std::shared_ptr<SuperExpression> stopCondition, std::shared_ptr<SuperExpression> doAfterEachLoop, std::shared_ptr<BodyNode> body)
 		: initCounter(initCounter), stopCondition(stopCondition), doAfterEachLoop(doAfterEachLoop), body(body)
 	{
 	}
 
-	ForStatment(Nullable<std::pair<std::shared_ptr<InitializeVariable>, std::shared_ptr<Assignment>>> initCounter, std::shared_ptr<SuperExpression> stopCondition, std::shared_ptr<SuperExpression> doAfterEachLoop, std::shared_ptr<BodyNode> body)
+	ForStatment(Nullable<std::shared_ptr<InitializeVariable>> initCounter, std::shared_ptr<SuperExpression> stopCondition, std::shared_ptr<SuperExpression> doAfterEachLoop, std::shared_ptr<BodyNode> body)
 		: initCounter(initCounter), stopCondition(stopCondition), doAfterEachLoop(doAfterEachLoop), body(body)
 	{
 	}
@@ -44,7 +44,7 @@ public:
 		if (initCounter.isNull)
 			ss << "<empty>, ";
 		else
-			ss << initCounter.value.first->printToString() << " " << initCounter.value.second->printToString() << ", ";
+			ss << initCounter.value->printToString() << ", ";
 
 		ss <<"StopCondition: " << stopCondition->printToString() << ", DoAfterEachLoop: " << doAfterEachLoop->printToString() << ")" << body->printToString();
 		return ss.str();

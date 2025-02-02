@@ -51,8 +51,11 @@ static inline Result<void> storeArgument
     if (type.isRefrence())
         return ErrorInfo("Argument type can not be a refrence, argument: \'" + argName + "\'", iterator.currentLine);
 
+    if (argType == ArgumentType::default_)
+        type.isMutable = false;
+
     ArgumentInfo arg = ArgumentInfo(storeInfo.isOptional, type, argName, argType, argumentPosition);
-    
+
     if (arg.isOptional)
     {
         arg.defaultValue = storeInfo.defaultValue;

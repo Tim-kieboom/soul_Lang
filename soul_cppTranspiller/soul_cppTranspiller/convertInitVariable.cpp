@@ -1,7 +1,10 @@
 #include "convertInitVariable.h"
 #include "soulChecker.h"
+#include "EmptyStatment.h"
 #include "convertAssignment.h"
 using namespace std;
+
+static const shared_ptr<SuperStatement> emptyStatment = make_shared<EmptyStatment>(EmptyStatment());
 
 static inline ErrorInfo ERROR_convertInitVariable_outOfBounds(TokenIterator& iterator)
 {
@@ -35,13 +38,13 @@ static inline Result<BodyStatment_Result<InitializeVariable>> _convertInitVariab
 	if (!iterator.nextToken())
 		return ERROR_convertInitVariable_outOfBounds(iterator);
 
-	BodyStatment_Result<InitializeVariable> bodyResult
-	(
-		make_shared<InitializeVariable>(InitializeVariable(toString(type), varName))
-	);
+	auto bodyResult = BodyStatment_Result<InitializeVariable>();
 
 	if (token == ";")
+	{
+		bodyResult.expression = make_shared<InitializeVariable>(InitializeVariable(toString(type), varName, emptyStatment));
 		return bodyResult;
+	}
 
 	if (token != "=")
 		return ErrorInfo("invalid symbool in argument, symbool: \'" + token + '\'', iterator.currentLine);
@@ -58,7 +61,7 @@ static inline Result<BodyStatment_Result<InitializeVariable>> _convertInitVariab
 		return assignResult.error;
 
 	bodyResult.addToBodyResult(assignResult.value());
-	bodyResult.afterStatment.push_back(assignResult.value().expression);
+	bodyResult.expression = make_shared<InitializeVariable>(InitializeVariable(toString(type), varName, assignResult.value().expression));
 	return bodyResult;
 }
 

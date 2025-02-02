@@ -23,7 +23,6 @@ bool isSyntaxTree_Expression(SyntaxNodeId id)
 {
 	return	id == SyntaxNodeId::Literal ||
 			id == SyntaxNodeId::Variable ||
-			id == SyntaxNodeId::Optional ||
 			id == SyntaxNodeId::Refrence ||
 			id == SyntaxNodeId::Increment ||
 			id == SyntaxNodeId::IndexArray ||

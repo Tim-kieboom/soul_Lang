@@ -1,25 +1,5 @@
 #pragma once
 
-enum class SyntaxNodeId_Statment
-{
-	/*Statment*/
-	FieldNode,
-	Assignment,
-	IfStatment,
-	ForStatment,
-	MethodeNode,
-	ElseStatment,
-	WhileStatment,
-	EmptyStatment,
-	BreakStatment,
-	ReturnStatment,
-	ElseIfStatment,
-	ContinueStatment,
-	InitializeVariable,
-	FunctionCallStatment,
-	CompileConstVariable,
-};
-
 enum class SyntaxNodeId
 {
 	SyntaxTree,
@@ -41,13 +21,13 @@ enum class SyntaxNodeId
 	ElseIfStatment,
 	ContinueStatment,
 	InitializeVariable,
+	RawArrayToSoulArray,
 	FunctionCallStatment,
 	CompileConstVariable,
 
 	/*expressions*/
 	Literal,
 	Variable,
-	Optional,
 	Refrence,
 	Increment,
 	IndexArray,

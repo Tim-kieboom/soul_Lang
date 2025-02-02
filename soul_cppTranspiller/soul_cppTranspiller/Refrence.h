@@ -3,10 +3,9 @@
 
 class Refrence : public SuperExpression
 {
-private:
+public:
 	std::shared_ptr<SuperExpression> expression;
 
-public:
 	explicit Refrence(std::shared_ptr<SuperExpression>& expression)
 		: expression(expression)
 	{

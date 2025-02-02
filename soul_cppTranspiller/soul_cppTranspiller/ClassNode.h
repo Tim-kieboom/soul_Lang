@@ -11,6 +11,20 @@ public:
 	std::vector<std::shared_ptr<MethodeNode>> methodes;
 
 	ClassNode() = default;
+	ClassNode(std::string& className)
+		: className(className)
+	{
+	}
+
+	void addField(std::shared_ptr<FieldVariable> field)
+	{
+		fields.push_back(field);
+	}
+
+	void addMethode(std::shared_ptr<MethodeNode> methode)
+	{
+		methodes.push_back(methode);
+	}
 
 	void print() const override
 	{
@@ -20,15 +34,15 @@ public:
 	std::string printToString() const override
 	{
 		std::stringstream ss;
-		ss << "classDef\n( className::" << className << "{";
+		ss << "className::" << className << "\n{\n";
 		
 		for (const std::shared_ptr<FieldVariable>& field : fields)
-			ss << field->printToString();
+			ss << field->printToString() << '\n';
 		
 		for (const std::shared_ptr<MethodeNode>& methode : methodes)
-			ss << methode->printToString();
+			ss << methode->printToString() << '\n';
 		
-		ss << "\n})";
+		ss << "\n}";
 		return ss.str();
 	}
 

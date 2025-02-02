@@ -1,11 +1,11 @@
 //invis till endInvis is removed by tokenizer
 #invis
 //for syntax highlighting
-func size(i32[] array);
-func size(str string);
 func ctor();
 func println(str msg);
 func println();
+func arrSize(str[] a);
+func strSize(str s);
 func print(str msg);
 func checkThrow(bool condition, str msg);
 func checkFail(bool condition, str msg);
@@ -21,23 +21,72 @@ class i8;
 class i16;
 class i32;
 class i64;
-class ui8;
-class ui16;
-class ui32;
-class ui64;
+class u8;
+class u16;
+class u32;
+class u64;
 class f32;
 class f64;
 class str;
 class none;
+class ptr;
 class f;
 # endInvis
 
-func main(): i32
+//class List
+//{
+//    //add i32[]*? array = null
+//    i32[] array = new i32[0];
+
+//    pub u64 Size =0;//{get; priv set;} = 0;
+//    pub u64 Capacity =0;//{get {return arrSize(array)} priv set;} = 0;
+
+
+//    pub ctor() { }
+//    pub ctor(this.capacity) { }
+//    pub ~ctor() { }
+
+//    pub push(i32 value)
+//    {
+//        if (Size + 1 > Capacity)
+//            reserve(Capacity*2);
+
+        
+//    }
+
+//    priv reserve(u64 newCapacity)
+//    {
+//        i32[] newArray = new i32[newCapacity];
+
+//        for(u64 i = 0; i < Size; i)
+
+//    }
+//}
+
+
+func main(mut str[] args): i32
 {
     println();
 
-    testOptional(name: out/*NOT ALLOWED*/ "bob", 1, optional: 3, 2);
+    u64 argsSize = arrSize(args);
+    i64 i = -1;
+
+    i8 v1 = 10;
+    i8 v2 = 4;
+
+    f64 log_ = 2 </ (2 </ 4 ** (10 log 100)); 
+    CompileConst f64 pow  = 4 ** 0.5; 
+    CompileConst f64 root = 2 </ 4;
+
+    str[] array = new str[10];
+array[0] = "tim";
+array[1] = "foo";
+array[2] = "john";
+array[3] = "ellie";
+println(array);
+    //i32[] array2 = copy[20] array;
+
+    println(f"log:{log_}, pow:{pow}, root{root}");
+
+    return 0;
 }
-
-func testOptional(i32 bar, str name = "tim", f32 float, i32 optional = 2): none { }
-

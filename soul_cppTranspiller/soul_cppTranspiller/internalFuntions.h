@@ -22,6 +22,26 @@ static const FuncDeclaration interalFunc_println = FuncDeclaration
 	false
 );
 
+static const FuncDeclaration interalFunc_print_arr = FuncDeclaration
+(
+	"print",
+	toString(PrimitiveType::none),
+	{
+		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true, {TypeWrapper::array_}), "msg", ArgumentType::default_, 1)
+	},
+	false
+);
+
+static const FuncDeclaration interalFunc_println_arr = FuncDeclaration
+(
+	"println",
+	toString(PrimitiveType::none),
+	{
+		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true, {TypeWrapper::array_}), "msg", ArgumentType::default_, 1)
+	},
+	false
+);
+
 static const FuncDeclaration interalFunc_println_empty = FuncDeclaration
 (
 	"println",
@@ -116,8 +136,8 @@ static const FuncDeclaration interalFunc_toStr = FuncDeclaration
 
 static const FuncDeclaration interalFunc_size_array = FuncDeclaration
 (
-	"size",
-	toString(PrimitiveType::ui64),
+	"arrSize",
+	toString(PrimitiveType::u64),
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), false, {TypeWrapper::array_}), "array", ArgumentType::default_, 1)
 	},
@@ -126,25 +146,50 @@ static const FuncDeclaration interalFunc_size_array = FuncDeclaration
 
 static const FuncDeclaration interalFunc_size_str = FuncDeclaration
 (
-	"size",
-	toString(PrimitiveType::ui64),
+	"strSize",
+	toString(PrimitiveType::u64),
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), false), "str", ArgumentType::default_, 1)
 	},
 	false
 );
 
+static const FuncDeclaration interalFunc_log = FuncDeclaration
+(
+	"log",
+	toString(PrimitiveType::f64),
+	{
+		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), false), "base", ArgumentType::default_, 1),
+		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), false), "x", ArgumentType::default_, 2)
+	},
+	false
+);
+
+static const FuncDeclaration interalFunc_log10 = FuncDeclaration
+(
+	"log",
+	toString(PrimitiveType::f64),
+	{
+		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::f64), false), "base", ArgumentType::default_, 1)
+	},
+	false
+);
+
 static const std::initializer_list<FuncDeclaration> internalFunctions =
 {
+	interalFunc_log,
 	interalFunc_Fail,
 	interalFunc_Throw,
 	interalFunc_print,
 	interalFunc_toStr,
+	interalFunc_log10,
 	interalFunc_println,
 	interalFunc_size_str,
+	interalFunc_print_arr,
 	interalFunc_checkFail,
 	interalFunc_checkThrow,
 	interalFunc_size_array,
+	interalFunc_println_arr,
 	interalFunc_println_empty,
 	interalFunc_checkFail_debug,
 	interalFunc_checkThrow_debug,

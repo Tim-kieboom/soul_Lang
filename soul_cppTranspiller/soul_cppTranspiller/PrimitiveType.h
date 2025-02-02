@@ -19,10 +19,10 @@ enum class PrimitiveType
 	i32,
 	i64,
 
-	ui8,
-	ui16,
-	ui32,
-	ui64,
+	u8,
+	u16,
+	u32,
+	u64,
 
 	f32,
 	f64

@@ -52,7 +52,7 @@ static inline Result<shared_ptr<BodyNode>> _convertStatmentBody(TokenIterator& i
 
         BodyStatment_Result<SuperStatement>& statment = statmentResult.value();
 
-        auto body = make_shared<BodyNode>(BodyNode());
+        auto body = make_shared<BodyNode>(BodyNode(ifContext));
         for (auto& before : statment.beforeStatment)
             body->addStatment(before);
 

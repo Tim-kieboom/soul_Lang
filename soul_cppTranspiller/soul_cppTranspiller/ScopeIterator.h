@@ -18,7 +18,10 @@ struct ScopeIterator
 	}
 
 	Result<VarInfo*> tryGetVariable_fromCurrent(const std::string& name, std::vector<VarInfo>& globalScope, uint64_t currentLine)
-	{
+	{	
+		if(scope.size() == 0)
+			return ErrorInfo("scope is empty", currentLine);
+
 		Result<VarInfo*> result = getCurrentNesting().tryGetVariable(name, this->scope, globalScope);
 		if (result.hasError)
 			return ErrorInfo(result.error.message, currentLine);

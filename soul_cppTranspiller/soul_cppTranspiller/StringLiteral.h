@@ -3,10 +3,9 @@
 
 class StringLiteral : public SuperExpression
 {
-private:
+public:
 	std::string value;
 
-public:
 	explicit StringLiteral(const std::string& value)
 		: value(value)
 	{

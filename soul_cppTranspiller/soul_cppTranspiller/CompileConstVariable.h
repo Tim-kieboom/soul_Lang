@@ -6,11 +6,10 @@ class CompileConstVariable : public SuperStatement
 {
 public:
 	std::shared_ptr<InitializeVariable> init;
-	std::shared_ptr<Assignment> assign;
 
 	CompileConstVariable() = default;
-	CompileConstVariable(std::shared_ptr<InitializeVariable> init, std::shared_ptr<Assignment> assign)
-		: init(init), assign(assign)
+	CompileConstVariable(std::shared_ptr<InitializeVariable> init)
+		: init(init)
 	{
 	}
 
@@ -22,7 +21,7 @@ public:
 	std::string printToString() const override
 	{
 		std::stringstream ss;
-		ss << "CompileConstVariable(" << init->printToString() << ", " << assign->printToString() << ')';
+		ss << "CompileConstVariable(" << init->printToString() << ')';
 		return ss.str();
 	}
 

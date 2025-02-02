@@ -1,5 +1,7 @@
 #pragma once
-#include "soul_str.hpp"
+#include "Collections/soul_str.hpp"
+
+inline void print(){ }
 
 template<typename T, typename = void>
 inline void print(T msg)
@@ -10,8 +12,8 @@ inline void print(T msg)
 template<>
 inline void print(__Soul_STR__ msg)
 {
-    for (uint32_t i = 0; i < msg.size - msg.offset; i++)
-        std::cout << msg.__soul_UNSAFE_at__(i);
+    for(char& ch : msg)
+        std::cout << ch;
 }
 
 template<typename K>
@@ -19,14 +21,16 @@ inline void print(__Soul_ARRAY__<K> array)
 {
     std::cout << '[';
 
-    uint32_t lastIndex = array.size - array.offset - 1;
-    for (uint32_t i = 0; i < lastIndex; i++)
+    int64_t lastIndex = array.size() - array.offset() - 1;
+    for (int64_t i = 0; i < lastIndex; i++)
     {
         print_element(array.__soul_UNSAFE_at__(i), std::is_same<K, __Soul_STR__>());
         std::cout << ", ";
     }
 
-    print_element(array.__soul_UNSAFE_at__(lastIndex), std::is_same<K, __Soul_STR__>());
+    if(lastIndex >= 0)
+        print_element(array.__soul_UNSAFE_at__(lastIndex), std::is_same<K, __Soul_STR__>());
+
     std::cout << ']';
 }
 template<typename T>
@@ -46,6 +50,11 @@ inline void print_element(const T& element, std::true_type)
 template<> inline void print<int8_t>(int8_t msg) { std::cout << static_cast<int16_t>(msg); }
 template<> inline void print<uint8_t>(uint8_t msg) { std::cout << static_cast<uint16_t>(msg); }
 
+inline void println()
+{
+    std::cout << std::endl;
+}
+
 template<typename T, typename = void>
 inline void println(T msg)
 {
@@ -55,9 +64,7 @@ inline void println(T msg)
 template<>
 inline void println(__Soul_STR__ msg)
 {
-    for (uint32_t i = 0; i < msg.size - msg.offset; i++)
-        std::cout << msg.__soul_UNSAFE_at__(i);
-
+    print(msg);
     std::cout << std::endl;
 }
 

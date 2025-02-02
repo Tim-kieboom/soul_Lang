@@ -116,6 +116,36 @@
     <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression\convertIndexArray">
       <UniqueIdentifier>{05a98613-b8b3-43f6-b456-6502d00e9c43}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertToCpp">
+      <UniqueIdentifier>{6124add4-31e4-4d3b-a6cc-d965dc23e434}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertToCpp\convert_Cpp_FuncDeclaration">
+      <UniqueIdentifier>{4edd1671-3e82-4059-9fb1-5fc9bf854ccf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertToCpp\soulToCpp_Type">
+      <UniqueIdentifier>{fd860f41-548b-41f2-89b1-b4df45b52f0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertToCpp\convertNode">
+      <UniqueIdentifier>{f594851f-ca08-4a64-9942-710de11d4506}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertInitializeVariable_ToCpp">
+      <UniqueIdentifier>{517287c4-e9ba-432d-93d3-9da304f31733}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertAssignment_ToCpp">
+      <UniqueIdentifier>{e745e6b4-8a8a-4817-862e-498bae2b99e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertToCpp\convertNode\SuperExpression_ToCpp">
+      <UniqueIdentifier>{a3ddf084-98f6-4dcd-b323-3132eef11304}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertCompileConstVariable_ToCpp">
+      <UniqueIdentifier>{627a86b1-fedb-42c4-9e01-f0786bc3e811}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertBodyNode_ToCpp">
+      <UniqueIdentifier>{e7ed2f83-b0f3-4802-bede-1fb05a610097}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertClass">
+      <UniqueIdentifier>{c2770be4-7a6b-40fc-bb68-dd170bd250cb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -219,6 +249,33 @@
     </ClCompile>
     <ClCompile Include="convertIndexArray.cpp">
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression\convertIndexArray</Filter>
+    </ClCompile>
+    <ClCompile Include="convertToCpp.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp</Filter>
+    </ClCompile>
+    <ClCompile Include="convert_Cpp_FuncDeclaration.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convert_Cpp_FuncDeclaration</Filter>
+    </ClCompile>
+    <ClCompile Include="soulToCpp.Type.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\soulToCpp_Type</Filter>
+    </ClCompile>
+    <ClCompile Include="convertInitializeVariable_ToCpp.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertInitializeVariable_ToCpp</Filter>
+    </ClCompile>
+    <ClCompile Include="convertAssignment_ToCpp.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertAssignment_ToCpp</Filter>
+    </ClCompile>
+    <ClCompile Include="SuperExpression_ToCpp.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convertNode\SuperExpression_ToCpp</Filter>
+    </ClCompile>
+    <ClCompile Include="convertCompileConstVariable_ToCpp.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertCompileConstVariable_ToCpp</Filter>
+    </ClCompile>
+    <ClCompile Include="convertBodyNode_ToCpp.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertBodyNode_ToCpp</Filter>
+    </ClCompile>
+    <ClCompile Include="convertClass.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertClass</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -407,9 +464,6 @@
     <ClInclude Include="convertReturnStatment.h">
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertBody\convertReturnStatment</Filter>
     </ClInclude>
-    <ClInclude Include="Optional.h">
-      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
-    </ClInclude>
     <ClInclude Include="StringLiteral.h">
       <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
     </ClInclude>
@@ -472,6 +526,36 @@
     </ClInclude>
     <ClInclude Include="RangeExpression.h">
       <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
+    <ClInclude Include="convertToCpp.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp</Filter>
+    </ClInclude>
+    <ClInclude Include="convert_Cpp_FuncDeclaration.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convert_Cpp_FuncDeclaration</Filter>
+    </ClInclude>
+    <ClInclude Include="soulToCpp.Type.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\soulToCpp_Type</Filter>
+    </ClInclude>
+    <ClInclude Include="convertInitializeVariable_ToCpp.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertInitializeVariable_ToCpp</Filter>
+    </ClInclude>
+    <ClInclude Include="convertAssignment_ToCpp.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertAssignment_ToCpp</Filter>
+    </ClInclude>
+    <ClInclude Include="SuperExpression_ToCpp.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convertNode\SuperExpression_ToCpp</Filter>
+    </ClInclude>
+    <ClInclude Include="convertCompileConstVariable_ToCpp.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertCompileConstVariable_ToCpp</Filter>
+    </ClInclude>
+    <ClInclude Include="convertBodyNode_ToCpp.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertBodyNode_ToCpp</Filter>
+    </ClInclude>
+    <ClInclude Include="RawArrayToSoulArray.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Statements</Filter>
+    </ClInclude>
+    <ClInclude Include="convertClass.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertClass</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

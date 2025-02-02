@@ -6,66 +6,6 @@
 
 using namespace std;
 
-static bool isExpression_CompileConst(SyntaxNodeId expressionId, shared_ptr<SuperExpression>& expression, MetaData& metaData, CurrentContext& context)
-{
-	if (expressionId == SyntaxNodeId::Variable)
-	{
-		string& varName = dynamic_pointer_cast<Variable>(expression)->varName;
-		Result<VarInfo*> var = context.scope.tryGetVariable_fromCurrent(varName, metaData.globalScope, 0);
-		if (var.hasError)
-			return false;
-
-		return var.value()->isCompileConst;
-	}
-
-	return expressionId == SyntaxNodeId::CompileConstVariable ||
-		   expressionId == SyntaxNodeId::Literal ||
-		   expressionId == SyntaxNodeId::StringLiteral;
-}
-
-static bool checkBinairyBranch(shared_ptr<SuperExpression>& expression, vector<shared_ptr<BinaryExpression>>& binairyStack, MetaData& metaData, CurrentContext& context)
-{
-	SyntaxNodeId id = expression->getId();
-	if (id == SyntaxNodeId::BinairyExpression)
-	{
-		binairyStack.push_back(dynamic_pointer_cast<BinaryExpression>(expression));
-	}
-	else
-	{
-		if (!isExpression_CompileConst(id, expression, metaData, context))
-			return false;
-	}
-
-	return true;
-}
-
-static inline bool isExpression_CompileConstant(shared_ptr<SuperExpression>& expression, MetaData& metaData, CurrentContext& context)
-{
-	if (expression->getId() == SyntaxNodeId::BinairyExpression)
-	{
-		vector<shared_ptr<BinaryExpression>> binairyStack;
-		binairyStack.push_back(dynamic_pointer_cast<BinaryExpression>(expression));
-
-		while(binairyStack.empty())
-		{
-			shared_ptr<BinaryExpression> binairy = binairyStack.back();
-			binairyStack.pop_back();
-
-			if (!checkBinairyBranch(binairy->left, /*out*/binairyStack, metaData, context))
-				return false;
-
-			if (!checkBinairyBranch(binairy->right, /*out*/binairyStack, metaData, context))
-				return false;
-		}
-
-		return true;
-	}
-	else
-	{
-		return isExpression_CompileConst(expression->getId(), expression, metaData, context);
-	}
-}
-
 static inline Result<BodyStatment_Result<CompileConstVariable>> _convertCompileConstVariable(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, bool isGlobalScope)
 {
 	string& token = iterator.currentToken;
@@ -104,8 +44,7 @@ static inline Result<BodyStatment_Result<CompileConstVariable>> _convertCompileC
 
 	auto compileConstVar = make_shared<CompileConstVariable>(CompileConstVariable
 	(
-		make_shared<InitializeVariable>(InitializeVariable(toString(typeResult.value()), varName)),
-		assign
+		make_shared<InitializeVariable>(InitializeVariable(toString(typeResult.value()), varName, assign))
 	));
 
 	auto bodyResult = BodyStatment_Result<CompileConstVariable>(compileConstVar);

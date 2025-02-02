@@ -5,13 +5,12 @@
 
 class FunctionCall : public SuperExpression
 {
-private:
+public:
     std::string funcName;
     std::string returnType;
     FuncDeclaration funcInfo;
     std::vector<std::shared_ptr<SuperExpression>> args;
 
-public:
     FunctionCall() = default;
 
     FunctionCall(const std::string& funcName, const std::string& returnType, FuncDeclaration funcInfo, std::vector<std::shared_ptr<SuperExpression>>& args)

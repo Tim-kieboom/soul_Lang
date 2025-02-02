@@ -2,14 +2,18 @@
 
 #include "SuperStatement.h"
 #include "ISyntaxNode.h"
+#include "CurrentContext.h"
 
 class BodyNode : public ISyntaxNode
 {
-private:
-	std::vector<std::shared_ptr<SuperStatement>> statements;
-
 public:
-	BodyNode() = default;
+	std::vector<std::shared_ptr<SuperStatement>> statements;
+	CurrentContext context;
+
+	BodyNode(CurrentContext& context)
+		: context(context)
+	{
+	}
 
 	void addStatment(std::shared_ptr<SuperStatement> statement)
 	{

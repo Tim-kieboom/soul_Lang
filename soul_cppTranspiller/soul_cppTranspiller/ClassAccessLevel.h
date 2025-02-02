@@ -3,8 +3,11 @@
 
 enum class ClassAccessLevel
 {
-	private_,
-	public_
+	invalid,
+
+	priv,
+	pub
 };
 
 std::string toString(ClassAccessLevel level);
+ClassAccessLevel getClassAccessLevel(std::string& token);

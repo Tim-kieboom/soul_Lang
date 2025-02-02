@@ -3,6 +3,7 @@
 #include "Variable.h"
 #include "Assignment.h"
 #include "convertBody.h"
+#include "convertClass.h"
 #include "StringLiteral.h"
 #include "internalFuntions.h"
 #include "convertInitVariable.h"
@@ -64,13 +65,23 @@ static inline void _addC_strToGlobalScope(MetaData& metaData, SyntaxTree& tree)
         c_str.isCompileConst = true;
         metaData.addToGlobalScope(c_str);
 
+        
+        auto assign = make_shared<Assignment>(Assignment
+        (
+            make_shared<Variable>(pair.second.name), 
+            make_shared<StringLiteral>(StringLiteral(pair.second.value)))
+        );
+
+        auto init = make_shared<InitializeVariable>(InitializeVariable
+        (
+            type,
+            pair.second.name,
+            assign
+        ));
+
         tree.globalVariables.push_back
         (
-            make_shared<CompileConstVariable>(CompileConstVariable
-            (
-                make_shared<InitializeVariable>(InitializeVariable(type, pair.second.name)),
-                make_shared<Assignment>(Assignment(make_shared<Variable>(pair.second.name), make_shared<StringLiteral>(StringLiteral(pair.second.value))))
-            ))
+            make_shared<CompileConstVariable>(CompileConstVariable(init))
         );
     }
 }
@@ -228,13 +239,11 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
         }
         else if(token == "class")
         {
-            throw exception("not yet implemented");
-
-            Result<ClassNode> classResult;// = convertClass();
+            Result<ClassNode> classResult = convertClass(iterator, metaData);
             if (classResult.hasError)
                 return classResult.error;
 
-            //addClass(/*out*/tree, classResult.value());
+            addClass(/*out*/tree, classResult.value());
         }
         else
         {

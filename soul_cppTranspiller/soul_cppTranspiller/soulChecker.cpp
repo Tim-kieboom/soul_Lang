@@ -1,5 +1,10 @@
 #include "soulChecker.h"
 #include "stringTools.h" 
+#include "Variable.h" 
+#include "CurrentContext.h" 
+#include "BinairyExpression.h" 
+
+using namespace std;
 
 bool checkName(const std::string& name)
 {
@@ -108,9 +113,9 @@ bool checkValue(const std::string& value, DuckType type)
 	{
 	case DuckType::number:
 		return checkValue(value, TypeCategory::boolean) ||
-			checkValue(value, TypeCategory::interger) ||
-			checkValue(value, TypeCategory::floatingPoint) ||
-			checkValue(value, TypeCategory::unsignedInterger);
+			   checkValue(value, TypeCategory::interger) ||
+			   checkValue(value, TypeCategory::floatingPoint) ||
+			   checkValue(value, TypeCategory::unsignedInterger);
 
 	case DuckType::compile_dynamic:
 		return checkValue(value, TypeCategory::compile_dynamic);
@@ -124,5 +129,65 @@ bool checkValue(const std::string& value, DuckType type)
 	default:
 	case DuckType::invalid:
 		return false;
+	}
+}
+
+static bool isExpression_CompileConst(SyntaxNodeId expressionId, shared_ptr<SuperExpression>& expression, MetaData& metaData, CurrentContext& context)
+{
+	if (expressionId == SyntaxNodeId::Variable)
+	{
+		string& varName = dynamic_pointer_cast<Variable>(expression)->varName;
+		Result<VarInfo*> var = context.scope.tryGetVariable_fromCurrent(varName, metaData.globalScope, 0);
+		if (var.hasError)
+			return false;
+
+		return var.value()->isCompileConst;
+	}
+
+	return expressionId == SyntaxNodeId::CompileConstVariable ||
+		expressionId == SyntaxNodeId::Literal ||
+		expressionId == SyntaxNodeId::StringLiteral;
+}
+
+static bool checkBinairyBranch(shared_ptr<SuperExpression>& expression, vector<shared_ptr<BinaryExpression>>& binairyStack, MetaData& metaData, CurrentContext& context)
+{
+	SyntaxNodeId id = expression->getId();
+	if (id == SyntaxNodeId::BinairyExpression)
+	{
+		binairyStack.push_back(dynamic_pointer_cast<BinaryExpression>(expression));
+	}
+	else
+	{
+		if (!isExpression_CompileConst(id, expression, metaData, context))
+			return false;
+	}
+
+	return true;
+}
+
+bool isExpression_CompileConstant(shared_ptr<SuperExpression>& expression, MetaData& metaData, CurrentContext& context)
+{
+	if (expression->getId() == SyntaxNodeId::BinairyExpression)
+	{
+		vector<shared_ptr<BinaryExpression>> binairyStack;
+		binairyStack.push_back(dynamic_pointer_cast<BinaryExpression>(expression));
+
+		while(!binairyStack.empty())
+		{
+			shared_ptr<BinaryExpression> binairy = binairyStack.back();
+			binairyStack.pop_back();
+
+			if (!checkBinairyBranch(binairy->left, /*out*/binairyStack, metaData, context))
+				return false;
+
+			if (!checkBinairyBranch(binairy->right, /*out*/binairyStack, metaData, context))
+				return false;
+		}
+
+		return true;
+	}
+	else
+	{
+		return isExpression_CompileConst(expression->getId(), expression, metaData, context);
 	}
 }

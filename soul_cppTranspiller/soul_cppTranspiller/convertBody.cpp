@@ -10,6 +10,7 @@
 #include "convertForStatment.h"
 #include "convertInitVariable.h"
 #include "convertFunctionCall.h"
+#include "RawArrayToSoulArray.h"
 #include "convertWhileStatment.h"
 #include "CompileConstVariable.h"
 #include "FunctionCallStatment.h"
@@ -255,8 +256,16 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 
 Result<shared_ptr<BodyNode>> convertBody(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, SyntaxNodeId parentNode)
 {
-	static const shared_ptr<BodyNode> emptyBodyNode = make_shared<BodyNode>(BodyNode());
-	shared_ptr<BodyNode> body = make_unique<BodyNode>();
+	static const shared_ptr<BodyNode> emptyBodyNode = make_shared<BodyNode>(BodyNode(context));
+	shared_ptr<BodyNode> body = make_unique<BodyNode>(BodyNode(context));
+
+	if (isFuncNode(parentNode) && funcInfo.functionName == "main" && !funcInfo.args.empty())
+	{
+		auto rawArg = make_shared<Variable>(Variable("__Soul_argv__"));
+		auto argSize = make_shared<Variable>(Variable("__Soul_argc__"));
+		auto soulArray = make_shared<Variable>(Variable(funcInfo.args[0].argName));
+		body->addStatment(make_shared<RawArrayToSoulArray>(RawArrayToSoulArray(rawArg, argSize, soulArray, "str[]")));
+	}
 
 	string checkBracket;
 	if (!iterator.peekToken(checkBracket))

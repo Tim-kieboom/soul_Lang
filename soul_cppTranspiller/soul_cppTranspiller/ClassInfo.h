@@ -8,7 +8,7 @@ struct FieldsInfo
 	std::string name = "";
 	std::string stringedRawType = "";
 	bool isProperty = false;
-	ClassAccessLevel accessLevel = ClassAccessLevel::private_;
+	ClassAccessLevel accessLevel = ClassAccessLevel::priv;
 
 	FieldsInfo() = default;
 	FieldsInfo(const std::string& name, const std::string& stringedRawType, ClassAccessLevel accessLevel, bool isProperty = false)
@@ -20,7 +20,7 @@ struct FieldsInfo
 struct Methode
 {
 	std::string methodeName;
-	ClassAccessLevel accessLevel = ClassAccessLevel::private_;
+	ClassAccessLevel accessLevel = ClassAccessLevel::priv;
 
 	Methode() = default;
 	Methode(std::string& methodeName, ClassAccessLevel accessLevel)

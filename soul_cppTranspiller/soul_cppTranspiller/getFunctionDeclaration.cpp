@@ -64,6 +64,16 @@ Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData
 			metaData.addFunction(funcInfo.functionName, funcInfo);
 		}
 
+		if (funcInfo.functionName == "main")
+		{
+			if (funcInfo.args.empty())
+				return funcInfo;
+
+			RawType& arg = funcInfo.args[0].valueType;
+			if (funcInfo.args.size() > 1 && (!arg.isArray() || arg.toPrimitiveType() != PrimitiveType::str) )
+				return ErrorInfo("func main only allows 'main()' or 'main(str[])' as arguments", iterator.currentLine);
+		}
+
 		return funcInfo;
 	}
 

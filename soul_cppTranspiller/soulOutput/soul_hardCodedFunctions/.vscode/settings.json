@@ -42,6 +42,7 @@
         "typeinfo": "cpp",
         "iostream": "cpp",
         "string_view": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "cstring": "cpp"
     }
 }

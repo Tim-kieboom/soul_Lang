@@ -10,6 +10,7 @@ uint32_t getOperator_Priority(SyntaxTree_Operator opType)
 {
 	switch (opType)
 	{
+	case SyntaxTree_Operator::Log:
 	case SyntaxTree_Operator::Pow:
 	case SyntaxTree_Operator::Root:
 		return 7;
@@ -61,6 +62,7 @@ bool isOperator_booleanOp(SyntaxTree_Operator opType)
 		case SyntaxTree_Operator::IsSmaller_Equals:
 			return true;
 
+		case SyntaxTree_Operator::Log:
 		case SyntaxTree_Operator::Pow:
 		case SyntaxTree_Operator::Mul:
 		case SyntaxTree_Operator::Div:
@@ -122,6 +124,8 @@ SyntaxTree_Operator getSyntax_Operator(const std::string& token)
 	if (token == toString(SyntaxTree_Operator::Root))
 		return SyntaxTree_Operator::Root;
 
+	if (token == toString(SyntaxTree_Operator::Log))
+		return SyntaxTree_Operator::Log;
 
 	if (token == toString(SyntaxTree_Operator::BitWise_OR))
 		return SyntaxTree_Operator::BitWise_OR;
@@ -172,6 +176,8 @@ std::string toString(SyntaxTree_Operator op)
 		return "**";
 	case SyntaxTree_Operator::Root:
 		return "</";
+	case SyntaxTree_Operator::Log:
+		return "log";
 
 	case SyntaxTree_Operator::BitWise_OR:
 		return "|";

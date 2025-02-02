@@ -322,7 +322,7 @@ static inline void tokenizeDot(const string& token, vector<Token>& tokenizer, co
 
 static inline void tokenizeLine(const string& line, vector<Token>& tokenizer, uint64_t& lineNumber)
 {
-    static initializer_list<const char*> parseStrings = { "</", "**", "&", ",", "!=", "!", "[]", "[", "]", "(", ")", "{", "}", ":", ";", "++", "--", ">=", "<=", "==", "+=", "-=", "/=", "*=", "<", ">", "+", "-", "/", "*", "=" };
+    static initializer_list<const char*> parseStrings = {"</", "**", "&", ",", "!=", "!", "[]", "[", "]", "(", ")", "{", "}", ":", ";", "++", "--", ">=", "<=", "==", "+=", "-=", "/=", "*=", "<", ">", "+", "-", "/", "*", "=" };
 
     vector<string> splitArgs = string_splitOn(line, parseStrings);
     string argsLine = concatToString(splitArgs, " ");

@@ -35,7 +35,7 @@ static inline Result<shared_ptr<BodyNode>> _convertStatmentBody(TokenIterator& i
 
         BodyStatment_Result<SuperStatement>& statment = statmentResult.value();
 
-        auto body = make_shared<BodyNode>(BodyNode());
+        auto body = make_shared<BodyNode>(BodyNode(forContext));
         for (auto& before : statment.beforeStatment)
             body->addStatment(before);
 
@@ -70,7 +70,7 @@ Result<BodyStatment_Result<SuperConditionalStatment>> convertForStatment(TokenIt
     CurrentContext forContext = CurrentContext(ScopeIterator(scope.scope, statementNestingIndex));
 
     string& token = iterator.currentToken;
-    Nullable<std::pair<std::shared_ptr<InitializeVariable>, std::shared_ptr<Assignment>>> initStatment;
+    Nullable<shared_ptr<InitializeVariable>> initStatment;
     if(token != ";")
     {
         Result<RawType> typeResult = getRawType(iterator, metaData.classStore);
@@ -94,9 +94,7 @@ Result<BodyStatment_Result<SuperConditionalStatment>> convertForStatment(TokenIt
 
 
             std::shared_ptr<InitializeVariable> initVar = init.expression;
-            std::shared_ptr<Assignment> assign = dynamic_pointer_cast<Assignment>(init.afterStatment.back());
-            pair<std::shared_ptr<InitializeVariable>, std::shared_ptr<Assignment>> _pair(initVar, assign);
-            initStatment = Nullable<std::pair<std::shared_ptr<InitializeVariable>, std::shared_ptr<Assignment>>>(_pair);
+            initStatment = Nullable<std::shared_ptr<InitializeVariable>>(initVar);
         }
         else
         {

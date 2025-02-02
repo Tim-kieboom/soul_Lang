@@ -8,7 +8,6 @@
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
-
 #include <unordered_map>
 
 #include "Token.h"
@@ -17,6 +16,7 @@
 #include "readFile.h"
 #include "tokenizer.h"
 #include "stringTools.h"
+#include "convertToCpp.h"
 #include "getAbstractSyntaxTree.h"
 
 using namespace std;
@@ -90,7 +90,7 @@ static string execAndPrint(const char* cmd)
 //constexpr const char* test_Path = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_cppTranspiller\\Source.soul";
 constexpr const char* test_Path = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_cppTranspiller\\quickTest.soul";
 constexpr const char* test_outputPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soulOutput\\out.cpp";
-constexpr const char* test_hardCodedPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_hardCodedFunctions\\soul_hardCodedFunctions.cpp";
+//constexpr const char* test_hardCodedPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_hardCodedFunctions\\soul_hardCodedFunctions.cpp";
 
 static inline void _tokenizerGetErrorLine(string& sourceFile, Result<vector<Token>>& tokensResult)
 {
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
     {
         path = test_Path;
         outputPath = test_outputPath;
-        hardCodedPath = test_hardCodedPath;
+        //hardCodedPath = test_hardCodedPath;
     }
     else
     {
@@ -125,10 +125,10 @@ int main(int argc, char* argv[])
     int64_t lineCount;
     int64_t libLineCount;
     string sourceFile = readFile_andStoreLine(path, lineCount);
-    string hardCodeLib = readFile(hardCodedPath, libLineCount);
-    if (lineCount <= 0 || libLineCount <= 0)
+    //string hardCodeLib = readFile(hardCodedPath, libLineCount);
+    if (lineCount <= 0 /*|| libLineCount <= 0*/)
     {
-        cout << "!!error!! readFile() lineCount: " << lineCount << ", libLineCount: " << libLineCount << endl;
+        cout << "!!error!! readFile() lineCount: " << lineCount << ", libLineCount: " /*<< libLineCount*/ << endl;
         exit(1);
     }
 
@@ -159,10 +159,18 @@ int main(int argc, char* argv[])
         SyntaxTree syntaxTree = move(syntaxTreeResult.value());
         syntaxTree.print();
 
-        //Result<string> cppResult = convert_AbstractSyntaxTree_ToCpp(syntaxTree);
+        Result<string> cppFile = convertToCpp(syntaxTree, metaData);
+        if (cppFile.hasError)
+        {
+            cout << "cppConverterError: \n" << syntaxTreeResult.error.message << ", onLine: " << syntaxTreeResult.error.lineNumber;
+            exit(1);
+        }
+
+        cout << "\n----------------------------- CPP_FILE -----------------------------\n\n";
+        cout << cppFile.value();
 
         //ofstream fileWriter(outputPath);
-        //fileWriter << metaData.getCpptIncludes() << hardCodeLib << cppResult.value();
+        //fileWriter << "#include \"soul_hardCodedFunctions.h\"" << cppFile.value();
         //fileWriter.close();
 
         //string execCppCodeCommand = "g++ " + string(outputPath);

@@ -19,6 +19,7 @@ enum class SyntaxTree_Operator
 	Modulo,
 	Pow,
 	Root,
+	Log,
 
 	BitWise_OR,
 	BitWise_AND,

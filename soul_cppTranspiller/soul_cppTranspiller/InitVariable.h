@@ -7,9 +7,10 @@ class InitializeVariable : public SuperStatement
 public:
     std::string type;
     std::string varName;
+    std::shared_ptr<SuperStatement> initStatment;
 
-    InitializeVariable(const std::string& type, const std::string& varName)
-        : type(type), varName(varName)
+    InitializeVariable(const std::string& type, const std::string& varName, const std::shared_ptr<SuperStatement> initStatment)
+        : type(type), varName(varName), initStatment(initStatment)
     {
     }
 
@@ -21,7 +22,7 @@ public:
     std::string printToString() const
     {
         std::stringstream ss;
-        ss << "InitializeVariable(" << varName << ", Type(" << type << "))";
+        ss << "InitializeVariable(" << varName << ", Type(" << type << "), " << initStatment->printToString() << ")";
         return ss.str();
     }
 

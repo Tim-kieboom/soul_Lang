@@ -1,11 +1,13 @@
 #include "convertFunctionCall.h"
 #include "Refrence.h"
-#include "Optional.h"
 #include "soulChecker.h"
+#include "EmptyStatment.h"
 #include "convertExpression.h"
 #include "convertInitVariable.h"
 
 using namespace std;
+
+static const shared_ptr<SuperStatement> emptyStatment = make_shared<EmptyStatment>(EmptyStatment());
 
 struct GetArgs_Result
 {
@@ -44,7 +46,7 @@ static inline void AddOutInitVariableExpression(const string& varName, RawType& 
 {
     functionCallExpression.push_back
     (
-        make_shared<InitializeVariable>(InitializeVariable(toString(type), varName))
+        make_shared<InitializeVariable>(InitializeVariable(toString(type), varName, emptyStatment))
     );
 }
 
@@ -102,7 +104,7 @@ static inline Result<GetArgs_Result> _getArgs(TokenIterator& iterator, MetaData&
 
                 bodyResult.beforeStatment.push_back
                 (
-                    make_shared<InitializeVariable>(InitializeVariable(typeString, nextToken))
+                    make_shared<InitializeVariable>(InitializeVariable(typeString, nextToken, emptyStatment))
                 );
 
                 if (!iterator.nextToken())

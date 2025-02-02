@@ -12,10 +12,10 @@ TypeCategory getTypeCategory(PrimitiveType type)
 	case PrimitiveType::i64:
 		return TypeCategory::interger;
 
-	case PrimitiveType::ui8:
-	case PrimitiveType::ui16:
-	case PrimitiveType::ui32:
-	case PrimitiveType::ui64:
+	case PrimitiveType::u8:
+	case PrimitiveType::u16:
+	case PrimitiveType::u32:
+	case PrimitiveType::u64:
 		return TypeCategory::unsignedInterger;
 
 	case PrimitiveType::f32:
