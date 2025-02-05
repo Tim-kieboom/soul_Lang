@@ -26,13 +26,16 @@ static inline Result<BodyStatment_Result<InitializeVariable>> _convertInitVariab
 
 	Result<VarInfo*> varExsists = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 	if (!varExsists.hasError)
-		return ErrorInfo("varName: \'" + token + "\' already exsists", iterator.currentLine);
+	{
+		if(!varExsists.value()->isForwardDecl)
+			return ErrorInfo("varName: \'" + token + "\' already exsists", iterator.currentLine);
+	}
 
 	VarInfo var = VarInfo(token, toString(type));
-	
+
 	if (isInGlobalScope)
 		metaData.addToGlobalScope(var);
-	else
+	else if(varExsists.hasError)
 		context.scope.getCurrentNesting().addVariable(var);
 
 	if (!iterator.nextToken())
@@ -42,6 +45,9 @@ static inline Result<BodyStatment_Result<InitializeVariable>> _convertInitVariab
 
 	if (token == ";")
 	{
+		if (!varExsists.hasError)
+			varExsists.value()->isForwardDecl = false;
+
 		bodyResult.expression = make_shared<InitializeVariable>(InitializeVariable(toString(type), varName, emptyStatment));
 		return bodyResult;
 	}
@@ -54,7 +60,12 @@ static inline Result<BodyStatment_Result<InitializeVariable>> _convertInitVariab
 
 	Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 	if (!varExsists.hasError)
-		return ErrorInfo("varName: \'" + token + "\' already exsists", iterator.currentLine);
+	{
+		if (!varExsists.value()->isForwardDecl)
+			return ErrorInfo("varName: \'" + token + "\' already exsists", iterator.currentLine);
+
+		varExsists.value()->isForwardDecl = false;
+	}
 
 	Result<BodyStatment_Result<Assignment>> assignResult = convertAssignment(iterator, metaData, varResult.value(), context);
 	if (assignResult.hasError)

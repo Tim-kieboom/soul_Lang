@@ -75,7 +75,8 @@ static inline Result<RawType> storeLastArgument
     StoreArgsInfo& storeInfo,
     MetaData& metaData,
     vector<ArgumentInfo>& args,
-    vector<ArgumentInfo>& optionals
+    vector<ArgumentInfo>& optionals,
+    bool isCtor
 )
 {
     string& token = iterator.currentToken;
@@ -87,6 +88,9 @@ static inline Result<RawType> storeLastArgument
     }
 
     RawType& type = storeInfo.type;
+    if (isCtor)
+        return type;
+
     if (!iterator.nextToken())
         return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
 
@@ -103,7 +107,7 @@ static inline Result<RawType> storeLastArgument
     return returnType.value();
 }
 
-Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& returnType)
+Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& returnType, ClassArgumentInfo* inClass)
 {
     StoreArgsInfo storeInfo;
     uint32_t& openBracketCounter = storeInfo.openBracketCounter;
@@ -128,11 +132,13 @@ Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& 
         {
             if(openBracketCounter <= 1)
             {
-                Result<RawType> result = storeLastArgument(iterator, storeInfo, metaData, args, optionals);
+                Result<RawType> result = storeLastArgument(iterator, storeInfo, metaData, args, optionals, (inClass != nullptr && inClass->isCtor));
                 if (result.hasError)
                     return result.error;
 
-                returnType = result.value();
+                if (inClass == nullptr || !inClass->isCtor)
+                    returnType = result.value();
+                
                 return StoreArguments_Result(args, optionals);
             }
 
@@ -166,6 +172,53 @@ Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& 
         else if (!typeResult.hasError)
         {
             storeInfo.type = typeResult.value();
+        }
+        else if(token == "this")
+        {
+            ClassInfo classInfo;
+
+            if (inClass == nullptr || !inClass->isCtor)
+                return ErrorInfo("'this' is only allowed as argument in ctor methodes", iterator.currentLine);
+            
+            if(inClass != nullptr) 
+                // i HATE compiler 'nooo you can't deref inClass it could be nullptr'
+                classInfo = inClass->classInfo;
+
+            if (!iterator.nextToken())
+                break;
+
+            if(token != ".")
+                return ErrorInfo("'this' allown is an invalid argument (valid argument 'this.<Field-name>')", iterator.currentLine);
+
+            if (!iterator.nextToken())
+                break;
+
+            string fieldName = token;
+
+            Result<FieldsInfo> field = classInfo.isField(token, iterator.currentLine);
+            if (field.hasError)
+                return ErrorInfo("\'" + token + "\' is not a field so can not be used as 'this." + fieldName + "\'", iterator.currentLine);
+
+            Result<RawType> type = getRawType_fromStringedRawType(field.value().stringRawType, metaData.classStore, iterator.currentLine);
+            if (type.hasError)
+                return type.error;
+
+            if (!iterator.nextToken())
+                break;
+            
+            if (!initListEquals({",", ")"}, token))
+                return ErrorInfo("\'"+token+"\' allowed in argument after 'this." + fieldName + "\'", iterator.currentLine);
+
+            storeInfo.argName = "this." + token;
+            storeInfo.argType = ArgumentType::mut;
+            storeInfo.type = type.value();
+
+            Result<void> result = storeArgument(iterator, storeInfo, metaData, args, optionals);
+            if (result.hasError)
+                return result.error;
+
+            if (token == ")")
+                return StoreArguments_Result(args, optionals);
         }
         else
         {

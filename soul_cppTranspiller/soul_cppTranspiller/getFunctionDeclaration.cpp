@@ -5,7 +5,7 @@
 
 using namespace std;
 
-Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData& metaData, bool isForwardDeclared)
+Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData& metaData, bool isForwardDeclared, ClassInfo* currentClass)
 {
 	FuncDeclaration funcInfo;
 	string& token = iterator.currentToken;
@@ -13,8 +13,18 @@ Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData
 	{
 		if(!checkName(token))
 			return ErrorInfo("function name is illigal, name: " + token, iterator.currentLine);
-
-		funcInfo.functionName = token;
+		
+		ClassArgumentInfo* isInClass = nullptr;
+		if (currentClass != nullptr)
+		{
+			bool isCtor = (token == "ctor");
+			funcInfo.functionName = currentClass->name + "#" + token;
+			isInClass = new ClassArgumentInfo(*currentClass, isCtor);
+		}
+		else
+		{
+			funcInfo.functionName = token;
+		}
 
 		if (!iterator.nextToken())
 			break;
@@ -27,9 +37,12 @@ Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData
 		CurrentContext context = CurrentContext(ScopeIterator(emptyVec));
 
 		RawType returnType;
-		Result<StoreArguments_Result> result = storeArguments(/*out*/iterator, /*out*/metaData, context, /*out*/returnType);
+		Result<StoreArguments_Result> result = storeArguments(/*out*/iterator, /*out*/metaData, context, /*out*/returnType, isInClass);
 		if (result.hasError)
 			return result.error;
+
+		if (isInClass != nullptr)
+			delete isInClass;
 
 		if (funcInfo.functionName == "main")
 		{

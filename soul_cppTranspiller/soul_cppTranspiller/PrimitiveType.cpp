@@ -49,6 +49,9 @@ PrimitiveType getPrimitiveType(const string& rawType)
 	if (rawType == toString(PrimitiveType::u64))
 		return PrimitiveType::u64;
 
+	if (rawType == toString(PrimitiveType::uSize))
+		return PrimitiveType::uSize;
+
 	if (rawType == toString(PrimitiveType::none))
 		return PrimitiveType::none;
 
@@ -100,6 +103,9 @@ string toString(PrimitiveType type)
 
 	case PrimitiveType::u64:
 		return "u64";
+
+	case PrimitiveType::uSize:
+		return "uSize";
 
 	case PrimitiveType::f32:
 		return "f32";

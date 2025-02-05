@@ -48,6 +48,15 @@ static inline Result<string> forwardFunction(vector<FuncDeclaration>& funcs, uno
     return ss.str();
 }
 
+static inline void forwardDeclareClasses(MetaData& metaData, stringstream& ss)
+{
+    for(auto& kv : metaData.classStore)
+    {
+        auto& classInfo = kv.second;
+        ss << "class " << classInfo.name << ';';
+    }
+}
+
 static inline Result<void> forwardDeclareFunctions(MetaData& metaData, stringstream& ss)
 {
     unordered_map<string, vector<FuncDeclaration>> internalFuncs;
@@ -109,7 +118,7 @@ Result<string> convertToCpp(SyntaxTree& tree, MetaData& metaData)
 
     Result<void> result;
 
-    /*TODO: classDeclr before funcDeclr*/
+    forwardDeclareClasses(metaData, /*out*/ss);
 
     result = forwardDeclareFunctions(metaData, /*out*/ss);
     if (result.hasError)

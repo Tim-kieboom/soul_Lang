@@ -129,7 +129,19 @@ static inline Result<string> _convertCopyExpression(shared_ptr<SuperExpression> 
 	if (arg.hasError)
 		return arg.error;
 
-	ss << copyFuncName << '(' << arg.value() << ')';
+	ss << copyFuncName << '(' << arg.value();
+
+	if(copy->argument->getId() != SyntaxNodeId::EmptyExpresion)
+	{
+		Result<string> copyArg = SuperExpression_ToCpp(copy->argument, metaData, context);
+		if (copyArg.hasError)
+			return copyArg.error;
+
+		ss << ", " << copyArg.value();
+	}
+
+	ss << ')';
+
 	return ss.str();
 }
 
@@ -183,9 +195,8 @@ static inline Result<string> _convertFunctionCall(shared_ptr<SuperExpression> ex
 
 static inline Result<string> _convertIndexArray(shared_ptr<SuperExpression> expression, MetaData& metaData, CurrentContext& context)
 {
-	constexpr const char* rangeMethode_end = "__soul_makeSpan_fail_end__";
-	constexpr const char* rangeMethode_start = "__soul_makeSpan_fail_start__";
-	constexpr const char* rangeMethode_startAndEnd = "__soul_makeSpan_fail_start_end__";
+	constexpr const char* rangeMethode = "__soul_makeSpan_fail__";
+	constexpr const char* rangeClass = "__Soul_Range__";
 
 	stringstream ss;
 	shared_ptr<IndexArray> indexArray = dynamic_pointer_cast<IndexArray>(expression);
@@ -209,19 +220,19 @@ static inline Result<string> _convertIndexArray(shared_ptr<SuperExpression> expr
 
 
 		if (end->getId() == SyntaxNodeId::EmptyExpresion && begin->getId() == SyntaxNodeId::EmptyExpresion)
-			return ErrorInfo("RangeExpression can not have an empty begin and empty end at trhe same time: \'" + index->printToString() + "\'", 0);
+			return ErrorInfo("RangeExpression can not have an empty begin and empty end at the same time: \'" + index->printToString() + "\'", 0);
 
 		if(end->getId() == SyntaxNodeId::EmptyExpresion)
 		{
-			ss << '.' << rangeMethode_start << '(' << beginResult.value() << ')';
+			ss << '.' << rangeMethode << '(' << rangeClass << '(' << beginResult.value() << ", __Soul_Range__::RangeType::START))";
 		}
 		else if(begin->getId() == SyntaxNodeId::EmptyExpresion)
 		{
-			ss << '.' << rangeMethode_end << '(' << endResult.value() << ')';
+			ss << '.' << rangeMethode << '(' << rangeClass << '(' << endResult.value() << ", __Soul_Range__::RangeType::END))";
 		}
 		else
 		{
-			ss << '.' << rangeMethode_startAndEnd << '(' << beginResult.value() << ", " << endResult.value() << ')';
+			ss << '.' << rangeMethode << '(' << rangeClass << '(' << beginResult.value() << ", " << endResult.value() << "))";
 		}
 	}
 	else
@@ -294,7 +305,7 @@ Result<string> SuperExpression_ToCpp(shared_ptr<SuperExpression> expression, Met
 		return _convertCopyExpression(expression, metaData, context);
 
 	case SyntaxNodeId::RangeExpression:
-		throw exception("rangeExpression not implemeted here");
+		throw exception("rangeExpression not implemeted here (impl in IndexArray)");
 
 	case SyntaxNodeId::BinairyExpression:
 		return _convertBinairyExpression(expression, metaData, context);

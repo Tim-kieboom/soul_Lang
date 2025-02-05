@@ -158,7 +158,7 @@ static inline Result<shared_ptr<Increment>> _convertBeforeVarIncrement(TokenIter
         );
 }
 
-static inline Result<shared_ptr<ConstructArray>> getConstructArray(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& arrayType)
+static inline Result<shared_ptr<ConstructArray>> _getConstructArray(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& arrayType)
 {
     if (!iterator.nextToken())
         return ERROR_convertExpression_outOfBounds(iterator);
@@ -267,7 +267,7 @@ static inline Result<BodyStatment_Result<SuperExpression>> _getVariableExpressio
     return bodyResult;
 }
 
-static Result<shared_ptr<SuperExpression>> getNewExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType* isType)
+static inline Result<shared_ptr<SuperExpression>> _getNewExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType* isType)
 {
     string& token = iterator.currentToken;
 
@@ -286,7 +286,7 @@ static Result<shared_ptr<SuperExpression>> getNewExpression(TokenIterator& itera
     shared_ptr<SuperExpression> newExpression;
     if (token == "[")
     {
-        Result<shared_ptr<ConstructArray>> newArrayResult = getConstructArray(iterator, metaData, context, /*out*/newType);
+        Result<shared_ptr<ConstructArray>> newArrayResult = _getConstructArray(iterator, metaData, context, /*out*/newType);
         if (newArrayResult.hasError)
             return newArrayResult.error;
 
@@ -311,7 +311,7 @@ static Result<shared_ptr<SuperExpression>> getNewExpression(TokenIterator& itera
     return newExpression;
 }
 
-static inline Result<void> setNegativeExpression
+static inline Result<void> _setNegativeExpression
 (
     TokenIterator& iterator, 
     MetaData& metaData,
@@ -368,7 +368,96 @@ static inline Result<void> setNegativeExpression
     return {};
 }
 
-static inline Result<void> getAllExpressions
+static inline Result<void> _getCopyExpression
+(
+    TokenIterator& iterator,
+    MetaData& metaData,
+    CurrentContext& context,
+    Stack<shared_ptr<SuperExpression>>& nodeStack,
+    RawType* shouldBeType,
+    RawType* isType,
+    BodyStatment_Result<SuperExpression>& bodyResult,
+    bool shouldBeMutable
+)
+{
+    string& token = iterator.currentToken;
+
+    if (!iterator.nextToken())
+        return ERROR_convertExpression_outOfBounds(iterator);
+
+    shared_ptr<SuperExpression> copyArgument;
+    if (token == "[")
+    {
+        if (!iterator.nextToken())
+            return ERROR_convertExpression_outOfBounds(iterator);
+
+        Result<RawType> literalType = getRawType_fromLiteralValue(token, iterator.currentLine);
+        Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
+
+        RawType type;
+        if (isVariable(varResult))
+        {
+            Result<BodyStatment_Result<SuperExpression>> varExpression = _getVariableExpression(iterator, metaData, context, varResult, shouldBeType, &type, shouldBeMutable);
+            if (varExpression.hasError)
+                return varExpression.error;
+
+            bodyResult.addToBodyResult(varExpression.value());
+
+            copyArgument = varExpression.value().expression;
+        }
+        else if (isLiteral(literalType))
+        {
+            if (literalType.value().toDuckType() == DuckType::invalid)
+                return ErrorInfo("Literal has to be one of the primitiveTypes", iterator.currentLine);
+
+            type = literalType.value();
+
+            copyArgument = std::make_shared<Literal>(Literal(token));
+        }
+        else
+        {
+            return ErrorInfo("\'" + token + "\' is invalid after '-' (can only be Variable of Literal)", iterator.currentLine);
+        }
+
+        if (!iterator.nextToken(/*steps:*/2))
+            return ERROR_convertExpression_outOfBounds(iterator);
+    }
+    else
+    {
+        copyArgument = emptyExpression;
+    }
+
+    RawType type;
+    Result<BodyStatment_Result<SuperExpression>> copyExpression = convertExpression(iterator, metaData, context, { ";" }, false, &type);
+    if (copyExpression.hasError)
+        return copyExpression.error;
+
+    bodyResult.addToBodyResult(copyExpression.value());
+
+    if (type.isPrimitiveType() && (!type.isArray() && !type.isPointer()))
+        return ErrorInfo("can not use 'copy' oparator for primitive type that is not an array or pointer", iterator.currentLine);
+
+    type.isMutable = true;
+
+    if (shouldBeType != nullptr)
+    {
+        Result<void> result = type.isEqual(*shouldBeType, metaData.classStore, iterator.currentLine, shouldBeMutable);
+        if (result.hasError)
+            return result.error;
+    }
+
+    if (isType != nullptr)
+        *isType = type;
+
+    nodeStack.push
+    (
+        make_shared<CopyExpression>(CopyExpression(toString(type), copyExpression.value().expression, copyArgument))
+    );
+
+    return {};
+}
+
+static inline Result<void> _getAllExpressions
 (
     TokenIterator& iterator,
     MetaData& metaData,
@@ -436,15 +525,6 @@ static inline Result<void> getAllExpressions
         }
         else if (isOperator(token))
         {
-            if(isNegativeSymbool(token, nodeStack, symboolStack))
-            {
-                Result<void> result = setNegativeExpression(iterator, metaData, context, nodeStack, shouldBeType, isType, bodyResult, shouldBeMutable);
-                if (result.hasError)
-                    return result.error;
-
-                continue;
-            }
-
             while (!symboolStack.empty() && getOperator_Priority(symboolStack.peek()) >= getOperator_Priority(token))
             {
                 SyntaxTree_Operator opType;
@@ -456,32 +536,23 @@ static inline Result<void> getAllExpressions
                     *isType = RawType("bool", false);
             }
 
+            if (isNegativeSymbool(token, nodeStack, symboolStack))
+            {
+                Result<void> result = _setNegativeExpression(iterator, metaData, context, nodeStack, shouldBeType, isType, bodyResult, shouldBeMutable);
+                if (result.hasError)
+                    return result.error;
+
+                continue;
+            }
+
             symboolStack.push(token);
         }
         else if(token == "copy")
         {
-            if (!iterator.nextToken())
-                break;
-
-            RawType type;
-            Result<BodyStatment_Result<SuperExpression>> copyExpression = convertExpression(iterator, metaData, context, { ";" }, false, &type);
-            if (copyExpression.hasError)
-                return copyExpression.error;
-
-            bodyResult.addToBodyResult(copyExpression.value());
-
-            if(type.isPrimitiveType() && (!type.isArray() && !type.isPointer()))
-                return ErrorInfo("can not use 'copy' oparator for primitive type that is not an array or pointer", iterator.currentLine);
-
-            type.isMutable = true;
-            nodeStack.push
-            (
-                make_shared<CopyExpression>(CopyExpression(toString(type), copyExpression.value().expression))
-            );
-
-            if (isType != nullptr)
-                *isType = type;
-
+            Result<void> result = _getCopyExpression(iterator, metaData, context, nodeStack, shouldBeType, isType, bodyResult, shouldBeMutable);
+            if (result.hasError)
+                return result.error;
+            
             return {};
         }
         else if (metaData.isFunction(token))
@@ -526,7 +597,7 @@ static inline Result<void> getAllExpressions
         }
         else if (token == "new")
         {
-            Result<shared_ptr<SuperExpression>> newExpression = getNewExpression(iterator, metaData, context, isType);
+            Result<shared_ptr<SuperExpression>> newExpression = _getNewExpression(iterator, metaData, context, isType);
             if (newExpression.hasError)
                 return newExpression.error;
 
@@ -554,7 +625,7 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
     Stack<shared_ptr<SuperExpression>> nodeStack;
     Stack<string> symboolStack;
 
-    Result<void> result = getAllExpressions(iterator, metaData, context, /*out*/nodeStack, /*out*/symboolStack, endTokens, shouldBeType, isType, bodyResult, shouldBeMutable);
+    Result<void> result = _getAllExpressions(iterator, metaData, context, /*out*/nodeStack, /*out*/symboolStack, endTokens, shouldBeType, isType, bodyResult, shouldBeMutable);
     if (result.hasError)
         return result.error;
 

@@ -1,30 +1,34 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "Result.h"
 #include "ClassAccessLevel.h"
 
 struct FieldsInfo
 {
-	std::string name = "";
-	std::string stringedRawType = "";
+	std::string name;
+	std::string stringRawType;
 	bool isProperty = false;
 	ClassAccessLevel accessLevel = ClassAccessLevel::priv;
 
 	FieldsInfo() = default;
-	FieldsInfo(const std::string& name, const std::string& stringedRawType, ClassAccessLevel accessLevel, bool isProperty = false)
-		: name(name), stringedRawType(stringedRawType), isProperty(isProperty), accessLevel(accessLevel)
+	FieldsInfo(std::string& name, std::string& stringRawType, ClassAccessLevel accessLevel, bool isProperty = false)
+		: name(name), stringRawType(stringRawType), isProperty(isProperty), accessLevel(accessLevel)
 	{
 	}
 };
 
-struct Methode
+struct ArgumentInfo;
+
+struct MethodeDecleration
 {
 	std::string methodeName;
+	std::vector<ArgumentInfo> args;
 	ClassAccessLevel accessLevel = ClassAccessLevel::priv;
 
-	Methode() = default;
-	Methode(std::string& methodeName, ClassAccessLevel accessLevel)
-		: methodeName(methodeName), accessLevel(accessLevel)
+	MethodeDecleration() = default;
+	MethodeDecleration(std::string& methodeName, std::vector<ArgumentInfo>& args, ClassAccessLevel accessLevel)
+		: methodeName(methodeName), args(args), accessLevel(accessLevel)
 	{
 	}
 };
@@ -32,8 +36,31 @@ struct Methode
 struct ClassInfo
 {
 	std::string name;
-	std::vector<FieldsInfo> publicFields;
-	std::vector<Methode> methodes;
+	std::vector<FieldsInfo> fields;
+	std::vector<MethodeDecleration> methodes;
+
+	ClassInfo() = default;
+
+	void addMethode(MethodeDecleration& methode)
+	{
+		methodes.push_back(methode);
+	}
+
+	void addField(FieldsInfo field)
+	{
+		fields.push_back(field);
+	}
+
+	Result<FieldsInfo> isField(std::string& name, uint32_t currentLine)
+	{
+		for (FieldsInfo& field : fields)
+		{
+			if (field.name == name)
+				return field;
+		}
+
+		return ErrorInfo("isNotField", currentLine);
+	}
 
 	bool isEqual(const ClassInfo& other) const
 	{

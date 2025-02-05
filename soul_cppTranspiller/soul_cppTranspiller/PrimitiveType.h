@@ -23,6 +23,7 @@ enum class PrimitiveType
 	u16,
 	u32,
 	u64,
+	uSize,
 
 	f32,
 	f64

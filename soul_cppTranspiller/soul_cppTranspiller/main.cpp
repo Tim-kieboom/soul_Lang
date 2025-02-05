@@ -159,15 +159,15 @@ int main(int argc, char* argv[])
         SyntaxTree syntaxTree = move(syntaxTreeResult.value());
         syntaxTree.print();
 
-        Result<string> cppFile = convertToCpp(syntaxTree, metaData);
-        if (cppFile.hasError)
-        {
-            cout << "cppConverterError: \n" << syntaxTreeResult.error.message << ", onLine: " << syntaxTreeResult.error.lineNumber;
-            exit(1);
-        }
+        //Result<string> cppFile = convertToCpp(syntaxTree, metaData);
+        //if (cppFile.hasError)
+        //{
+        //    cout << "cppConverterError: \n" << syntaxTreeResult.error.message << ", onLine: " << syntaxTreeResult.error.lineNumber;
+        //    exit(1);
+        //}
 
         cout << "\n----------------------------- CPP_FILE -----------------------------\n\n";
-        cout << cppFile.value();
+        //cout << cppFile.value();
 
         //ofstream fileWriter(outputPath);
         //fileWriter << "#include \"soul_hardCodedFunctions.h\"" << cppFile.value();

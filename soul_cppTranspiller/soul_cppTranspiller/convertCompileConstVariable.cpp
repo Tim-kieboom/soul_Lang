@@ -27,7 +27,11 @@ static inline Result<BodyStatment_Result<CompileConstVariable>> _convertCompileC
 	VarInfo var = VarInfo(varName, toString(typeResult.value()));
 	var.isAssigned = true;
 	var.isCompileConst = true;
-	context.scope.getCurrentNesting().addVariable(var);
+
+	if (isGlobalScope)
+		metaData.addToGlobalScope(var);
+	else
+		context.scope.getCurrentNesting().addVariable(var);
 
 	Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(varName, metaData.globalScope, iterator.currentLine);
 	if (varResult.hasError)

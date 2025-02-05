@@ -1,6 +1,9 @@
 //invis till endInvis is removed by tokenizer
 #invis
 //for syntax highlighting
+func Error(str err);
+func Ok(i32 val);
+
 func ctor();
 func println(str msg);
 func println();
@@ -9,12 +12,16 @@ func strSize(str s);
 func print(str msg);
 func checkThrow(bool condition, str msg);
 func checkFail(bool condition, str msg);
+func Throw(str msg);
+func Fail(str msg);
 struct pub;
 struct mut;
 struct copy;
 struct func;
 struct priv;
+struct Range;
 struct delete;
+struct inline;
 struct Funcional;
 struct CompileConst;
 class i8;
@@ -25,48 +32,151 @@ class u8;
 class u16;
 class u32;
 class u64;
+class uSize;
 class f32;
 class f64;
 class str;
 class none;
-class ptr;
+class Result;
 class f;
 # endInvis
 
-//class List
+CompileConst u32 MAX_U32 = (32 ** 2) - 1;
+
+//Funcional nlog(f64 base): f64
 //{
-//    //add i32[]*? array = null
-//    i32[] array = new i32[0];
-
-//    pub u64 Size =0;//{get; priv set;} = 0;
-//    pub u64 Capacity =0;//{get {return arrSize(array)} priv set;} = 0;
-
-
-//    pub ctor() { }
-//    pub ctor(this.capacity) { }
-//    pub ~ctor() { }
-
-//    pub push(i32 value)
-//    {
-//        if (Size + 1 > Capacity)
-//            reserve(Capacity*2);
-
-        
-//    }
-
-//    priv reserve(u64 newCapacity)
-//    {
-//        i32[] newArray = new i32[newCapacity];
-
-//        for(u64 i = 0; i < Size; i)
-
-//    }
+//    return 10 log base;
 //}
 
+//Funcional sqrt(f64 base): f64
+//{
+//    return 2 </ base;
+//}
+
+func calulateMaxByte(): u8
+{
+    return 2 ** 8 - 1;
+}
+
+class StructObject
+{
+    pub str key = "";
+    pub i32 value = 0;
+
+    pub ctor() { }
+    pub ctor(this.key, this.value) { }
+}
+
+class List
+{
+    //add i32[]*? array = null
+    i32[] array = new i32[0];
+
+    pub uSize Size = 0;//{get; priv set;} = 0;
+    pub uSize Capacity = 0;
+    //{
+    //    get 
+    //    {
+    //        return arrSize(array);
+    //    } 
+    //    priv set 
+    //    {
+    //        copy[newCapacity] array;
+    //    } 
+    //} = 0;
+
+
+    pub ctor() { }
+    pub ctor(this.Capacity) { }
+    pub ctor(this.array, this.Size) { }
+
+    pub Push(i32 value): none
+    {
+        CompileConst u32 LAST_CAPACITY_BEFORE_OVERFLOW = (16 ** 2);
+
+        if (Size + 1 > Capacity)
+        {
+            if((Capacity == 0))
+            {   
+                reserve(1);
+            }
+            else if(Capacity < LAST_CAPACITY_BEFORE_OVERFLOW)
+            {
+                reserve(Capacity * 2);
+            }
+            else if(Capacity == MAX_U32)
+            {
+                Fail(f"can't increase capacity of List, because List reached max Capacity:{MAX_U32}");
+            }
+            else
+            {
+                reserve(MAX_U32);
+            }
+        }
+
+        array[Size++] = value;
+    }
+
+    pub Peek(): i32
+    {
+        checkFail((Size == 0), "can not peek empty list");
+        return array[Size - 1];
+    }
+
+    pub Pop(): i32
+    {
+        checkFail((Size == 0), "can not pop empty list");
+        return array[--Size];
+    }
+
+    priv reserve(uSize newCapacity): none
+    {
+        array = copy[newCapacity] array;
+        Capacity = newCapacity;
+    }
+
+    //pub At(i64 index): Result<i32>
+    //{
+    //    if ((index < 0 && Size + index < 0) || (index > Size - 1))
+    //        return Error(f"index:{index}, is to big, size:{Size}");
+
+    //    return Ok(array[index]);
+    //}
+
+    //pub Set(i64 index, i32 value): Result<none>
+    //{
+    //    u32 realIndex = index;
+    //    if (index < 0)
+    //        realIndex = Size + index;
+
+    //    if (index > Size - 1)
+    //        return Error(f"index:{index}, is to big, size:{Size}");
+
+    //    array[index] = value;
+    //    return Ok();
+    //}
+
+    //pub this::[] (i64 index): i32&
+    //{
+    //    return array[index];
+    //}
+
+    //pub this::copy(): List
+    //{
+    //    return List(copy array, Size);
+    //}
+
+    //pub this::copy(u64 capacity): List
+    //{
+    //    return List(copy[capacity] array, Size);
+    //}
+}
 
 func main(mut str[] args): i32
 {
     println();
+
+    println(f"max byte = 2**8-1 = {maxByte}");
 
     u64 argsSize = arrSize(args);
     i64 i = -1;
@@ -78,13 +188,14 @@ func main(mut str[] args): i32
     CompileConst f64 pow  = 4 ** 0.5; 
     CompileConst f64 root = 2 </ 4;
 
-    str[] array = new str[10];
-    array[0] = "tim";
-    array[1] = "foo";
-    array[2] = "john";
-    array[3] = "ellie";
+    str[] array;
+    array = new str[10];
+    array[3] = "ellie"; 
+    
+
     println(array);
-    //i32[] array2 = copy[20] array;
+
+    str[] array2 = copy[20] array;
 
     println(f"log:{log_}, pow:{pow}, root{root}");
 

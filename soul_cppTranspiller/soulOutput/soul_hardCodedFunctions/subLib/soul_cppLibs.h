@@ -7,6 +7,7 @@
 #include <sstream>
 #include <utility>
 #include <cassert>
+#include <cstring>
 #include <iostream>
 #include <iterator>
 #include <stdexcept>

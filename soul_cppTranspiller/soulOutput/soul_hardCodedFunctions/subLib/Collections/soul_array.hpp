@@ -1,5 +1,5 @@
 #pragma once
-#include "../soul_cppLibs.h"
+#include "soul_Range.hpp"
 
 template<typename T>
 class __Soul_ARRAY_Iterator__
@@ -51,12 +51,6 @@ public:
     bool operator!=(const __Soul_ARRAY_ConstIterator__& other) const { return ptr != other.ptr; }
     bool operator==(const __Soul_ARRAY_ConstIterator__& other) const { return ptr == other.ptr; }
 };
-
-template <typename T>
-void __Soul_ARRAY_deleter__(T* ptr) 
-{
-    delete[] ptr;
-}
 
 template <typename T>
 class __Soul_ARRAY__
@@ -146,58 +140,6 @@ public:
         return *( ((T*)rawArray.get()) + index + offset_ );
     }
 
-    constexpr __Soul_ARRAY__<T> __soul_makeSpan_fail_start_end__(int64_t start, int64_t end) noexcept
-    {
-        if (start < 0)
-            start = start + size_;
-
-        if (end < 0)
-            end = end + size_;
-
-        start += offset_;
-        end += offset_ + 1;
-
-        if (end < start)
-        {
-            printf("!!ERROR!! (start < end) while making arraySpan\n");
-            exit(1);
-        }
-
-        return __Soul_ARRAY__<T>(this, start, end);
-    }
-
-    constexpr __Soul_ARRAY__<T> __soul_makeSpan_fail_start__(int64_t start) noexcept
-    {
-        if (start < 0)
-            start = start + size_;
-
-        start += offset_;
-
-        if (size_ < start)
-        {
-            printf("!!ERROR!! (start < end) while making arraySpan\n");
-            exit(1);
-        }
-
-        return __Soul_ARRAY__<T>(this, start, size_);
-    }
-
-    constexpr __Soul_ARRAY__<T> __soul_makeSpan_fail_end__(int64_t end) noexcept
-    {
-        if (end < 0)
-            end = end + size_;
-
-        end += offset_ + 1;
-
-        if (end < offset_)
-        {
-            printf("!!ERROR!! (start < end) while making arraySpan\n");
-            exit(1);
-        }
-
-        return __Soul_ARRAY__<T>(this, offset_, end);
-    }
-
     uint32_t size() const
     {
         return size_;
@@ -227,6 +169,78 @@ public:
     {
         return __Soul_ARRAY_ConstIterator__<T>(rawArray.get() + size_);
     }
+
+    __Soul_ARRAY__<T> __soul_makeSpan_fail__(__Soul_Range__&& range) noexcept
+    {
+        switch(range.type)
+        {
+            case __Soul_Range__::RangeType::START:
+                return __soul_makeSpan_fail_start__(range.start);
+
+            case __Soul_Range__::RangeType::END:
+                return __soul_makeSpan_fail_end__(range.end);
+
+            default:
+            case __Soul_Range__::RangeType::START_END:
+                return __soul_makeSpan_fail_start_end__(range);
+        };
+    }
+
+private:
+    __Soul_ARRAY__<T> __soul_makeSpan_fail_start_end__(__Soul_Range__& range) noexcept
+    {
+        auto& start = range.start;
+        auto& end = range.end;
+
+        if (start < 0)
+            start = start + size_;
+
+        if (end < 0)
+            end = end + size_;
+
+        start += offset_;
+        end += offset_ + 1;
+
+        if (end < start)
+        {
+            printf("!!ERROR!! (start < end) while making arraySpan\n");
+            exit(1);
+        }
+
+        return __Soul_ARRAY__<T>(this, start, end);
+    }
+
+    __Soul_ARRAY__<T> __soul_makeSpan_fail_start__(int64_t start) noexcept
+    {
+        if (start < 0)
+            start = start + size_;
+
+        start += offset_;
+
+        if (size_ < start)
+        {
+            printf("!!ERROR!! (start < end) while making arraySpan\n");
+            exit(1);
+        }
+
+        return __Soul_ARRAY__<T>(this, start, size_);
+    }
+
+    __Soul_ARRAY__<T> __soul_makeSpan_fail_end__(int64_t end) noexcept
+    {
+        if (end < 0)
+            end = end + size_;
+
+        end += offset_ + 1;
+
+        if (end < offset_)
+        {
+            printf("!!ERROR!! (start < end) while making arraySpan\n");
+            exit(1);
+        }
+
+        return __Soul_ARRAY__<T>(this, offset_, end);
+    }
 };
 
 template <typename T>
@@ -248,4 +262,15 @@ inline __Soul_ARRAY__<K> __Soul_copy__(const __Soul_ARRAY__<K>& other)
 
     return copyArray;
 }
-  
+
+template <typename K>
+inline __Soul_ARRAY__<K> __Soul_copy__(__Soul_ARRAY__<K>& other, uint32_t capacity)
+{
+    __Soul_ARRAY__<K> copyArray(capacity);
+
+    int32_t size = (capacity <  other.size()) ? capacity : other.size();
+    for(uint32_t i = 0; i < size; i++)
+        copyArray.__soul_UNSAFE_at__(i) = __Soul_copy__(other.__soul_UNSAFE_at__(i));
+
+    return copyArray;
+}

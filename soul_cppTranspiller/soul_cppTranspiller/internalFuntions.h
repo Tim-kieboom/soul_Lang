@@ -175,6 +175,7 @@ static const FuncDeclaration interalFunc_log10 = FuncDeclaration
 	false
 );
 
+
 static const std::initializer_list<FuncDeclaration> internalFunctions =
 {
 	interalFunc_log,

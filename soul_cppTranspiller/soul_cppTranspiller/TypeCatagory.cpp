@@ -16,6 +16,7 @@ TypeCategory getTypeCategory(PrimitiveType type)
 	case PrimitiveType::u16:
 	case PrimitiveType::u32:
 	case PrimitiveType::u64:
+	case PrimitiveType::uSize:
 		return TypeCategory::unsignedInterger;
 
 	case PrimitiveType::f32:

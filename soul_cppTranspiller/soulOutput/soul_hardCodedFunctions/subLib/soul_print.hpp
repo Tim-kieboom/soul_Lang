@@ -19,6 +19,12 @@ inline void print(__Soul_STR__ msg)
 template<typename K>
 inline void print(__Soul_ARRAY__<K> array)
 {
+    if(array.size() == 0)
+    {
+        std::cout << "[empty]";
+        return;
+    }
+
     std::cout << '[';
 
     int64_t lastIndex = array.size() - array.offset() - 1;

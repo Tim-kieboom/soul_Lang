@@ -1,6 +1,5 @@
 #pragma once 
 #include "soul_array.hpp"
-#include <cstring>
 
 class __Soul_STR__
 {
@@ -58,8 +57,8 @@ public:
         return (rawStr.get())[index];
     }
 
-    __Soul_STR__ operator+(__Soul_STR__& other)
-    {
+    __Soul_STR__ operator+(__Soul_STR__& other) noexcept
+    { 
         int64_t thisSize = (this->size_ - this->offset_);
         int64_t otherSize = (other.size_ - other.offset_);
         int64_t newSize = thisSize + otherSize;
@@ -76,7 +75,7 @@ public:
         return newStr;
     }
 
-    bool operator==(__Soul_STR__& other)
+    bool operator==(__Soul_STR__& other) noexcept
     {
         if((int64_t)(this->size_) - this->offset_ != (int64_t)(other.size_) - other.offset_)
             return false;
@@ -95,8 +94,63 @@ public:
         return (rawStr.get())[index + offset_];
     }
 
-    __Soul_STR__ __soul_makeSpan_fail_start_end__(int64_t start, int64_t end) noexcept
+    __Soul_STR__ __soul_makeSpan_fail__(__Soul_Range__&& range) noexcept
     {
+        switch(range.type)
+        {
+            case __Soul_Range__::RangeType::START:
+                return __soul_makeSpan_fail_start__(range.start);
+
+            case __Soul_Range__::RangeType::END:
+                return __soul_makeSpan_fail_end__(range.end);
+
+            default:
+            case __Soul_Range__::RangeType::START_END:
+                return __soul_makeSpan_fail_start_end__(range);
+        };
+    }
+
+    uint32_t size() const
+    {
+        return size_;
+    }
+
+    uint32_t offset() const
+    {
+        return offset_;
+    }
+
+    char* __Soul_getC_Str__() noexcept
+    {
+        return rawStr.get(); 
+    }
+
+    __Soul_ARRAY_Iterator__<char> begin()
+    {
+        return __Soul_ARRAY_Iterator__<char>((char*)rawStr.get() + offset_);
+    }
+
+    __Soul_ARRAY_Iterator__<char> end()
+    {
+        return __Soul_ARRAY_Iterator__<char>((char*)rawStr.get() + size_);
+    }
+
+    __Soul_ARRAY_ConstIterator__<char> begin() const
+    {
+        return __Soul_ARRAY_ConstIterator__<char>(rawStr.get() + offset_);
+    }
+
+    __Soul_ARRAY_ConstIterator__<char> end() const
+    {
+        return __Soul_ARRAY_ConstIterator__<char>(rawStr.get() + size_);
+    }
+
+private:
+        __Soul_STR__ __soul_makeSpan_fail_start_end__(__Soul_Range__& range) noexcept
+    {
+        auto& start = range.start;
+        auto& end = range.end;
+
         if (start < 0)
             start = start + size_;
 
@@ -148,40 +202,6 @@ public:
         return __Soul_STR__(this, offset_, end);
     }
 
-    uint32_t size() const
-    {
-        return size_;
-    }
-
-    uint32_t offset() const
-    {
-        return offset_;
-    }
-
-    char* __Soul_getC_Str__() 
-    {
-        return rawStr.get(); 
-    }
-
-    __Soul_ARRAY_Iterator__<char> begin()
-    {
-        return __Soul_ARRAY_Iterator__<char>((char*)rawStr.get() + offset_);
-    }
-
-    __Soul_ARRAY_Iterator__<char> end()
-    {
-        return __Soul_ARRAY_Iterator__<char>((char*)rawStr.get() + size_);
-    }
-
-    __Soul_ARRAY_ConstIterator__<char> begin() const
-    {
-        return __Soul_ARRAY_ConstIterator__<char>(rawStr.get() + offset_);
-    }
-
-    __Soul_ARRAY_ConstIterator__<char> end() const
-    {
-        return __Soul_ARRAY_ConstIterator__<char>(rawStr.get() + size_);
-    }
 };
 
 inline uint64_t arrSize(__Soul_STR__ str) 

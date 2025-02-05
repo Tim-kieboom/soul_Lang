@@ -20,4 +20,15 @@ struct StoreArguments_Result
 	}
 };
 
-Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& returnType);
+struct ClassArgumentInfo
+{
+	bool isCtor;
+	ClassInfo& classInfo;
+
+	ClassArgumentInfo(ClassInfo& classInfo, bool isCtor = false)
+		: isCtor(isCtor), classInfo(classInfo)
+	{
+	}
+};
+
+Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& returnType, ClassArgumentInfo* inClass = nullptr);

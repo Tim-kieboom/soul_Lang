@@ -7,10 +7,11 @@ class CopyExpression : public SuperExpression
 public:
 	std::string type;
 	std::shared_ptr<SuperExpression> copyExpression;
+	std::shared_ptr<SuperExpression> argument;
 
 	CopyExpression() = default;
-	CopyExpression(std::string type, std::shared_ptr<SuperExpression> copyExpression)
-		: type(type), copyExpression(copyExpression)
+	CopyExpression(std::string type, std::shared_ptr<SuperExpression> copyExpression, std::shared_ptr<SuperExpression> argument)
+		: type(type), copyExpression(copyExpression), argument(argument)
 	{
 	}
 
@@ -22,7 +23,7 @@ public:
 	std::string printToString() const override
 	{
 		std::stringstream ss;
-		ss << "CopyExpression( Type(" << type << ") " << copyExpression->printToString() << ")";
+		ss << "CopyExpression( Type(" << type << ") " << copyExpression->printToString() << ", arguments: " + argument->printToString() + ")";
 		return ss.str();
 	}
 

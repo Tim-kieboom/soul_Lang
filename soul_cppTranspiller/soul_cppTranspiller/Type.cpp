@@ -1,7 +1,7 @@
 #include "Type.h"
 #include <sstream>
 #include <unordered_map>
-
+#include "Type.h"
 #include "ClassInfo.h"
 #include "TypeWrapper.h"
 #include "PrimitiveType.h"
