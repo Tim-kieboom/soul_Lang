@@ -178,7 +178,7 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
     BodyStatment_Result<FunctionCall> bodyResult;
     string& token = iterator.currentToken;
 
-    if (!metaData.isFunction(funcName))
+    if (!metaData.isFunction(funcName, context))
         return ErrorInfo("\'" + funcName + "\' is not a function", iterator.currentLine);
 
     if (!iterator.nextToken())
@@ -210,7 +210,7 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
 
     ErrorInfo error;
     FuncDeclaration funcInfo;
-    if (!metaData.tryGetFuncInfo(funcName, args.args, args.optionals, /*out*/funcInfo, iterator.currentLine, error))
+    if (!metaData.tryGetFunction(funcName, context, args.args, args.optionals, /*out*/funcInfo, iterator.currentLine, error))
         return ErrorInfo("functionCall: \'" + funcName + "\' not found with given arguments\n" + error.message, iterator.currentLine);
 
     if(shouldBeType != nullptr && shouldBeType->toPrimitiveType() != PrimitiveType::none)
@@ -229,8 +229,6 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
         (
             FunctionCall(funcName, funcInfo.returnType, funcInfo, expressions.value())
         );
-
-
 
     return bodyResult;
 }

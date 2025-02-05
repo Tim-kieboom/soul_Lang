@@ -67,7 +67,7 @@ Result<BodyStatment_Result<SuperConditionalStatment>> convertForStatment(TokenIt
     (
         Nesting::makeChild(&scope.getCurrentNesting())
     );
-    CurrentContext forContext = CurrentContext(ScopeIterator(scope.scope, statementNestingIndex));
+    CurrentContext forContext = CurrentContext(context, statementNestingIndex);
 
     string& token = iterator.currentToken;
     Nullable<shared_ptr<InitializeVariable>> initStatment;

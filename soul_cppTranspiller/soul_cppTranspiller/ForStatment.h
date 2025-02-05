@@ -41,10 +41,10 @@ public:
 		std::stringstream ss;
 		ss << "For(InitCounter: ";
 		
-		if (initCounter.isNull)
+		if (initCounter.isNull())
 			ss << "<empty>, ";
 		else
-			ss << initCounter.value->printToString() << ", ";
+			ss << initCounter.value()->printToString() << ", ";
 
 		ss <<"StopCondition: " << stopCondition->printToString() << ", DoAfterEachLoop: " << doAfterEachLoop->printToString() << ")" << body->printToString();
 		return ss.str();

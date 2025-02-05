@@ -53,11 +53,6 @@ CompileConst u32 MAX_U32 = (32 ** 2) - 1;
 //    return 2 </ base;
 //}
 
-func calulateMaxByte(): u8
-{
-    return 2 ** 8 - 1;
-}
-
 class StructObject
 {
     pub str key = "";
@@ -175,8 +170,6 @@ class List
 func main(mut str[] args): i32
 {
     println();
-
-    println(f"max byte = 2**8-1 = {maxByte}");
 
     u64 argsSize = arrSize(args);
     i64 i = -1;

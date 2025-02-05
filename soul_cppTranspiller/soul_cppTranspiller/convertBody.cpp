@@ -186,7 +186,7 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 		BodyStatment_Result<Assignment>& assign = assignResult.value();
 		return BodyStatment_Result<SuperStatement>(assign.expression, assign);
 	}
-	else if (metaData.isFunction(token))
+	else if (metaData.isFunction(token, context))
 	{
 		Result<BodyStatment_Result<FunctionCall>> funcResult = convertFunctionCall(iterator, metaData, context, token);
 		if (funcResult.hasError)
@@ -250,7 +250,7 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 	}
 	else
 	{
-		return ErrorInfo("unknown token: \'" + token + "\'", iterator.currentLine);
+		return ErrorInfo("unknown token: \'" + token + "\' while parsing body", iterator.currentLine);
 	}
 }
 

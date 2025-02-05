@@ -39,7 +39,7 @@ static inline Result<shared_ptr<BodyNode>> _convertStatmentBody(TokenIterator& i
     if (!iterator.peekToken(nextToken))
         nextToken = "";
 
-    CurrentContext ifContext = CurrentContext(ScopeIterator(scope.scope, statementNestingIndex));
+    CurrentContext ifContext = CurrentContext(context, statementNestingIndex);
 
     if (nextToken != "{")
     {

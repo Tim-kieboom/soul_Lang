@@ -555,7 +555,7 @@ static inline Result<void> _getAllExpressions
             
             return {};
         }
-        else if (metaData.isFunction(token))
+        else if (metaData.isFunction(token, context))
         {
             Result<BodyStatment_Result<FunctionCall>> funcCallResult = convertFunctionCall(iterator, metaData, context, token);
             if (funcCallResult.hasError)
@@ -650,7 +650,7 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
     {
         std::stringstream ss;
 
-        for (uint32_t i = beginI; i < iterator.i-1; i++)
+        for (uint32_t i = (uint32_t)beginI; i < (uint32_t)(iterator.i-1); i++)
             ss << iterator.tokens.at(i).text << ' ';
 
         ss << iterator.tokens.at(iterator.i-1).text;

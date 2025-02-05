@@ -4,34 +4,54 @@
 template <typename T>
 class Nullable
 {
+private:
+	bool isNull_;
+	T value_;
+
 public:
-	bool isNull;
-	T value;
 
 	Nullable()
-		: isNull(true), value()
+		: isNull_(true), value_({})
 	{
 	}
 
 	Nullable(T value)
-		: isNull(false), value(value)
+		: isNull_(false), value_(value)
 	{
 	}
 
-	bool tryGetValue(T& _value)
+	bool isNull() const
 	{
-		if (isNull)
+		return isNull_;
+	}
+
+	bool hasValue() const 
+	{
+		return !isNull_;
+	}
+
+	bool tryValue(T& _value)
+	{
+		if (isNull_)
 			return false;
 
-		_value = value;
+		_value = value_;
 		return true;
 	}
 
-	T& getValue()
+	const T& value() const
 	{
-		if (isNull)
+		if (isNull_)
 			throw std::exception("trying to get value while value is null");
 
-		return value;
+		return value_;
+	}
+
+	T& value()
+	{
+		if (isNull_)
+			throw std::exception("trying to get value while value is null");
+
+		return value_;
 	}
 };

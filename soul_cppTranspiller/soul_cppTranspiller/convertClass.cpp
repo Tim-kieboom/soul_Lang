@@ -31,6 +31,7 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 	vector<Nesting> scope;
 	scope.emplace_back(Nesting());
 	CurrentContext classContext = CurrentContext(ScopeIterator(scope));
+	classContext.inClass = Nullable<ClassInfo>(classInfo);
 
 	for (auto& field : classInfo.fields)
 	{
@@ -93,7 +94,7 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 
 			uint64_t nestingIndex = scope.size();
 			scope.emplace_back(Nesting::makeChild(&scope.at(0)));
-			CurrentContext methodeContext = CurrentContext(ScopeIterator(scope, nestingIndex));
+			CurrentContext methodeContext = CurrentContext(classContext, nestingIndex);
 
 			for(auto& arg : funcDecl.value().args)
 			{

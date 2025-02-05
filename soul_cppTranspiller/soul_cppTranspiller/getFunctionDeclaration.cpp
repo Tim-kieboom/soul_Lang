@@ -60,7 +60,7 @@ Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData
 		uint64_t funcInfoIndex = 0;
 		ErrorInfo error;
 		FuncDeclaration func;
-		if (metaData.tryGetFuncInfo(funcInfo.functionName, funcInfo.args, result.value().optionals, func, iterator.currentLine, error, &funcInfoIndex))
+		if (metaData.tryGetFunction(funcInfo.functionName, context, funcInfo.args, result.value().optionals, func, iterator.currentLine, error, &funcInfoIndex))
 		{
 			if(!func.isForwardDeclared)
 				return ErrorInfo("function with these arguments already exists, name: \'" + token + "\', args: \'" + toString(funcInfo.args) + "\'\n" + error.message, iterator.currentLine);

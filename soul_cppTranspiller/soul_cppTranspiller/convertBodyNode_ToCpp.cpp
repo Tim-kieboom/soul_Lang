@@ -73,13 +73,13 @@ static inline Result<string> _convertForStatment(shared_ptr<SuperStatement>& nod
 	Nullable<shared_ptr<InitializeVariable>>& initCounter = forStatment->initCounter;
 
 	ss << "for(";
-	if (initCounter.isNull)
+	if (initCounter.isNull())
 	{
 		ss << ";";
 	}
 	else
 	{
-		Result<string> init = convertInitializeVariable_ToCpp(initCounter.getValue(), metaData, context);
+		Result<string> init = convertInitializeVariable_ToCpp(initCounter.value(), metaData, context);
 		if (init.hasError)
 			return init.error;
 
