@@ -61,7 +61,7 @@ Result<shared_ptr<CompileConstVariable>> convertCompileConstVariable_inGlobal(To
 {
 	vector<Nesting> nestings;
 	nestings.emplace_back();
-	CurrentContext context = CurrentContext(ScopeIterator(nestings));
+	CurrentContext context = CurrentContext(ScopeIterator(make_shared<vector<Nesting>>(nestings)));
 	Result<BodyStatment_Result<CompileConstVariable>> bodyResult = _convertCompileConstVariable(iterator, metaData, context, true);
 	if (bodyResult.hasError)
 		return bodyResult.error;

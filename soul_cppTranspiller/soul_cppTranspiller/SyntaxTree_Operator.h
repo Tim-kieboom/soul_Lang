@@ -5,6 +5,7 @@ enum class SyntaxTree_Operator
 {
 	Invalid,
 
+	Not,
 	Equals,
 	NotEquals,
 	IsSmaller,
@@ -27,8 +28,8 @@ enum class SyntaxTree_Operator
 	Logical_OR,
 	Logical_AND,
 };
-uint32_t getOperator_Priority(const std::string& opType);
-uint32_t getOperator_Priority(SyntaxTree_Operator opType);
+uint32_t getOperator_Precedence(const std::string& opType);
+uint32_t getOperator_Precedence(SyntaxTree_Operator opType);
 
 bool isOperator_booleanOp(SyntaxTree_Operator opType);
 

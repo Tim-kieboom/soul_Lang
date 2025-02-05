@@ -389,7 +389,7 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
             vector<Nesting> funcScope;
             _addArgsToScope(funcScope, funcDeclResult.value());
 
-            CurrentContext context = CurrentContext(ScopeIterator(funcScope));
+            CurrentContext context = CurrentContext(ScopeIterator(make_shared<vector<Nesting>>(funcScope)));
 
             Result<shared_ptr<BodyNode>> funcResult = convertBody(iterator, metaData, funcInfo, context, /*parentNode:*/SyntaxNodeId::FuncNode);
             if (funcResult.hasError)

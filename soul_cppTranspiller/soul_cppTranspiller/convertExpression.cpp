@@ -108,20 +108,37 @@ static inline Result<RawType> getArrayItemType(const RawType& type, const TokenI
 
 static inline Result<void> makeAndPush_BinairyExpression(Stack<shared_ptr<SuperExpression>>& nodeStack, Stack<string>& SymboolStack, int64_t currentLine, SyntaxTree_Operator& opType)
 {
+    static shared_ptr<Literal> trueLiteral = make_shared<Literal>(Literal("true"));
+
     SyntaxTree_Operator oparator = getSyntax_Operator(SymboolStack.pop());
-    auto right = nodeStack.pop();
-    if (nodeStack.empty())
-        return ErrorInfo("BinairyEpression invalid at: \'" + right->printToString() + " " + toString(oparator) + "\'", currentLine);
+    shared_ptr<SuperExpression> right = nodeStack.pop();
+    shared_ptr<SuperExpression> left;
 
-    auto left = nodeStack.pop();
+    if (oparator == SyntaxTree_Operator::Not)
+    {
+        if (right->getId() == SyntaxNodeId::EmptyExpresion)
+            return ErrorInfo("EmptyExpression can not go into a BinairyExpression", currentLine);
 
-    if (right->getId() == SyntaxNodeId::EmptyExpresion || left->getId() == SyntaxNodeId::EmptyExpresion)
-        return ErrorInfo("EmptyExpression can not go into a BinairyExpression", currentLine);
+        nodeStack.push
+        (
+            make_shared<BinaryExpression>( BinaryExpression(right, SyntaxTree_Operator::NotEquals, trueLiteral) )
+        );
+    }
+    else
+    {
+        if (nodeStack.empty())
+            return ErrorInfo("BinairyEpression invalid at: \'" + right->printToString() + " " + toString(oparator) + "\'", currentLine);
 
-    nodeStack.push
-    (
-        make_shared<BinaryExpression>(BinaryExpression(left, oparator, right))
-    );
+        left = nodeStack.pop();
+
+        if (right->getId() == SyntaxNodeId::EmptyExpresion || left->getId() == SyntaxNodeId::EmptyExpresion)
+            return ErrorInfo("EmptyExpression can not go into a BinairyExpression", currentLine);
+
+        nodeStack.push
+        (
+            make_shared<BinaryExpression>(BinaryExpression(left, oparator, right))
+        );
+    }
 
     return {};
 }
@@ -212,9 +229,6 @@ static inline Result<BodyStatment_Result<SuperExpression>> _getVariableExpressio
     if (shouldBeMutable && !canMutate)
             return ErrorInfo("can not change a const value, var: \'" + varResult.value()->name + "\', type: \'" + varResult.value()->stringedRawType + "\'", iterator.currentLine);
 
-    if (isType != nullptr)
-        *isType = varType.value();
-
     string nextToken;
     if (!iterator.peekToken(nextToken))
         nextToken = "";
@@ -223,10 +237,11 @@ static inline Result<BodyStatment_Result<SuperExpression>> _getVariableExpressio
 
     if (initListEquals({ "++", "--" }, nextToken))
     {
+        auto variable = make_shared<Variable>(Variable(token));
+
         if (!iterator.nextToken())
             return ERROR_convertExpression_outOfBounds(iterator);
 
-        auto variable = make_shared<Variable>(Variable(token));
         variableExpression = make_shared<Increment>
             (
                 Increment(variable, false, (nextToken == "--"), 1)
@@ -262,6 +277,9 @@ static inline Result<BodyStatment_Result<SuperExpression>> _getVariableExpressio
                 return isCompatible.error;
         }
     }
+
+    if (isType != nullptr)
+        *isType = varType.value();
 
     bodyResult.expression = variableExpression;
     return bodyResult;
@@ -323,6 +341,8 @@ static inline Result<void> _setNegativeExpression
     bool shouldBeMutable
 )
 {
+    static shared_ptr<Literal> minusOne = make_shared<Literal>(Literal("-1"));
+
     string& token = iterator.currentToken;
     if (!iterator.nextToken())
         return ERROR_convertExpression_outOfBounds(iterator);
@@ -342,7 +362,7 @@ static inline Result<void> _setNegativeExpression
 
         nodeStack.push
         (
-            make_shared<BinaryExpression>(BinaryExpression(varExpression.value().expression, SyntaxTree_Operator::Mul, make_shared<Literal>(Literal("-1"))))
+            make_shared<BinaryExpression>(BinaryExpression(varExpression.value().expression, SyntaxTree_Operator::Mul, minusOne))
         );
     }
     else if (isLiteral(literalType))
@@ -395,9 +415,10 @@ static inline Result<void> _getCopyExpression
         Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 
         RawType type;
+        RawType indexShouldBeType = RawType("f64", true);
         if (isVariable(varResult))
         {
-            Result<BodyStatment_Result<SuperExpression>> varExpression = _getVariableExpression(iterator, metaData, context, varResult, shouldBeType, &type, shouldBeMutable);
+            Result<BodyStatment_Result<SuperExpression>> varExpression = _getVariableExpression(iterator, metaData, context, varResult, &indexShouldBeType, &type, shouldBeMutable);
             if (varExpression.hasError)
                 return varExpression.error;
 
@@ -466,8 +487,8 @@ static inline Result<void> _getAllExpressions
     Stack<string>& symboolStack,
     initializer_list<const char*> endTokens, 
     RawType* shouldBeType, 
-    RawType* isType, 
     BodyStatment_Result<SuperExpression>& bodyResult,
+    Stack<RawType>& typeStack,
     bool shouldBeMutable
 )
 {
@@ -497,8 +518,8 @@ static inline Result<void> _getAllExpressions
                 if (result.hasError)
                     return result.error;
 
-                if (isType != nullptr && isOperator_booleanOp(opType))
-                    *isType = RawType("bool", false);
+                if (isOperator_booleanOp(opType))
+                    typeStack.push(RawType("bool", true));
             }
 
             if (symboolStack.topEquals("("))
@@ -518,41 +539,44 @@ static inline Result<void> _getAllExpressions
 
             shared_ptr<Increment> increment = incrementResult.value();
 
-            if (isType != nullptr)
-                *isType = type;
-
+            typeStack.push(type);
             nodeStack.push(increment);
         }
         else if (isOperator(token))
         {
-            while (!symboolStack.empty() && getOperator_Priority(symboolStack.peek()) >= getOperator_Priority(token))
+            uint32_t operatorPrecedence = getOperator_Precedence(token);
+            while (!symboolStack.empty() && getOperator_Precedence(symboolStack.peek()) >= operatorPrecedence)
             {
                 SyntaxTree_Operator opType;
                 Result<void> result = makeAndPush_BinairyExpression(/*out*/nodeStack, symboolStack, iterator.currentLine, opType);
                 if (result.hasError)
                     return result.error;
 
-                if (isType != nullptr && isOperator_booleanOp(opType))
-                    *isType = RawType("bool", false);
+                if (isOperator_booleanOp(opType))
+                    typeStack.push(RawType("bool", true));
             }
 
             if (isNegativeSymbool(token, nodeStack, symboolStack))
             {
-                Result<void> result = _setNegativeExpression(iterator, metaData, context, nodeStack, shouldBeType, isType, bodyResult, shouldBeMutable);
+                RawType type;
+                Result<void> result = _setNegativeExpression(iterator, metaData, context, nodeStack, shouldBeType, &type, bodyResult, shouldBeMutable);
                 if (result.hasError)
                     return result.error;
 
+                typeStack.push(type);
                 continue;
             }
 
             symboolStack.push(token);
         }
-        else if(token == "copy")
+        else if (token == "copy")
         {
-            Result<void> result = _getCopyExpression(iterator, metaData, context, nodeStack, shouldBeType, isType, bodyResult, shouldBeMutable);
+            RawType type;
+            Result<void> result = _getCopyExpression(iterator, metaData, context, nodeStack, shouldBeType, &type, bodyResult, shouldBeMutable);
             if (result.hasError)
                 return result.error;
-            
+
+            typeStack.push(type);
             return {};
         }
         else if (metaData.isFunction(token, context))
@@ -564,25 +588,22 @@ static inline Result<void> _getAllExpressions
             bodyResult.addToBodyResult(funcCallResult.value());
             shared_ptr<FunctionCall> funcCall = funcCallResult.value().expression;
 
-            if (isType != nullptr)
-            {
-                Result<RawType> type = getRawType_fromStringedRawType(funcCall->getReturnType(), metaData.classStore, iterator.currentLine);
-                if (type.hasError)
-                    return type.error;
+            Result<RawType> type = getRawType_fromStringedRawType(funcCall->getReturnType(), metaData.classStore, iterator.currentLine);
+            if (type.hasError)
+                return type.error;
 
-                *isType = type.value();
-            }
-
+            typeStack.push(type.value());
             nodeStack.push(funcCall);
         }
         else if (isVariable(varResult))
         {
-            Result<BodyStatment_Result<SuperExpression>> varExpression = _getVariableExpression(iterator, metaData, context, varResult, shouldBeType, isType, shouldBeMutable);
+            RawType type;
+            Result<BodyStatment_Result<SuperExpression>> varExpression = _getVariableExpression(iterator, metaData, context, varResult, shouldBeType, &type, shouldBeMutable);
             if (varExpression.hasError)
                 return varExpression.error;
-                
-            bodyResult.addToBodyResult(varExpression.value());
 
+            bodyResult.addToBodyResult(varExpression.value());
+            typeStack.push(type);
             nodeStack.push(varExpression.value().expression);
         }
         else if (isLiteral(literalType))
@@ -590,17 +611,18 @@ static inline Result<void> _getAllExpressions
             if (literalType.value().toDuckType() == DuckType::invalid)
                 return ErrorInfo("Literal has to be one of the primitiveTypes", iterator.currentLine);
 
-            if (isType != nullptr)
-                *isType = literalType.value();
-
+            typeStack.push(literalType.value());
             nodeStack.push(make_shared<Literal>(token));
         }
         else if (token == "new")
         {
-            Result<shared_ptr<SuperExpression>> newExpression = _getNewExpression(iterator, metaData, context, isType);
+
+            RawType type;
+            Result<shared_ptr<SuperExpression>> newExpression = _getNewExpression(iterator, metaData, context, &type);
             if (newExpression.hasError)
                 return newExpression.error;
 
+            typeStack.push(type);
             nodeStack.push(newExpression.value());
         }
         else
@@ -624,8 +646,9 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
     string& token = iterator.currentToken;
     Stack<shared_ptr<SuperExpression>> nodeStack;
     Stack<string> symboolStack;
+    Stack<RawType> typeStack;
 
-    Result<void> result = _getAllExpressions(iterator, metaData, context, /*out*/nodeStack, /*out*/symboolStack, endTokens, shouldBeType, isType, bodyResult, shouldBeMutable);
+    Result<void> result = _getAllExpressions(iterator, metaData, context, /*out*/nodeStack, /*out*/symboolStack, endTokens, shouldBeType, bodyResult, typeStack, shouldBeMutable);
     if (result.hasError)
         return result.error;
 
@@ -657,6 +680,9 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
 
         return ErrorInfo("\'" + ss.str() + "\' is invalid, not a valid singleExpression or a valid binairyExpression", iterator.currentLine);
     }
+
+    if (isType != nullptr)
+        *isType = typeStack.pop();
 
     bodyResult.expression = nodeStack.pop();
     return bodyResult;

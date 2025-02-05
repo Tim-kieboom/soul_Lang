@@ -62,8 +62,8 @@ Result<BodyStatment_Result<SuperConditionalStatment>> convertForStatment(TokenIt
         return ErrorInfo("unexpected end while parsing 'for'", iterator.currentLine);
 
     ScopeIterator& scope = context.scope;
-    uint64_t statementNestingIndex = scope.scope.size();
-    scope.scope.emplace_back
+    uint64_t statementNestingIndex = scope.scope->size();
+    scope.scope->emplace_back
     (
         Nesting::makeChild(&scope.getCurrentNesting())
     );

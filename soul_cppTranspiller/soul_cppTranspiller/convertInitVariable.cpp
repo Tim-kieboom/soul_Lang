@@ -80,7 +80,7 @@ Result<BodyStatment_Result<InitializeVariable>> convertInitVariable_inGlobal(Tok
 {
 	vector<Nesting> nestings;
 	nestings.emplace_back();
-	CurrentContext context = CurrentContext(ScopeIterator(nestings));
+	CurrentContext context = CurrentContext(ScopeIterator(make_shared<vector<Nesting>>(nestings)));
 	Result<BodyStatment_Result<InitializeVariable>> bodyResult = _convertInitVariable(iterator, metaData, type, context, true);
 	if (bodyResult.hasError)
 		return bodyResult.error;

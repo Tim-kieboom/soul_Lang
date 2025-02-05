@@ -27,10 +27,9 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 
 	ClassInfo& classInfo = metaData.classStore[token];
 	ClassNode classNode = ClassNode(token);
-
-	vector<Nesting> scope;
-	scope.emplace_back(Nesting());
-	CurrentContext classContext = CurrentContext(ScopeIterator(scope));
+	
+	CurrentContext classContext = CurrentContext(ScopeIterator(make_shared<vector<Nesting>>(vector<Nesting>())));
+	classContext.scope.scope->emplace_back(Nesting());
 	classContext.inClass = Nullable<ClassInfo>(classInfo);
 
 	for (auto& field : classInfo.fields)
@@ -92,8 +91,8 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 			if (funcDecl.hasError)
 				return funcDecl.error;
 
-			uint64_t nestingIndex = scope.size();
-			scope.emplace_back(Nesting::makeChild(&scope.at(0)));
+			uint64_t nestingIndex = classContext.scope.scope->size();
+			classContext.scope.scope->emplace_back(Nesting::makeChild(&classContext.scope.scope->at(0)));
 			CurrentContext methodeContext = CurrentContext(classContext, nestingIndex);
 
 			for(auto& arg : funcDecl.value().args)
@@ -106,7 +105,7 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 			if (methodeBody.hasError)
 				return methodeBody.error;
 
-			scope.pop_back();
+			classContext.scope.scope->pop_back();
 
 			auto funcNode = make_shared<FuncNode>(FuncNode(funcDecl.value(), methodeBody.value()));
 			classNode.addMethode(make_shared<MethodeNode>(MethodeNode(access, funcNode)));

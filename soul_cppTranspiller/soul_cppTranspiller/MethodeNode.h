@@ -4,11 +4,10 @@
 
 class MethodeNode : public SuperStatement
 {
-private:
+public:
     ClassAccessLevel accessLevel;
     std::shared_ptr<FuncNode> func;
 
-public:
     MethodeNode(ClassAccessLevel accessLevel, std::shared_ptr<FuncNode> func)
         : accessLevel(accessLevel), func(func)
     {

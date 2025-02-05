@@ -34,7 +34,7 @@ Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData
 		
 		auto emptyVec = vector<Nesting>();
 		emptyVec.emplace_back();
-		CurrentContext context = CurrentContext(ScopeIterator(emptyVec));
+		CurrentContext context = CurrentContext(ScopeIterator(make_shared<vector<Nesting>>(emptyVec)));
 
 		RawType returnType;
 		Result<StoreArguments_Result> result = storeArguments(/*out*/iterator, /*out*/metaData, context, /*out*/returnType, isInClass);

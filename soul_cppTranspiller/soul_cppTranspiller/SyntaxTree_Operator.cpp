@@ -1,15 +1,18 @@
 #pragma once
 #include "SyntaxTree_Operator.h"
 
-uint32_t getOperator_Priority(const std::string& opType)
+uint32_t getOperator_Precedence(const std::string& opType)
 {
-	return getOperator_Priority(getSyntax_Operator(opType));
+	return getOperator_Precedence(getSyntax_Operator(opType));
 }
 
-uint32_t getOperator_Priority(SyntaxTree_Operator opType)
+uint32_t getOperator_Precedence(SyntaxTree_Operator opType)
 {
 	switch (opType)
 	{
+	case SyntaxTree_Operator::Not:
+		return 8;
+
 	case SyntaxTree_Operator::Log:
 	case SyntaxTree_Operator::Pow:
 	case SyntaxTree_Operator::Root:
@@ -53,6 +56,7 @@ bool isOperator_booleanOp(SyntaxTree_Operator opType)
 {
 	switch (opType)
 	{
+		case SyntaxTree_Operator::Not:
 		case SyntaxTree_Operator::IsBigger:
 		case SyntaxTree_Operator::NotEquals:
 		case SyntaxTree_Operator::IsSmaller:
@@ -81,6 +85,9 @@ bool isOperator_booleanOp(SyntaxTree_Operator opType)
 
 SyntaxTree_Operator getSyntax_Operator(const std::string& token)
 {
+	if (token == toString(SyntaxTree_Operator::Not))
+		return SyntaxTree_Operator::Not;
+
 	if (token == toString(SyntaxTree_Operator::Equals))
 		return SyntaxTree_Operator::Equals;
 
@@ -127,6 +134,7 @@ SyntaxTree_Operator getSyntax_Operator(const std::string& token)
 	if (token == toString(SyntaxTree_Operator::Log))
 		return SyntaxTree_Operator::Log;
 
+
 	if (token == toString(SyntaxTree_Operator::BitWise_OR))
 		return SyntaxTree_Operator::BitWise_OR;
 
@@ -149,6 +157,8 @@ std::string toString(SyntaxTree_Operator op)
 {
 	switch (op)
 	{
+	case SyntaxTree_Operator::Not:
+		return "!";
 	case SyntaxTree_Operator::Equals:
 		return "==";
 	case SyntaxTree_Operator::NotEquals:

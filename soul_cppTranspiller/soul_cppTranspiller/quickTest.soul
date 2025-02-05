@@ -64,7 +64,7 @@ class StructObject
 
 class List
 {
-    //add i32[]*? array = null
+    //add 'i32[]*? array = null'
     i32[] array = new i32[0];
 
     pub uSize Size = 0;//{get; priv set;} = 0;
@@ -79,7 +79,6 @@ class List
     //        copy[newCapacity] array;
     //    } 
     //} = 0;
-
 
     pub ctor() { }
     pub ctor(this.Capacity) { }
@@ -171,26 +170,19 @@ func main(mut str[] args): i32
 {
     println();
 
-    u64 argsSize = arrSize(args);
-    i64 i = -1;
-
-    i8 v1 = 10;
-    i8 v2 = 4;
-
-    f64 log_ = 2 </ (2 </ 4 ** (10 log 100)); 
-    CompileConst f64 pow  = 4 ** 0.5; 
-    CompileConst f64 root = 2 </ 4;
-
     str[] array;
     array = new str[10];
     array[3] = "ellie"; 
-    
-
     println(array);
 
     str[] array2 = copy[20] array;
 
-    println(f"log:{log_}, pow:{pow}, root{root}");
+    f64 log_ = 2 </ (2 </ 4 ** (10 log 100));
+
+    CompileConst f64 POW  = 4 ** 0.5;
+    CompileConst f64 ROOT = 2 </ 4;
+
+    println(f"log:{log_}, pow:{POW}, root{ROOT}");
 
     return 0;
 }

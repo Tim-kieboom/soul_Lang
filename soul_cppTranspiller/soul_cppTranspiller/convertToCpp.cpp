@@ -2,6 +2,7 @@
 #include "CurrentContext.h"
 #include "internalFuntions.h"
 #include "convertBodyNode_ToCpp.h"
+#include "convertClassNode_ToCpp.h"
 #include "convert_Cpp_FuncDeclaration.h"
 #include "convertInitializeVariable_ToCpp.h"
 #include "convertCompileConstVariable_ToCpp.h"
@@ -38,11 +39,13 @@ static inline Result<string> forwardFunction(vector<FuncDeclaration>& funcs, uno
         if (isInternalFunc(funcInfo, internalFuncs, metaData))
             continue;
 
-        Result<string> func = convert_Cpp_FuncDeclaration(funcInfo, metaData);
+        bool isMethode = false;
+        Result<string> func = convert_Cpp_FuncDeclaration(funcInfo, metaData, &isMethode);
         if (func.hasError)
             return func.error;
 
-        ss << func.value() << ";\n";
+        if(!isMethode)
+            ss << func.value() << ";\n";
     }
 
     return ss.str();
@@ -53,7 +56,7 @@ static inline void forwardDeclareClasses(MetaData& metaData, stringstream& ss)
     for(auto& kv : metaData.classStore)
     {
         auto& classInfo = kv.second;
-        ss << "class " << classInfo.name << ';';
+        ss << "class " << classInfo.name << ";\n";
     }
 }
 
@@ -79,7 +82,7 @@ static inline CurrentContext getGlobalContext()
 {
     vector<Nesting> nestings;
     nestings.emplace_back(Nesting());
-    return CurrentContext(ScopeIterator(nestings));
+    return CurrentContext(ScopeIterator(make_shared<vector<Nesting>>(nestings)));
 }
 
 static inline Result<void> setGlobalVariables(SyntaxTree& tree, MetaData& metaData, stringstream& ss)
@@ -119,7 +122,6 @@ Result<string> convertToCpp(SyntaxTree& tree, MetaData& metaData)
     Result<void> result;
 
     forwardDeclareClasses(metaData, /*out*/ss);
-
     result = forwardDeclareFunctions(metaData, /*out*/ss);
     if (result.hasError)
         return result.error;
@@ -147,7 +149,11 @@ Result<string> convertToCpp(SyntaxTree& tree, MetaData& metaData)
         else if(funcOrClass->getId() == SyntaxNodeId::ClassNode)
         {
             const shared_ptr<ClassNode> classNode = dynamic_pointer_cast<ClassNode>(funcOrClass);
-            throw exception("not yet impl");
+            Result<string> classResult = convertClassNode_ToCpp(classNode, metaData);
+            if (classResult.hasError)
+                return classResult.error;
+
+            ss << classResult.value();
         }
         else
         {

@@ -1,5 +1,6 @@
 #include "soulToCpp.Type.h"
 #include <sstream>
+#include <stdexcept>
 
 using namespace std;
 
@@ -12,6 +13,9 @@ inline const char* primitiveTypeToCpp(PrimitiveType primType)
 
 	case PrimitiveType::none:
 		return "void";
+
+	case PrimitiveType::uSize:
+		return "size_t";
 
 	case PrimitiveType::c_str:
 	case PrimitiveType::str:
@@ -53,7 +57,8 @@ inline const char* primitiveTypeToCpp(PrimitiveType primType)
 	case PrimitiveType::f64:
 		return "double";
 	}
-	return "";
+	
+	throw exception(("primitiveTypeToCpp, \'" + toString(primType) + "\' type not in switch case").c_str());
 }
 
 Result<string> soulToCpp_Type(RawType& type, MetaData& metaData)

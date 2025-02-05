@@ -132,6 +132,7 @@
     <ClCompile Include="convertAssignment.cpp" />
     <ClCompile Include="convertAssignment_ToCpp.cpp" />
     <ClCompile Include="convertBodyNode_ToCpp.cpp" />
+    <ClCompile Include="convertClassNode_ToCpp.cpp" />
     <ClCompile Include="convertClass.cpp" />
     <ClCompile Include="convertCompileConstVariable.cpp" />
     <ClCompile Include="convertCompileConstVariable_ToCpp.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="convertAssignment.h" />
     <ClInclude Include="convertAssignment_ToCpp.h" />
     <ClInclude Include="convertBodyNode_ToCpp.h" />
+    <ClInclude Include="convertClassNode_ToCpp.h" />
     <ClInclude Include="convertClass.h" />
     <ClInclude Include="convertCompileConstVariable.h" />
     <ClInclude Include="convertCompileConstVariable_ToCpp.h" />

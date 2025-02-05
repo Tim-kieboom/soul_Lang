@@ -29,8 +29,8 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertCondition(Tok
 static inline Result<shared_ptr<BodyNode>> _convertStatmentBody(TokenIterator& iterator, MetaData& metaData, FuncDeclaration& funcInfo, CurrentContext& context, SyntaxNodeId parentNode)
 {
     ScopeIterator& scope = context.scope;
-    uint64_t statementNestingIndex = scope.scope.size();
-    scope.scope.emplace_back
+    uint64_t statementNestingIndex = scope.scope->size();
+    scope.scope->emplace_back
     (
         Nesting::makeChild(&scope.getCurrentNesting())
     );

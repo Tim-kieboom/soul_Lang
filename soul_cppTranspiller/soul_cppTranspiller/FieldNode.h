@@ -4,11 +4,10 @@
 
 class FieldVariable : public SuperStatement
 {
-private:
+public:
     ClassAccessLevel accessLevel;
     std::shared_ptr<InitializeVariable> init;
 
-public:
     FieldVariable(ClassAccessLevel accessLevel, std::shared_ptr<InitializeVariable> init)
         : accessLevel(accessLevel), init(init)
     {

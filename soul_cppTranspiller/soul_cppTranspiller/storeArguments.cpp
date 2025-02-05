@@ -209,7 +209,7 @@ Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& 
             if (!initListEquals({",", ")"}, token))
                 return ErrorInfo("\'"+token+"\' allowed in argument after 'this." + fieldName + "\'", iterator.currentLine);
 
-            storeInfo.argName = "this." + token;
+            storeInfo.argName = "this." + fieldName;
             storeInfo.argType = ArgumentType::mut;
             storeInfo.type = type.value();
 
