@@ -2,11 +2,31 @@
 #include "soulChecker.h"
 #include "storeArguments.h"
 #include "CurrentContext.h"
+#include "getTemplateTypes.h"
 
 using namespace std;
 
-Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData& metaData, bool isForwardDeclared, ClassInfo* currentClass)
+static inline Result<void> checkIfArgsAreConst(TokenIterator& iterator, StoreArguments_Result& args)
 {
+	for (auto& arg : args.args)
+	{
+		if (arg.valueType.isMutable)
+			return ErrorInfo("\'" + toString(arg) + "\' has to be inmutable because function is 'Functional'", iterator.currentLine);
+	}
+
+	for (auto& arg : args.optionals)
+	{
+		if (arg.valueType.isMutable)
+			return ErrorInfo("\'" + toString(arg) + "\' has to be inmutable because function is 'Functional'", iterator.currentLine);
+	}
+
+	return {};
+}
+
+Result<FuncDeclaration_Result> getFunctionDeclaration(TokenIterator& iterator, MetaData& metaData, bool isForwardDeclared, CurrentContext& context, ClassInfo* currentClass)
+{
+	std::shared_ptr<TemplateTypes> templateTypes;
+
 	FuncDeclaration funcInfo;
 	string& token = iterator.currentToken;
 	while(iterator.nextToken())
@@ -26,20 +46,40 @@ Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData
 			funcInfo.functionName = token;
 		}
 
+		if (context.functionRuleSet == CurrentContext::FuncRuleSet::Functional)
+		{
+			funcInfo.isConstexpr = true;
+		}
+
 		if (!iterator.nextToken())
 			break;
 
+		if (token == "<")
+		{
+			Result<std::shared_ptr<TemplateTypes>> templatesTypesResult = getTemplateTypes(iterator, context);
+			if (templatesTypesResult.hasError)
+				return templatesTypesResult.error;
+
+			templateTypes = templatesTypesResult.value();
+			funcInfo.templateTypes = templateTypes->templateTypes;
+			if (!iterator.nextToken())
+				break;
+		}
+
 		if(token != "(")
 			return ErrorInfo("function Declaration missing '(' ", iterator.currentLine);
-		
-		auto emptyVec = vector<Nesting>();
-		emptyVec.emplace_back();
-		CurrentContext context = CurrentContext(ScopeIterator(make_shared<vector<Nesting>>(emptyVec)));
 
 		RawType returnType;
-		Result<StoreArguments_Result> result = storeArguments(/*out*/iterator, /*out*/metaData, context, /*out*/returnType, isInClass);
-		if (result.hasError)
-			return result.error;
+		Result<StoreArguments_Result> argsResult = storeArguments(/*out*/iterator, /*out*/metaData, context, /*out*/returnType, isInClass);
+		if (argsResult.hasError)
+			return argsResult.error;
+
+		if(context.functionRuleSet == CurrentContext::FuncRuleSet::Functional)
+		{
+			Result<void> result = checkIfArgsAreConst(iterator, argsResult.value());
+			if (result.hasError)
+				return result.error;
+		}
 
 		if (isInClass != nullptr)
 			delete isInClass;
@@ -54,13 +94,13 @@ Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData
 		}
 
 		funcInfo.returnType = toString(returnType);
-		funcInfo.args = result.value().args;
-		funcInfo.pushOptionals(result.value().optionals);
+		funcInfo.args = argsResult.value().args;
+		funcInfo.pushOptionals(argsResult.value().optionals);
 
 		uint64_t funcInfoIndex = 0;
 		ErrorInfo error;
 		FuncDeclaration func;
-		if (metaData.tryGetFunction(funcInfo.functionName, context, funcInfo.args, result.value().optionals, func, iterator.currentLine, error, &funcInfoIndex))
+		if (metaData.tryGetFunction(funcInfo.functionName, context, funcInfo.args, argsResult.value().optionals, func, iterator.currentLine, error, &funcInfoIndex))
 		{
 			if(!func.isForwardDeclared)
 				return ErrorInfo("function with these arguments already exists, name: \'" + token + "\', args: \'" + toString(funcInfo.args) + "\'\n" + error.message, iterator.currentLine);
@@ -80,14 +120,14 @@ Result<FuncDeclaration> getFunctionDeclaration(TokenIterator& iterator, MetaData
 		if (funcInfo.functionName == "main")
 		{
 			if (funcInfo.args.empty())
-				return funcInfo;
+				return FuncDeclaration_Result(funcInfo, templateTypes);
 
 			RawType& arg = funcInfo.args[0].valueType;
 			if (funcInfo.args.size() > 1 && (!arg.isArray() || arg.toPrimitiveType() != PrimitiveType::str) )
 				return ErrorInfo("func main only allows 'main()' or 'main(str[])' as arguments", iterator.currentLine);
 		}
 
-		return funcInfo;
+		return FuncDeclaration_Result(funcInfo, templateTypes);
 	}
 
 	return ErrorInfo("function declaration incomplete", iterator.currentLine);

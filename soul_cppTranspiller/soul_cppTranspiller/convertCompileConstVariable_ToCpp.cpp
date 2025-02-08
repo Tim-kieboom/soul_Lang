@@ -12,13 +12,13 @@ Result<string> convertCompileConstVariable_ToCpp(shared_ptr<SuperStatement> node
     stringstream ss;
     shared_ptr<CompileConstVariable> constexprVar = dynamic_pointer_cast<CompileConstVariable>(node);
 
-    Result<RawType> valueType = getRawType_fromStringedRawType(constexprVar->init->type, metaData.classStore, 0);
+    Result<RawType> valueType = getRawType_fromStringedRawType(constexprVar->init->type, metaData.classStore, context.currentTemplateTypes, 0);
     if (valueType.hasError)
         return valueType.error;
 
     valueType.value().isMutable = false;
 
-    Result<string> cppTypeResult = soulToCpp_Type(valueType.value(), metaData);
+    Result<string> cppTypeResult = soulToCpp_Type(valueType.value(), metaData, context);
     if (cppTypeResult.hasError)
         return cppTypeResult.error;
 

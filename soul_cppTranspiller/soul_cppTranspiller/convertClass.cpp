@@ -1,8 +1,9 @@
 #include "convertClass.h"
 #include "soulChecker.h"
+#include "convertBody.h"
+#include "getTemplateTypes.h"
 #include "convertInitVariable.h"
 #include "getFunctionDeclaration.h"
-#include "convertBody.h"
 using namespace std;
 
 static inline ErrorInfo ERROR_convertClass_outOfBounds(TokenIterator& iterator)
@@ -26,7 +27,6 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 		return ErrorInfo("\'" + token + "\' is not a valid name for a class", iterator.currentLine);
 
 	ClassInfo& classInfo = metaData.classStore[token];
-	ClassNode classNode = ClassNode(token);
 	
 	CurrentContext classContext = CurrentContext(ScopeIterator(make_shared<vector<Nesting>>(vector<Nesting>())));
 	classContext.scope.scope->emplace_back(Nesting());
@@ -42,8 +42,22 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 	if (!iterator.nextToken())
 		return ERROR_convertClass_outOfBounds(iterator);
 
+	shared_ptr<TemplateTypes> templatesTypes;
+	if (token == "<")
+	{
+		Result<shared_ptr<TemplateTypes>> templatesTypesResult = getTemplateTypes(iterator, /*out*/classContext);
+		if (templatesTypesResult.hasError)
+			return templatesTypesResult.error;
+
+		templatesTypes = templatesTypesResult.value();
+	}
+	
+	ClassNode classNode = ClassNode(token, templatesTypes);
+	
 	if (token != "{")
+	{
 		return ErrorInfo("class \'" + classNode.className + "\' has to start with '{'", iterator.currentLine);
+	}
 
 	while(iterator.nextToken())
 	{
@@ -57,7 +71,7 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 		{
 			access = ClassAccessLevel::priv;
 
-			typeResult = getRawType(iterator, metaData.classStore);
+			typeResult = getRawType(iterator, metaData.classStore, classContext.currentTemplateTypes);
 			if (!isType(typeResult))
 				return ErrorInfo("methode needs to start with 'pub' or 'priv'", iterator.currentLine);
 		}
@@ -66,7 +80,7 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 			if (!iterator.nextToken())
 				break;
 
-			typeResult = getRawType(iterator, metaData.classStore);
+			typeResult = getRawType(iterator, metaData.classStore, classContext.currentTemplateTypes);
 		}
 
 
@@ -87,27 +101,29 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 			if (!iterator.nextToken(/*steps:*/-1))
 				break;
 
-			Result<FuncDeclaration> funcDecl = getFunctionDeclaration(iterator, metaData, /*isForwardDeclared:*/false, /*currentClassName:*/&classInfo);
-			if (funcDecl.hasError)
-				return funcDecl.error;
-
 			uint64_t nestingIndex = classContext.scope.scope->size();
 			classContext.scope.scope->emplace_back(Nesting::makeChild(&classContext.scope.scope->at(0)));
 			CurrentContext methodeContext = CurrentContext(classContext, nestingIndex);
 
-			for(auto& arg : funcDecl.value().args)
+			Result<FuncDeclaration_Result> funcDeclResult = getFunctionDeclaration(iterator, metaData, /*isForwardDeclared:*/false, methodeContext, /*currentClassName:*/&classInfo);
+			if (funcDeclResult.hasError)
+				return funcDeclResult.error;
+
+			FuncDeclaration& funcDecl = funcDeclResult.value().funcInfo;
+
+			for(auto& arg : funcDecl.args)
 			{
 				auto var = VarInfo(arg.argName, toString(arg.valueType));
 				methodeContext.scope.getCurrentNesting().addVariable(var);
 			}
 
-			Result<std::shared_ptr<BodyNode>> methodeBody = convertBody(iterator, metaData, funcDecl.value(), methodeContext, SyntaxNodeId::MethodeNode);
+			Result<std::shared_ptr<BodyNode>> methodeBody = convertBody(iterator, metaData, funcDecl, methodeContext, SyntaxNodeId::MethodeNode);
 			if (methodeBody.hasError)
 				return methodeBody.error;
 
 			classContext.scope.scope->pop_back();
 
-			auto funcNode = make_shared<FuncNode>(FuncNode(funcDecl.value(), methodeBody.value()));
+			auto funcNode = make_shared<FuncNode>(FuncNode(funcDecl, methodeBody.value(), funcDeclResult.value().templateTypes));
 			classNode.addMethode(make_shared<MethodeNode>(MethodeNode(access, funcNode)));
 		}
 	}

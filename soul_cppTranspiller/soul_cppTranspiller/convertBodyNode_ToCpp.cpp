@@ -140,7 +140,7 @@ static inline Result<string> _convertRawArrayToSoulArray(shared_ptr<SuperStateme
 	stringstream ss;
 	shared_ptr<RawArrayToSoulArray> convertArray = dynamic_pointer_cast<RawArrayToSoulArray>(statment);
 
-	Result<RawType> type = getRawType_fromStringedRawType(convertArray->type, metaData.classStore, 0);
+	Result<RawType> type = getRawType_fromStringedRawType(convertArray->type, metaData.classStore, context.currentTemplateTypes, 0);
 	if (type.hasError)
 		return type.error;
 

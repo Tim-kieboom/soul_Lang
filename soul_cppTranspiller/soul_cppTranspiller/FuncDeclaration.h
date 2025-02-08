@@ -11,12 +11,14 @@ struct FuncDeclaration
 	std::string functionName;
 	std::vector<ArgumentInfo> args;
 	std::unordered_map<std::string, ArgumentInfo> optionals;
+	std::unordered_set<std::string> templateTypes;
 	bool isForwardDeclared = true;
 	bool hasReturnStament = false;
+	bool isConstexpr = false;
 
 	FuncDeclaration() = default;
-	FuncDeclaration(const std::string& funcName, const std::string& returnType, std::initializer_list<ArgumentInfo> args_, bool isForwardDeclared = true)
-		: returnType(returnType), functionName(funcName), args(), isForwardDeclared(isForwardDeclared)
+	FuncDeclaration(const std::string& funcName, const std::string& returnType, std::initializer_list<ArgumentInfo> args_, std::unordered_set<std::string> templateTypes, bool isForwardDeclared = true)
+		: returnType(returnType), functionName(funcName), args(), isForwardDeclared(isForwardDeclared), templateTypes(templateTypes)
 	{
 		for (const ArgumentInfo& arg : args_)
 		{
@@ -47,6 +49,10 @@ struct FuncDeclaration
 	std::string printToString() const
 	{
 		std::stringstream ss;
+		
+		if (isConstexpr)
+			ss << "constexpr ";
+		
 		ss << returnType << ' ' << functionName << '(';
 		for (const ArgumentInfo& arg : args)
 		{
@@ -65,7 +71,7 @@ struct FuncDeclaration
 		return ss.str();
 	}
 
-	bool argsCompatible(const std::vector<ArgumentInfo>& other, const std::unordered_map<std::string, ArgumentInfo>& other_optionals, std::unordered_map<std::string, ClassInfo>& classStore, int64_t currentLine, ErrorInfo& error) const
+	bool argsCompatible(const std::vector<ArgumentInfo>& other, const std::unordered_map<std::string, ArgumentInfo>& other_optionals, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, int64_t currentLine, ErrorInfo& error) const
 	{
 		uint64_t j = 0;
 		for (uint64_t i = 0; i < other.size(); i++)
@@ -75,7 +81,7 @@ struct FuncDeclaration
 
 			const ArgumentInfo& arg = args.at(j);
 			const ArgumentInfo& other_arg = other.at(i);
-			Result<void> result = arg.Compatible(other_arg, classStore, currentLine);
+			Result<void> result = arg.Compatible(other_arg, classStore, templateTypes, currentLine);
 			if (result.hasError)
 			{
 				error = ErrorInfo("error at argument " + std::to_string(i + 1) + "\n" + result.error.message, currentLine);
@@ -93,7 +99,7 @@ struct FuncDeclaration
 				return false;
 
 			ArgumentInfo arg = optionals.at(other_arg.argName);
-			Result<void> result = arg.Compatible(other_arg, classStore, currentLine);
+			Result<void> result = arg.Compatible(other_arg, classStore, templateTypes, currentLine);
 			if (result.hasError)
 			{
 				error = ErrorInfo("error at optional: \'" + other_arg.argName + "\'\n" + result.error.message, currentLine);
@@ -104,7 +110,7 @@ struct FuncDeclaration
 		return true;
 	}
 
-	bool argsCompatible(const std::vector<ArgumentInfo>& other, const std::vector<ArgumentInfo>& other_optionals, std::unordered_map<std::string, ClassInfo>& classStore, int64_t currentLine, ErrorInfo& error) const
+	bool argsCompatible(const std::vector<ArgumentInfo>& other, const std::vector<ArgumentInfo>& other_optionals, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, int64_t currentLine, ErrorInfo& error) const
 	{
 		uint64_t j = 0;
 		for (uint64_t i = 0; i < other.size(); i++)
@@ -114,7 +120,7 @@ struct FuncDeclaration
 
 			const ArgumentInfo& arg = args.at(j);
 			const ArgumentInfo& other_arg = other.at(i);
-			Result<void> result = arg.Compatible(other_arg, classStore, currentLine);
+			Result<void> result = arg.Compatible(other_arg, classStore, templateTypes, currentLine);
 			if (result.hasError)
 			{
 				error = ErrorInfo("error at argument " + std::to_string(i+1) + "\n" + result.error.message, currentLine);
@@ -132,7 +138,7 @@ struct FuncDeclaration
 				return false;
 
 			ArgumentInfo arg = optionals.at(other_arg.argName);
-			Result<void> result = arg.Compatible(other_arg, classStore, currentLine);
+			Result<void> result = arg.Compatible(other_arg, classStore, templateTypes, currentLine);
 			if (result.hasError)
 			{
 				error = ErrorInfo("error at optional: \'" + other_arg.argName + "\'\n" + result.error.message, currentLine);

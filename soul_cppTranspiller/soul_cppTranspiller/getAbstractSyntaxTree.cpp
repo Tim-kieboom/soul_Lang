@@ -7,6 +7,7 @@
 #include "convertClass.h"
 #include "StringLiteral.h"
 #include "internalFuntions.h"
+#include "getTemplateTypes.h"
 #include "convertInitVariable.h"
 #include "CompileConstVariable.h"
 #include "getFunctionDeclaration.h"
@@ -24,10 +25,9 @@ static inline void _addClass(SyntaxTree& tree, ClassNode& class_)
     tree.funcsAndClasses.emplace_back(make_shared<ClassNode>(move(class_)));
 }
 
-static inline void _addArgsToScope(vector<Nesting>& funcScope, FuncDeclaration& funcDecl)
+static inline void _addArgsToCurrentScope(CurrentContext& context, FuncDeclaration& funcDecl)
 {
-    funcScope.emplace_back();
-    Nesting& funcNesting = funcScope.back();
+    Nesting& funcNesting = context.scope.getCurrentNesting();
     for (auto arg : funcDecl.args)
     {
         if (arg.argType == ArgumentType::default_)
@@ -103,6 +103,7 @@ static inline Result<void> _forwardDeclareFunctions(TokenIterator& iterator, Met
     static bool declaredMain = false;
 
     string& token = iterator.currentToken;
+    string funcRule = token;
 
     string funcName;
     if(!iterator.peekToken(funcName))
@@ -110,7 +111,11 @@ static inline Result<void> _forwardDeclareFunctions(TokenIterator& iterator, Met
 
     bool isMain = (funcName == "main");
 
-    Result<FuncDeclaration> funcDeclResult = getFunctionDeclaration(iterator, metaData, isMain);
+    auto scope = make_shared<vector<Nesting>>();
+    scope->emplace_back(Nesting());
+    CurrentContext dummyContext = CurrentContext(ScopeIterator(scope));
+
+    Result<FuncDeclaration_Result> funcDeclResult = getFunctionDeclaration(iterator, metaData, isMain, dummyContext);
     if (funcDeclResult.hasError)
         return funcDeclResult.error;
 
@@ -130,7 +135,7 @@ static inline Result<void> _forwardDeclareFunctions(TokenIterator& iterator, Met
         return ErrorInfo("unexpected end while parsing functionDeclarations", iterator.currentLine);
 
     if (checkBracket != "{")
-        return ErrorInfo("no '{' after function declaration, funcName: \'" + string(funcDeclResult.value().functionName) + '\'', iterator.currentLine);
+        return ErrorInfo("no '{' after function declaration, funcName: \'" + string(funcDeclResult.value().funcInfo.functionName) + '\'', iterator.currentLine);
 
     int64_t openBracketStack = 0;
 
@@ -225,9 +230,24 @@ static inline Result<ClassInfo> _forwardDeclareClass(TokenIterator& iterator, Me
     if (!checkName(token))
         return ErrorInfo("\'" + token + "\' is an invalid name for class", iterator.currentLine);
 
-    ClassInfo classInfo = ClassInfo();
-    classInfo.name = token;
+    string nextToken;
+    if (!iterator.peekToken(nextToken))
+        return ErrorInfo("unexpected end while forwardDeclaring class", iterator.currentLine);
 
+    shared_ptr<vector<Nesting>> scope = make_shared<vector<Nesting>>();
+    scope->emplace_back(Nesting());
+    CurrentContext context = CurrentContext(ScopeIterator(scope));
+    shared_ptr<TemplateTypes> templates;
+    if(nextToken == "<")
+    {
+        Result<shared_ptr<TemplateTypes>> templatesResult = getTemplateTypes(iterator, /*out*/context);
+        if (templatesResult.hasError)
+            return templatesResult.error;
+
+        templates = templatesResult.value();
+    }
+
+    ClassInfo classInfo = ClassInfo(token, context.currentTemplateTypes);
     int64_t openBracketStack = 0;
 
     while (iterator.nextToken())
@@ -254,7 +274,7 @@ static inline Result<ClassInfo> _forwardDeclareClass(TokenIterator& iterator, Me
         {
             access = ClassAccessLevel::priv;
 
-            typeResult = getRawType(iterator, metaData.classStore);
+            typeResult = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
             if (!isType(typeResult))
                 return ErrorInfo("methode needs to start with 'pub' or 'priv'", iterator.currentLine);
         }
@@ -263,7 +283,7 @@ static inline Result<ClassInfo> _forwardDeclareClass(TokenIterator& iterator, Me
             if (!iterator.nextToken())
                 break;
 
-            typeResult = getRawType(iterator, metaData.classStore);
+            typeResult = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
         }
 
 
@@ -291,11 +311,15 @@ static inline Result<ClassInfo> _forwardDeclareClass(TokenIterator& iterator, Me
             if (!iterator.nextToken(/*steps:*/-1))
                 break;
 
-            Result<FuncDeclaration> funcDeclResult = getFunctionDeclaration(iterator, metaData, /*isForwardDeclared:*/false, /*currentClassName:*/&classInfo);
+            auto scope = make_shared<vector<Nesting>>();
+            scope->emplace_back(Nesting());
+            CurrentContext dummyContext = CurrentContext(ScopeIterator(scope));
+
+            Result<FuncDeclaration_Result> funcDeclResult = getFunctionDeclaration(iterator, metaData, /*isForwardDeclared:*/false, dummyContext, /*currentClassName:*/&classInfo);
             if (funcDeclResult.hasError)
                 return funcDeclResult.error;
 
-            FuncDeclaration& funcDecl = funcDeclResult.value();
+            FuncDeclaration& funcDecl = funcDeclResult.value().funcInfo;
             MethodeDecleration methode = MethodeDecleration(funcDecl.functionName, funcDecl.args, access);
 
             _skipMethodeBody(/*out*/iterator);
@@ -333,7 +357,7 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
 
     while(iterator.nextToken())
     {
-        if(token == "func")
+        if(CurrentContext::getFuncRuleSet(token) != CurrentContext::FuncRuleSet::invalid)
         {
             Result<void> result = _forwardDeclareFunctions(iterator, metaData);
             if (result.hasError)
@@ -353,7 +377,8 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
     iterator.i = beginI;
     while (iterator.nextToken())
     {
-        typeResult = getRawType(iterator, metaData.classStore);
+        unordered_set<string> dummyHashSet;
+        typeResult = getRawType(iterator, metaData.classStore, dummyHashSet);
 
         if(isType(typeResult))
         {
@@ -379,23 +404,28 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
 
             tree.globalVariables.push_back(globalInit.value());
         }
-        else if(token == "func")
+        else if(CurrentContext::getFuncRuleSet(token) != CurrentContext::FuncRuleSet::invalid)
         {
-            Result<FuncDeclaration> funcDeclResult = getFunctionDeclaration(iterator, metaData, /*isForwardDeclared:*/true);
+            string ruleSet = token;
+
+            vector<Nesting> funcScope;
+            funcScope.emplace_back(Nesting());
+            CurrentContext context = CurrentContext(ScopeIterator(make_shared<vector<Nesting>>(funcScope)));
+            context.functionRuleSet = CurrentContext::getFuncRuleSet(ruleSet);
+
+            Result<FuncDeclaration_Result> funcDeclResult = getFunctionDeclaration(iterator, metaData, /*isForwardDeclared:*/true, context);
             if (funcDeclResult.hasError)
                 return funcDeclResult.error;
 
-            FuncDeclaration funcInfo = funcDeclResult.value();
-            vector<Nesting> funcScope;
-            _addArgsToScope(funcScope, funcDeclResult.value());
+            FuncDeclaration& funcInfo = funcDeclResult.value().funcInfo;
+            _addArgsToCurrentScope(context, funcInfo);
 
-            CurrentContext context = CurrentContext(ScopeIterator(make_shared<vector<Nesting>>(funcScope)));
 
             Result<shared_ptr<BodyNode>> funcResult = convertBody(iterator, metaData, funcInfo, context, /*parentNode:*/SyntaxNodeId::FuncNode);
             if (funcResult.hasError)
                 return funcResult.error;
 
-            _addFunc(/*out*/tree, FuncNode(funcInfo, funcResult.value()));
+            _addFunc(/*out*/tree, FuncNode(funcInfo, funcResult.value(), funcDeclResult.value().templateTypes));
         }
         else if(token == "class")
         {

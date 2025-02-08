@@ -11,11 +11,11 @@ Result<string> convertInitializeVariable_ToCpp(shared_ptr<SuperStatement> node, 
     stringstream ss;
     shared_ptr<InitializeVariable> init = dynamic_pointer_cast<InitializeVariable>(node);
     
-    Result<RawType> valueType = getRawType_fromStringedRawType(init->type, metaData.classStore, 0);
+    Result<RawType> valueType = getRawType_fromStringedRawType(init->type, metaData.classStore, context.currentTemplateTypes, 0);
     if (valueType.hasError)
         return valueType.error;
     
-    Result<string> cppType = soulToCpp_Type(valueType.value(), metaData);
+    Result<string> cppType = soulToCpp_Type(valueType.value(), metaData, context);
     if (cppType.hasError)
         return cppType.error;
 

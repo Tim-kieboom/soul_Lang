@@ -93,7 +93,7 @@ public:
 		std::vector<FuncDeclaration>& funcs = (isFunctionInClass) ? funcStore.at(getMethodeMapEntryName(funcName, context.inClass.value())) : funcStore.at(funcName);
 		for (FuncDeclaration& func : funcs)
 		{
-			if (func.argsCompatible(args, optionals, classStore, currentLine, error))
+			if (func.argsCompatible(args, optionals, classStore, context.currentTemplateTypes, currentLine, error))
 			{
 				if (funcInfoIndex != nullptr)
 					*funcInfoIndex = i;
@@ -123,7 +123,7 @@ public:
 		std::vector<FuncDeclaration>& funcs = funcStore.at(getMethodeMapEntryName(methodeName, thisClass));
 		for (FuncDeclaration& func : funcs)
 		{
-			if (func.argsCompatible(args, optionals, classStore, currentLine, error))
+			if (func.argsCompatible(args, optionals, classStore, context.currentTemplateTypes, currentLine, error))
 			{
 				if (funcInfoIndex != nullptr)
 					*funcInfoIndex = i;

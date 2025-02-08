@@ -1,8 +1,10 @@
 #pragma once
 #include <unordered_map>
+#include <unordered_set>
 
 #include "Token.h"
 #include "Result.h"
+#include "Nullable.h"
 #include "DuckType.h"
 #include "ClassInfo.h"
 #include "TypeWrapper.h"
@@ -12,8 +14,8 @@ class RawType;
 DuckType getDuckType(RawType& type);
 
 std::string toString(const RawType& type);
-Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore);
-Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, const uint64_t currentLine);
+Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes);
+Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, const uint64_t currentLine);
 Result<RawType> getRawType_fromLiteralValue(const std::string& value, const uint64_t currentLine);
 
 class RawType
@@ -99,13 +101,16 @@ public:
 				(wrapSize == 0) ||
 				(wrapSize == 1 && typeWrappers.at(wrapSize - 1) == TypeWrapper::refrence) ||
 				(wrapSize == 2 && typeWrappers.at(wrapSize - 1) == TypeWrapper::refrence && typeWrappers.at(wrapSize - 2) == TypeWrapper::refrence)
-				)
+			)
 		{
 			return ErrorInfo("can not get childType from type: \'" + rawType + "\'", currentLine);
 		}
 
 		RawType child = *this;
+
 		child.typeWrappers.pop_back();
+		while(!child.typeWrappers.empty() && child.typeWrappers.back() == TypeWrapper::default_)
+			child.typeWrappers.pop_back();
 
 		if (child.lastWrapper == TypeWrapper::refrence)
 			child.refrenceCounter--;
@@ -131,7 +136,7 @@ public:
 		return true;
 	}
 
-	Result<void> isEqual(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, uint64_t currentLine, bool checkMutable = true) const
+	Result<void> isEqual(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, uint64_t currentLine, bool checkMutable = true) const
 	{
 		if (checkMutable && isMutable != other.isMutable)
 			return ErrorInfo("argument: \'" + toString(*this)+ "\' and argument: \'" + toString(other) + "\' have diffrent mutability", currentLine);
@@ -139,34 +144,30 @@ public:
 		if(!typeWrapperEquals(other))
 			return ErrorInfo("typeWrappers '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
 
-		Result<PrimitiveType, ClassInfo> trueType;
-		Result<PrimitiveType, ClassInfo> trueType_other;
-		if (!getType(classStore, trueType))
-			return ErrorInfo("\'" + toString(*this) + "\' is not a reconizeble type", currentLine);
-
-		if (!other.getType(classStore, trueType_other))
-			return ErrorInfo("\'" + toString(other) + "\' is not a reconizeble type", currentLine);
-
-		bool isPrimitiveType = !trueType.hasError;
-		bool isPrimitiveType_other = !trueType_other.hasError;
-
-		if (isPrimitiveType != isPrimitiveType_other)
-			return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
-
-		if (isPrimitiveType)
+		if
+			(
+				isPrimitiveType() != other.isPrimitiveType() ||
+				isClass(classStore) != other.isClass(classStore) ||
+				isTemplate(templateTypes) != other.isTemplate(templateTypes)
+			)
 		{
-			PrimitiveType primType = trueType.value();
-			PrimitiveType primType_other = trueType_other.value();
+			return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+		}
+
+		if (isPrimitiveType())
+		{
+			PrimitiveType primType = toPrimitiveType();
+			PrimitiveType primType_other = other.toPrimitiveType();
 			if (primType == PrimitiveType::compile_dynamic || primType_other == PrimitiveType::compile_dynamic)
 				return {};
 
 			if (primType != primType_other)
 				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
 		}
-		else
+		else if(isClass(classStore))
 		{
-			ClassInfo classInfo = trueType.error;
-			ClassInfo classInfo_other = trueType_other.error;
+			ClassInfo classInfo = toClassInfo(classStore).value();
+			ClassInfo classInfo_other = toClassInfo(classStore).value();
 			if (!classInfo.isEqual(classInfo_other))
 				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
 		}
@@ -174,44 +175,40 @@ public:
 		return {};
 	}
 
-	Result<void> areTypeCompatible(const std::string& other, std::unordered_map<std::string, ClassInfo>& classStore, uint64_t currentLine) const
+	Result<void> areTypeCompatible(const std::string& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, uint64_t currentLine) const
 	{
-		Result<RawType> type = getRawType_fromStringedRawType(other, classStore, currentLine);
+		Result<RawType> type = getRawType_fromStringedRawType(other, classStore, templateTypes, currentLine);
 		if (type.hasError)
 			return type.error;
 		
-		return areTypeCompatible(type.value(), classStore, currentLine);
+		return areTypeCompatible(type.value(), classStore, templateTypes, currentLine);
 	}
 
-	Result<void> areTypeCompatible(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, uint64_t currentLine) const
+	Result<void> areTypeCompatible(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, uint64_t currentLine) const
 	{
 		if (!typeWrapperEquals(other))
 			return ErrorInfo("typeWrappers '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
 
-		Result<PrimitiveType, ClassInfo> trueType;
-		Result<PrimitiveType, ClassInfo> trueType_other;
-		if (!getType(classStore, trueType))
-			return ErrorInfo("\'" + toString(*this) + "\' is not a reconizeble type", currentLine);
-
-		if (!other.getType(classStore, trueType_other))
-			return ErrorInfo("\'" + toString(other) + "\' is not a reconizeble type", currentLine);
-	
-		bool isPrimitiveType = !trueType.hasError;
-		bool isPrimitiveType_other = !trueType_other.hasError;
-
-		if (isPrimitiveType != isPrimitiveType_other)
-			return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
-
-		if(isPrimitiveType)
+		if
+			(
+				isPrimitiveType() != other.isPrimitiveType() ||
+				isClass(classStore) != other.isClass(classStore) ||
+				isTemplate(templateTypes) != other.isTemplate(templateTypes)
+			)
 		{
-			PrimitiveType primType = trueType.value();
-			PrimitiveType primType_other = trueType_other.value();
+			return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+		}
+
+		if(isPrimitiveType())
+		{
+			PrimitiveType primType = toPrimitiveType();
+			PrimitiveType primType_other = other.toPrimitiveType();
 			if (primType == PrimitiveType::compile_dynamic || primType_other == PrimitiveType::compile_dynamic)
 				return {};
 
 			if (other.isRefrence() || other.isPointer() || other.isArray())
 			{
-				Result<void> result = isEqual(other, classStore, currentLine, false);
+				Result<void> result = isEqual(other, classStore, templateTypes, currentLine, false);
 				if (result.hasError)
 					return result.error;
 			}
@@ -221,10 +218,10 @@ public:
 					return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
 			}
 		}
-		else
+		else if(isClass(classStore))
 		{
-			ClassInfo classInfo = trueType.error;
-			ClassInfo classInfo_other = trueType_other.error;
+			ClassInfo classInfo = toClassInfo(classStore).value();
+			ClassInfo classInfo_other = toClassInfo(classStore).value();
 			if(!classInfo.isEqual(classInfo_other))
 				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
 		}
@@ -235,6 +232,16 @@ public:
 	bool isPrimitiveType() const
 	{
 		return getPrimitiveType(rawType) != PrimitiveType::invalid;
+	}
+
+	bool isClass(std::unordered_map<std::string, ClassInfo>& classStore) const
+	{
+		return classStore.find(rawType) != classStore.end();
+	}
+
+	bool isTemplate(std::unordered_set<std::string>& templateTypes) const
+	{
+		return templateTypes.find(rawType) != templateTypes.end();
 	}
 
 	PrimitiveType toPrimitiveType() const
@@ -252,28 +259,17 @@ public:
 		return getDuckType(getPrimitiveType(rawType));
 	}
 
+	Nullable<ClassInfo> toClassInfo(std::unordered_map<std::string, ClassInfo>& classStore) const
+	{
+		if (!isClass(classStore))
+			return Nullable<ClassInfo>();
+
+		return classStore[rawType];
+	}
+
 	bool isEmpty()
 	{
 		return rawType.empty();
-	}
-
-	bool getType(std::unordered_map<std::string, ClassInfo>& classStore, Result<PrimitiveType, ClassInfo>& type) const
-	{
-		Result<PrimitiveType, ClassInfo> result;
-		PrimitiveType primType = getPrimitiveType(rawType);
-		if (primType != PrimitiveType::invalid)
-		{
-			type = Result<PrimitiveType, ClassInfo>(primType);
-			return true;
-		}
-
-		if (classStore.find(rawType) != classStore.end())
-		{
-			type = Result<PrimitiveType, ClassInfo>(classStore[rawType]);
-			return true;
-		}
-
-		return false;
 	}
 
 	std::string getType_WithoutWrapper() const
@@ -281,14 +277,9 @@ public:
 		return rawType;
 	}
 
-	bool isValid(std::unordered_map<std::string, ClassInfo>& classStore) const
+	bool isValid(std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes) const
 	{
-		Result<PrimitiveType, ClassInfo> result;
-		PrimitiveType primType = getPrimitiveType(rawType);
-		if (primType != PrimitiveType::invalid)
-			return true;
-
-		if (classStore.find(rawType) != classStore.end())
+		if (isPrimitiveType() || isClass(classStore) || isTemplate(templateTypes))
 			return true;
 
 		return false;

@@ -244,7 +244,7 @@ private:
 };
 
 template <typename T>
-inline uint64_t arrSize(const __Soul_ARRAY__<T>& arr) 
+inline uint64_t len(const __Soul_ARRAY__<T>& arr) 
 {
     return arr.size(); 
 }

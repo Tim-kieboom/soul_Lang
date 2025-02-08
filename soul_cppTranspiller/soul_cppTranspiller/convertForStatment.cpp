@@ -73,7 +73,7 @@ Result<BodyStatment_Result<SuperConditionalStatment>> convertForStatment(TokenIt
     Nullable<shared_ptr<InitializeVariable>> initStatment;
     if(token != ";")
     {
-        Result<RawType> typeResult = getRawType(iterator, metaData.classStore);
+        Result<RawType> typeResult = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
 
         if(isType(typeResult))
         {

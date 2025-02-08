@@ -149,6 +149,9 @@
     <Filter Include="Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertBodyNode_ToCpp">
       <UniqueIdentifier>{e7ed2f83-b0f3-4802-bede-1fb05a610097}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertToCpp\convert_Cpp_FuncDeclaration\getTemplateTypes">
+      <UniqueIdentifier>{f8c3d7e4-ff57-401b-9234-7bceb802e741}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -282,6 +285,9 @@
     </ClCompile>
     <ClCompile Include="convertClassNode_ToCpp.cpp">
       <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertClassNode_ToCpp</Filter>
+    </ClCompile>
+    <ClCompile Include="getTemplateTypes.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convert_Cpp_FuncDeclaration\getTemplateTypes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -565,6 +571,12 @@
     </ClInclude>
     <ClInclude Include="convertClassNode_ToCpp.h">
       <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convertNode\convertClassNode_ToCpp</Filter>
+    </ClInclude>
+    <ClInclude Include="getTemplateTypes.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convert_Cpp_FuncDeclaration\getTemplateTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="TemplateTypes.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

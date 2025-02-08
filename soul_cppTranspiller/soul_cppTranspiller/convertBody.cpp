@@ -104,7 +104,7 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 				return ERROR_convertBody_outOfBounds(funcInfo, iterator);
 		}
 
-		Result<RawType> returnTypeResult = getRawType_fromStringedRawType(funcInfo.returnType, metaData.classStore, iterator.currentLine);
+		Result<RawType> returnTypeResult = getRawType_fromStringedRawType(funcInfo.returnType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
 		if (returnTypeResult.hasError)
 			return returnTypeResult.error;
 
@@ -116,7 +116,7 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 		return BodyStatment_Result<SuperStatement>(make_shared<EmptyStatment>(EmptyStatment()));
 	}
 
-	Result<RawType> typeResult = getRawType(iterator, metaData.classStore);
+	Result<RawType> typeResult = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
 	Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 
 	string nextToken;

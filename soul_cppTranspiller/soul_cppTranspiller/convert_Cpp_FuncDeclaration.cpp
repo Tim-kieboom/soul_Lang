@@ -4,9 +4,9 @@
 
 using namespace std;
 
-static inline Result<void> convertCppArgument(ArgumentInfo& arg, MetaData& metaData, stringstream& ss, Nullable<string>& ctorArg)
+static inline Result<void> convertCppArgument(ArgumentInfo& arg, MetaData& metaData, stringstream& ss, Nullable<string>& ctorArg, CurrentContext& dummyContext)
 {
-	Result<string> cppType = soulToCpp_Type(arg.valueType, metaData);
+	Result<string> cppType = soulToCpp_Type(arg.valueType, metaData, dummyContext);
 	if (cppType.hasError)
 		return cppType.error;
 
@@ -36,7 +36,7 @@ static inline bool isFuncCtor(FuncDeclaration& funcInfo)
 	return false;
 }
 
-Result<string> convert_Cpp_FuncDeclaration(FuncDeclaration& funcInfo, MetaData& metaData, bool* isMethode)
+Result<string> convert_Cpp_FuncDeclaration(FuncDeclaration& funcInfo, MetaData& metaData, unordered_set<string>& templateTypes, bool* isMethode)
 {
 	if (funcInfo.functionName == "main" && !funcInfo.args.empty())
 		return string("int main(int __Soul_argc__, char** __Soul_argv__)");
@@ -44,16 +44,22 @@ Result<string> convert_Cpp_FuncDeclaration(FuncDeclaration& funcInfo, MetaData& 
 	stringstream ss;
 	stringstream ctorArgs;
 
+	CurrentContext dummyContext = CurrentContext(ScopeIterator(make_shared<vector<Nesting>>()));
+	dummyContext.currentTemplateTypes = templateTypes;
+
 	if (isMethode != nullptr)
 		*isMethode = string_contains(funcInfo.functionName, '#');
 
+	if (funcInfo.isConstexpr)
+		ss << "constexpr ";
+
 	if (!isFuncCtor(funcInfo))
 	{
-		Result<RawType> returnTypeResult = getRawType_fromStringedRawType(funcInfo.returnType, metaData.classStore, 0);
+		Result<RawType> returnTypeResult = getRawType_fromStringedRawType(funcInfo.returnType, metaData.classStore, templateTypes, 0);
 		if (returnTypeResult.hasError)
 			return returnTypeResult.error;
 
-		Result<string> cppReturnType = soulToCpp_Type(returnTypeResult.value(), metaData);
+		Result<string> cppReturnType = soulToCpp_Type(returnTypeResult.value(), metaData, dummyContext);
 		if (cppReturnType.hasError)
 			return cppReturnType.error;
 
@@ -68,7 +74,7 @@ Result<string> convert_Cpp_FuncDeclaration(FuncDeclaration& funcInfo, MetaData& 
 	for (uint32_t i = 0; i < funcInfo.args.size(); i++)
 	{
 		Nullable<string> ctorArg;
-		Result<void> result = convertCppArgument(funcInfo.args[i], metaData, /*out*/ss, /*out*/ctorArg);
+		Result<void> result = convertCppArgument(funcInfo.args[i], metaData, /*out*/ss, /*out*/ctorArg, dummyContext);
 		if (result.hasError)
 			return result.error;
 
@@ -102,7 +108,7 @@ Result<string> convert_Cpp_FuncDeclaration(FuncDeclaration& funcInfo, MetaData& 
 	for (uint32_t i = 0; i < optionals.size(); i++)
 	{
 		Nullable<string> ctorArg;
-		Result<void> result = convertCppArgument(optionals[i], metaData, /*out*/ss, /*out*/ctorArg);
+		Result<void> result = convertCppArgument(optionals[i], metaData, /*out*/ss, /*out*/ctorArg, dummyContext);
 		if (result.hasError)
 			return result.error;
 

@@ -13,7 +13,7 @@ Result<BodyStatment_Result<ReturnStatment>> convertReturnStatment(TokenIterator&
     string& token = iterator.currentToken;
 
 
-    Result<RawType> returnTypeResult = getRawType_fromStringedRawType(funcInfo.returnType, metaData.classStore, iterator.currentLine);
+    Result<RawType> returnTypeResult = getRawType_fromStringedRawType(funcInfo.returnType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
     if (returnTypeResult.hasError)
         return returnTypeResult.error;
 
@@ -38,7 +38,7 @@ Result<BodyStatment_Result<ReturnStatment>> convertReturnStatment(TokenIterator&
     if (expression.hasError)
         return expression.error;
 
-    if (type.areTypeCompatible(returnType, metaData.classStore, iterator.currentLine).hasError)
+    if (type.areTypeCompatible(returnType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine).hasError)
         return ErrorInfo("trying to return type: \'" + toString(type) + "\', while return type is returnType: \'" + toString(returnType) + "\'", iterator.currentLine);
 
     BodyStatment_Result<ReturnStatment> bodyResult

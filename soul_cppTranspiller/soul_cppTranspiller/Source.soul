@@ -55,28 +55,46 @@ func handleResult(bool value): str
 */
 
 //invis till endInvis is removed by tokenizer
-# invis
+#invis
 //for syntax highlighting
+func Error(str err);
+func Ok(i32 val);
+
 func ctor();
 func println(str msg);
+func println();
+func len(str[] a);
+func len(str s);
 func print(str msg);
-func checkFail(bool condition, str msg);
 func checkThrow(bool condition, str msg);
-func checkFail_debug(bool condition, str msg);
-func checkThrow_debug(bool condition, str msg);
-func testArg(i8 a, i8 b);
-struct func;
+func checkFail(bool condition, str msg);
+func Throw(str msg);
+func Fail(str msg);
 struct pub;
-struct priv;
-struct delete;
 struct mut;
-class f;
+struct copy;
+struct func;
+struct priv;
+struct Range;
+struct delete;
+struct inline;
+struct Funcional;
+struct CompileConst;
 class i8;
+class i16;
 class i32;
+class i64;
+class u8;
+class u16;
+class u32;
+class u64;
+class uSize;
+class f32;
 class f64;
 class str;
-class ui64;
 class none;
+class Result;
+class f;
 # endInvis
 //class Result<V, E = str>
 //{
@@ -245,6 +263,67 @@ class none;
 //                    result
 //                );
 //}
+CompileConst u64 MAX_U64 = (64 ** 2) - 1;
+CompileConst u32 MAX_U32 = (32 ** 2) - 1;
+CompileConst u16 MAX_U16 = (16 ** 2) - 1;
+CompileConst u8  MAX_U8  = (8  ** 2) - 1;
+
+CompileConst u64 MIN_U64 = 0;
+CompileConst u32 MIN_U32 = 0;
+CompileConst u16 MIN_U16 = 0;
+CompileConst u8  MIN_U8  = 0;
+
+
+CompileConst u64 MAX_U64 = ((64 ** 2) /	2) - 1;
+CompileConst u32 MAX_U32 = ((32 ** 2) /	2) - 1;
+CompileConst u16 MAX_U16 = ((16 ** 2) /	2) - 1;
+CompileConst u8  MAX_U8  = ((8  ** 2) /	2) - 1;
+
+CompileConst u64 MIN_U64 = ((64 ** 2) /	2) * -1;
+CompileConst u32 MIN_U32 = ((32 ** 2) /	2) * -1;
+CompileConst u16 MIN_U16 = ((16 ** 2) /	2) * -1;
+CompileConst u8  MIN_U8  = ((8  ** 2) /	2) * -1;
+
+
+Funcional sqrt(f64 x): f64
+{
+	return 2 </ x;
+}
+
+Funcional nlog(f64 x): f64
+{
+	return 10 log x;
+}
+
+class Vec3
+{
+	pub f64 x = 0;
+	pub f64 y = 0;
+	pub f64 z = 0;
+
+	pub ctor() { }
+	pub ctor(this.x, this.y, this.z) { }
+
+	pub this::+(f64 scalar): Vec3 
+	{
+		Vec3(x + scalar, y + scalar, z + scalar);
+	}
+
+    pub this::+(Vec3 other): Vec3
+	{
+        Vec3(x + other.x, y + other.y, z + other.z);
+    }
+
+    pub this::-(f64 scalar): Vec3
+	{
+		Vec3(x - scalar, y - scalar, z - scalar);
+    }
+
+    pub this::-(Vec3 other): Vec3
+	{
+        Vec3(x - other.x, y - other.y, z - other.z);
+    }
+}
 
 func sum(i32 a, i32 b): i32
 {

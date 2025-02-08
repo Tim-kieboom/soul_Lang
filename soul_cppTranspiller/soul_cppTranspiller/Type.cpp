@@ -32,7 +32,12 @@ static inline bool isClass(const std::string& token, std::unordered_map<std::str
     return classStore.find(token) != classStore.end();
 }
 
-Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, const uint64_t currentLine)
+static inline bool isTemplateType(const std::string& token, std::unordered_set<std::string>& templateTypes)
+{
+    return templateTypes.find(token) != templateTypes.end();
+}
+
+Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, const uint64_t currentLine)
 {
     string strType = stringedRawType;
     string_remove(strType, ' ');
@@ -56,7 +61,7 @@ Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawTyp
     }
 
     PrimitiveType type = getPrimitiveType(strTypes.at(i));
-    if (type == PrimitiveType::invalid && !isClass(strTypes.at(i), classStore))
+    if (type == PrimitiveType::invalid && !isClass(strTypes.at(i), classStore) && !isTemplateType(strTypes.at(i), templateTypes))
     {
         return ErrorInfo("type: \'" + strTypes.at(i) + "\', is not a reconized Type", currentLine);
     }
@@ -95,7 +100,12 @@ Result<RawType> getRawType_fromLiteralValue(const std::string& value, const uint
     return RawType(rawType, false);
 }
 
-Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore)
+static inline bool isTemplateType(std::string& token, std::unordered_set<std::string>& templateTypes)
+{
+    return templateTypes.find(token) != templateTypes.end();
+}
+
+Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes)
 {
 	const uint64_t beginIndex = iterator.i;
 	string& token = iterator.currentToken;
@@ -113,7 +123,7 @@ Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::stri
     }
 
     PrimitiveType type = getPrimitiveType(token);
-    if (type == PrimitiveType::invalid && !isClass(token, classStore))
+    if (type == PrimitiveType::invalid && !isClass(token, classStore) && !isTemplateType(token, templateTypes))
     {  
         iterator.at(beginIndex);
         return ErrorInfo("type: \'" + token + "\', is not a reconized Type", iterator.currentLine);

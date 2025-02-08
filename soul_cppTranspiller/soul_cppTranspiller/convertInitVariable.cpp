@@ -24,6 +24,13 @@ static inline Result<BodyStatment_Result<InitializeVariable>> _convertInitVariab
 		return ErrorInfo("name invalid name: \'" + token + "\'", iterator.currentLine);
 	string varName = token;
 
+
+	if (context.functionRuleSet == CurrentContext::FuncRuleSet::Functional)
+	{
+		if (type.isMutable)
+			return ErrorInfo("\'" + varName + "\' must be inmutable because function is 'Functional'", iterator.currentLine);
+	}
+
 	Result<VarInfo*> varExsists = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 	if (!varExsists.hasError)
 	{

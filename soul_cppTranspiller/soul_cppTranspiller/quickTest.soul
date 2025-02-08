@@ -7,8 +7,8 @@ func Ok(i32 val);
 func ctor();
 func println(str msg);
 func println();
-func arrSize(str[] a);
-func strSize(str s);
+func len(str[] array);
+func len(str msg);
 func print(str msg);
 func checkThrow(bool condition, str msg);
 func checkFail(bool condition, str msg);
@@ -16,13 +16,14 @@ func Throw(str msg);
 func Fail(str msg);
 struct pub;
 struct mut;
+struct pass;
 struct copy;
 struct func;
 struct priv;
 struct Range;
 struct delete;
 struct inline;
-struct Funcional;
+struct Functional;
 struct CompileConst;
 class i8;
 class i16;
@@ -43,136 +44,241 @@ class f;
 
 CompileConst u32 MAX_U32 = (32 ** 2) - 1;
 
-//Funcional nlog(f64 base): f64
+//Functional sqrt(f64 x): f64
 //{
-//    return 10 log base;
+//    return 2 </ x;
 //}
 
-//Funcional sqrt(f64 base): f64
+//class Ok<T>
 //{
-//    return 2 </ base;
+//    pub T data;
+//    pub ctor(this.data) { }
 //}
 
-class StructObject
-{
-    pub str key = "";
-    pub i32 value = 0;
+//class Error<T>
+//{
+//    pub T data;
+//    pub ctor(this.data) { }
+//}
 
-    pub ctor() { }
-    pub ctor(this.key, this.value) { }
+//class Result<TValue, TError>
+//{
+//    Ok<TValue>? value = null;
+//    Error<TError>? error = null;
+
+//    pub ctor() { }
+
+//    pub ctor(Ok<TValue> value_) 
+//    {
+//        value = value_;
+//    }
+
+//    pub ctor(Error<TError> error_) 
+//    {
+//        error = error_;
+//    }
+
+//    pub HasError(): bool 
+//    {
+//        return error != null; 
+//    }
+
+//    pub HasValue(): bool
+//    {
+//        return value != null; 
+//    }
+
+//    pub isEmpty() bool
+//    {
+//        return !HasError() && !HasValue();
+//    }
+
+//    pub Error(): TError& 
+//    {
+//        checkFail(!HasError(), "Result does not have error");
+
+//        return error; 
+//    }
+
+//    pub Value(): TValue&
+//    {
+//        checkFail(!HasValue(), "Result does not have value");
+
+//        return value;
+//    }
+
+//    //pub this::pass(): TValue&
+//    //{
+//    //    if(hasValue())
+//    //    {
+//    //        pass::Ok();
+//    //    }
+//    //    else
+//    //    {
+//    //        pass::Error();
+//    //    }
+//    //}
+
+//    //priv this::pass::Ok(): TValue&
+//    //{
+//    //    return value.data;
+//    //}
+
+//    //priv this::pass::Error(): TError&
+//    //{
+//    //    return error.data;
+//    //}
+//}
+
+func template<T>(T value): none 
+{ 
+    T temp = value; 
 }
 
-class List
-{
-    //add 'i32[]*? array = null'
-    i32[] array = new i32[0];
+//class Ref<T>
+//{
+//    T[] ref = new T[1];
+    
+//    pub ctor(mut T& value) { ref[0] = value }
 
-    pub uSize Size = 0;//{get; priv set;} = 0;
-    pub uSize Capacity = 0;
-    //{
-    //    get 
-    //    {
-    //        return arrSize(array);
-    //    } 
-    //    priv set 
-    //    {
-    //        copy[newCapacity] array;
-    //    } 
-    //} = 0;
+//    pub get(): T&
+//    {
+//        return ref[0];
+//    }
+//}
 
-    pub ctor() { }
-    pub ctor(this.Capacity) { }
-    pub ctor(this.array, this.Size) { }
+//class List<T>
+//{
+//    Ref<T[]> arrayRef = Ref<T[]>(new T[0]);
 
-    pub Push(i32 value): none
-    {
-        CompileConst u32 LAST_CAPACITY_BEFORE_OVERFLOW = (16 ** 2);
+//    pub uSize Size = 0;//{get; priv set;} = 0;
+//    pub uSize Capacity = 0;
+//    //{
+//    //    get 
+//    //    {
+//    //        return len(arrayRef.get());
+//    //    } 
+//    //    priv set(uSize newCapacity)
+//    //    {
+//    //        arrayRef.get() = copy[newCapacity] arrayRef.get();
+//    //    } 
+//    //} = 0;
 
-        if (Size + 1 > Capacity)
-        {
-            if((Capacity == 0))
-            {   
-                reserve(1);
-            }
-            else if(Capacity < LAST_CAPACITY_BEFORE_OVERFLOW)
-            {
-                reserve(Capacity * 2);
-            }
-            else if(Capacity == MAX_U32)
-            {
-                Fail(f"can't increase capacity of List, because List reached max Capacity:{MAX_U32}");
-            }
-            else
-            {
-                reserve(MAX_U32);
-            }
-        }
+//    pub ctor() { }
+//    pub ctor(this.Capacity) { }
+//    pub ctor(mut T[] array, this.Size)
+//        : arrayRef(Ref<T[]>(array))
+//    {
+//    }
 
-        array[Size++] = value;
-    }
+//    pub isEmpty(): bool
+//    {
+//        return size == 0;
+//    }
 
-    pub Peek(): i32
-    {
-        checkFail((Size == 0), "can not peek empty list");
-        return array[Size - 1];
-    }
+//    pub Data(): T[]
+//    {
+//        return arrayRef.get();
+//    }
 
-    pub Pop(): i32
-    {
-        checkFail((Size == 0), "can not pop empty list");
-        return array[--Size];
-    }
+//    pub Push(T value): none
+//    {
+//        CompileConst u32 LAST_CAPACITY_BEFORE_OVERFLOW = (16 ** 2);
 
-    priv reserve(uSize newCapacity): none
-    {
-        array = copy[newCapacity] array;
-        Capacity = newCapacity;
-    }
+//        if (Size + 1 > Capacity)
+//        {
+//            if((Capacity == 0))
+//            {   
+//                reserve(1);
+//            }
+//            else if(Capacity < LAST_CAPACITY_BEFORE_OVERFLOW)
+//            {
+//                reserve(Capacity * 2);
+//            }
+//            else if(Capacity == MAX_U32)
+//            {
+//                Fail(f"can't increase capacity of List, because List reached max Capacity:{MAX_U32}");
+//            }
+//            else
+//            {
+//                reserve(MAX_U32);
+//            }
+//        }
 
-    //pub At(i64 index): Result<i32>
-    //{
-    //    if ((index < 0 && Size + index < 0) || (index > Size - 1))
-    //        return Error(f"index:{index}, is to big, size:{Size}");
+//        T[]& array = arrayRef.get();
+//        array[Size++] = value;
+//    }
 
-    //    return Ok(array[index]);
-    //}
+//    pub Peek(): T&
+//    {
+//        checkFail((Size == 0), "can not peek empty list");
+//        return array[Size - 1];
+//    }
 
-    //pub Set(i64 index, i32 value): Result<none>
-    //{
-    //    u32 realIndex = index;
-    //    if (index < 0)
-    //        realIndex = Size + index;
+//    pub Pop(): T
+//    {
+//        checkFail((Size == 0), "can not pop empty list");
+//        T[]& array = arrayRef.get();
+//        return array[--Size];
+//    }
 
-    //    if (index > Size - 1)
-    //        return Error(f"index:{index}, is to big, size:{Size}");
+//    priv reserve(uSize newCapacity): none
+//    {
+//        T[]& array = arrayRef.get();
+//        array = copy[newCapacity] array;
+//        Capacity = len(array);
+//    }
 
-    //    array[index] = value;
-    //    return Ok();
-    //}
+//    //pub At(i64 index, out T& value): Result<none>
+//    //{
+//    //    if ((index < 0 && Size + index < 0) || (index > Size - 1))
+//    //        return Error(f"index:{index}, is to big, size:{Size}");
+        
+//    //    T[]& array = arrayRef.get();
+//    //    value = array[index];
+//    //    return Ok();
+//    //}
 
-    //pub this::[] (i64 index): i32&
-    //{
-    //    return array[index];
-    //}
+//    //pub this::[] (i64 index): i32&
+//    //{
+//    //    return array[index];
+//    //}
 
-    //pub this::copy(): List
-    //{
-    //    return List(copy array, Size);
-    //}
+//    //pub this::copy(): List
+//    //{
+//    //    return List(copy array, Size);
+//    //}
 
-    //pub this::copy(u64 capacity): List
-    //{
-    //    return List(copy[capacity] array, Size);
-    //}
-}
+//    //pub this::copy(u64 capacity): List
+//    //{
+//    //    return List(copy[capacity] array, Size);
+//    //}
+//}
+
+//func testList(): Result<none>
+//{
+//    List<i32> list = List<i32>();
+//    list.Push(1);
+//    list.Push(2);
+//    list.Push(3);
+//    list.Push(4);
+//    list.Push(5);
+//    pass list.At(1, out i32 value)
+
+//    println(list.Data());
+//    return;
+//}
 
 func main(mut str[] args): i32
 {
     println();
 
+    //Result<none> result = testList()
+
     str[] array;
     array = new str[10];
-    array[3] = "ellie"; 
+    array[3] = "ellie";
+    println(len(array[3]));
     println(array);
 
     str[] array2 = copy[20] array;
@@ -182,7 +288,10 @@ func main(mut str[] args): i32
     CompileConst f64 POW  = 4 ** 0.5;
     CompileConst f64 ROOT = 2 </ 4;
 
-    println(f"log:{log_}, pow:{POW}, root{ROOT}");
+    println(f"log:{log_}, pow 4 ** 0.5={POW}, root 2 </ 4={ROOT}");
+
+    //CompileConst f64 foo = sqrt(4);
+
 
     return 0;
 }

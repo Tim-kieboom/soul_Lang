@@ -151,6 +151,7 @@
     <ClCompile Include="DuckType.cpp" />
     <ClCompile Include="getAbstractSyntaxTree.cpp" />
     <ClCompile Include="getFunctionDeclaration.cpp" />
+    <ClCompile Include="getTemplateTypes.cpp" />
     <ClCompile Include="PrimitiveType.cpp" />
     <ClCompile Include="readFile.cpp" />
     <ClCompile Include="main.cpp" />
@@ -218,6 +219,7 @@
     <ClInclude Include="ClassNode.h" />
     <ClInclude Include="C_strPair.h" />
     <ClInclude Include="getFunctionDeclaration.h" />
+    <ClInclude Include="getTemplateTypes.h" />
     <ClInclude Include="If_else_elseIf_Statments.h" />
     <ClInclude Include="Increment.h" />
     <ClInclude Include="IndexArray.h" />
@@ -260,6 +262,7 @@
     <ClInclude Include="SyntaxNodeId.h" />
     <ClInclude Include="SyntaxTree.h" />
     <ClInclude Include="SyntaxTree_Operator.h" />
+    <ClInclude Include="TemplateTypes.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="tokenizer.h" />
     <ClInclude Include="Type.h" />

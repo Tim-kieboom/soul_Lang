@@ -33,6 +33,7 @@ static inline Result<void> storeArgument
     TokenIterator& iterator,
     StoreArgsInfo& storeInfo,
     MetaData& metaData,
+    CurrentContext& context,
     vector<ArgumentInfo>& args,
     vector<ArgumentInfo>& optionals
 )
@@ -45,7 +46,7 @@ static inline Result<void> storeArgument
     if (argName.empty())
         return ErrorInfo("no name given to argument, argumentNumber: \'" + argumentPosition + string("\',") + "argument type : \'" + toString(type) + "\'", iterator.currentLine);
 
-    if (!type.isValid(metaData.classStore))
+    if (!type.isValid(metaData.classStore, context.currentTemplateTypes))
         return ErrorInfo("valueType of argument is invalid, argument: \'" + argName + "\'", iterator.currentLine);
 
     if (type.isRefrence())
@@ -74,15 +75,16 @@ static inline Result<RawType> storeLastArgument
     TokenIterator& iterator,
     StoreArgsInfo& storeInfo,
     MetaData& metaData,
+    CurrentContext& context,
     vector<ArgumentInfo>& args,
     vector<ArgumentInfo>& optionals,
     bool isCtor
 )
 {
     string& token = iterator.currentToken;
-    if (storeInfo.type.isValid(metaData.classStore))
+    if (storeInfo.type.isValid(metaData.classStore, context.currentTemplateTypes))
     {
-        Result<void> result = storeArgument(iterator, storeInfo, metaData, args, optionals);
+        Result<void> result = storeArgument(iterator, storeInfo, metaData, context, args, optionals);
         if (result.hasError)
             return result.error;
     }
@@ -95,12 +97,12 @@ static inline Result<RawType> storeLastArgument
         return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
 
     if (token != ":")
-        return ErrorInfo("function Declarations doesn't end with ':'", iterator.currentLine);
+        return ErrorInfo("function Declarations doesn't have return type", iterator.currentLine);
 
     if (!iterator.nextToken())
         return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
 
-    Result<RawType> returnType = getRawType(iterator, metaData.classStore);
+    Result<RawType> returnType = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
     if (returnType.hasError)
         return returnType.error;
 
@@ -117,10 +119,10 @@ Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& 
     string& token = iterator.currentToken;
     while(iterator.nextToken())
     {
-        Result<RawType> typeResult = getRawType(iterator, metaData.classStore);
+        Result<RawType> typeResult = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
         if (token == ",")
         {
-            Result<void> result = storeArgument(iterator, storeInfo, metaData, args, optionals);
+            Result<void> result = storeArgument(iterator, storeInfo, metaData, context, args, optionals);
             if (result.hasError)
                 return result.error;
         }
@@ -132,7 +134,7 @@ Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& 
         {
             if(openBracketCounter <= 1)
             {
-                Result<RawType> result = storeLastArgument(iterator, storeInfo, metaData, args, optionals, (inClass != nullptr && inClass->isCtor));
+                Result<RawType> result = storeLastArgument(iterator, storeInfo, metaData, context, args, optionals, (inClass != nullptr && inClass->isCtor));
                 if (result.hasError)
                     return result.error;
 
@@ -163,7 +165,7 @@ Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& 
             if (!iterator.nextToken(/*steps*/ -1))
                 break;
 
-            Result<void> areCompatible = storeInfo.type.areTypeCompatible(type, metaData.classStore, iterator.currentLine);
+            Result<void> areCompatible = storeInfo.type.areTypeCompatible(type, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
             if (areCompatible.hasError)
                 return ErrorInfo("optional defaultValue:\n" + areCompatible.error.message, areCompatible.error.lineNumber);
 
@@ -199,7 +201,7 @@ Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& 
             if (field.hasError)
                 return ErrorInfo("\'" + token + "\' is not a field so can not be used as 'this." + fieldName + "\'", iterator.currentLine);
 
-            Result<RawType> type = getRawType_fromStringedRawType(field.value().stringRawType, metaData.classStore, iterator.currentLine);
+            Result<RawType> type = getRawType_fromStringedRawType(field.value().stringRawType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
             if (type.hasError)
                 return type.error;
 
@@ -213,7 +215,7 @@ Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& 
             storeInfo.argType = ArgumentType::mut;
             storeInfo.type = type.value();
 
-            Result<void> result = storeArgument(iterator, storeInfo, metaData, args, optionals);
+            Result<void> result = storeArgument(iterator, storeInfo, metaData, context, args, optionals);
             if (result.hasError)
                 return result.error;
 

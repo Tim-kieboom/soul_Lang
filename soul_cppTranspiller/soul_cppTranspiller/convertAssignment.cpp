@@ -21,7 +21,7 @@ static inline ErrorInfo ERROR_convertAssignment_outOfBounds(TokenIterator& itera
 	return ErrorInfo("unexpected end while converting Assingment", iterator.currentLine);
 }
 
-static inline Result<void> _isSymboolAllowed(string& symbool, MetaData& metaData, VarInfo* varInfo, RawType& type, const TokenIterator& iterator)
+static inline Result<void> _isSymboolAllowed(string& symbool, MetaData& metaData, VarInfo* varInfo, RawType type, const TokenIterator& iterator)
 {
 	static const initializer_list<const char*> allowed_ArraySymbols = { "[", "=" };
 	static const initializer_list<const char*> allowed_PointerSymbols = { ".", "=" };
@@ -29,6 +29,19 @@ static inline Result<void> _isSymboolAllowed(string& symbool, MetaData& metaData
 	static const initializer_list<const char*> allowed_ConstSymbols = { ".", "[" };
 
 	initializer_list<const char*> allowedSymbols;
+
+	if (toString(type) == "i32[]&")
+		int d = 0;
+
+	if (type.isRefrence())
+	{
+		Result<RawType> child = type.getTypeChild(iterator.currentLine);
+		if (child.hasError)
+			return child.error;
+
+		type = child.value();
+	}
+
 
 	if (type.isArray())
 	{
@@ -85,12 +98,9 @@ Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterato
 {
 	BodyStatment_Result<Assignment> bodyResult;
 
-	Result<RawType> typeResult = getRawType_fromStringedRawType(varInfo->stringedRawType, metaData.classStore, iterator.currentLine);
+	Result<RawType> typeResult = getRawType_fromStringedRawType(varInfo->stringedRawType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
 	if (typeResult.hasError)
 		return typeResult.error;
-
-	if (iterator.currentLine == 127)
-		int d = 0;
 
 	RawType assignVar_type = typeResult.value();
 

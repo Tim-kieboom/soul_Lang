@@ -1,8 +1,9 @@
 #pragma once
 #include "BodyNode.h"
-#include "SuperMainNodes.h"
 #include "ISyntaxNode.h"
 #include "InitVariable.h"
+#include "TemplateTypes.h"
+#include "SuperMainNodes.h"
 #include "FuncDeclaration.h"
 
 class FuncNode : public SuperMainNode
@@ -10,11 +11,12 @@ class FuncNode : public SuperMainNode
 public:
 	FuncDeclaration funcDecl;
 	std::shared_ptr<BodyNode> body;
+	std::shared_ptr<TemplateTypes> templatesTypes;
 
 	FuncNode() = default;
 
-	FuncNode(FuncDeclaration& funcDecl, std::shared_ptr<BodyNode> body)
-		: funcDecl(funcDecl), body(body)
+	FuncNode(FuncDeclaration& funcDecl, std::shared_ptr<BodyNode> body, std::shared_ptr<TemplateTypes> templatesTypes)
+		: funcDecl(funcDecl), body(body), templatesTypes(templatesTypes)
 	{
 	}
 
@@ -26,7 +28,12 @@ public:
 	std::string printToString() const override
 	{
 		std::stringstream ss;
-		ss << funcDecl.printToString() << body->printToString();
+		ss << funcDecl.printToString();
+
+		if (templatesTypes)
+			ss << templatesTypes->printToString() << ' ';
+
+		ss << body->printToString();
 		return ss.str();
 	}
 

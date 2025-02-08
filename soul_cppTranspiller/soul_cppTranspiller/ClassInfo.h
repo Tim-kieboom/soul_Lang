@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <unordered_set>
+
 #include "Result.h"
 #include "ClassAccessLevel.h"
 
@@ -38,8 +40,13 @@ struct ClassInfo
 	std::string name;
 	std::vector<FieldsInfo> fields;
 	std::vector<MethodeDecleration> methodes;
+	std::unordered_set<std::string> templateTypes;
 
 	ClassInfo() = default;
+	ClassInfo(std::string& name, std::unordered_set<std::string>& templateTypes)
+		: name(name), templateTypes(templateTypes)
+	{
+	}
 
 	void addMethode(MethodeDecleration& methode)
 	{

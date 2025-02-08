@@ -33,6 +33,7 @@ enum class SyntaxNodeId
 	IndexArray,
 	FunctionCall,
 	StringLiteral,
+	TemplateTypes,
 	EmptyExpresion,
 	ConstructArray,
 	CopyExpression,

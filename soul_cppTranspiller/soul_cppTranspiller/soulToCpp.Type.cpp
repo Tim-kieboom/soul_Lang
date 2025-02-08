@@ -61,9 +61,9 @@ inline const char* primitiveTypeToCpp(PrimitiveType primType)
 	throw exception(("primitiveTypeToCpp, \'" + toString(primType) + "\' type not in switch case").c_str());
 }
 
-Result<string> soulToCpp_Type(RawType& type, MetaData& metaData)
+Result<string> soulToCpp_Type(RawType& type, MetaData& metaData, CurrentContext& context)
 {
-    if (!type.isValid(metaData.classStore))
+    if (!type.isValid(metaData.classStore, context.currentTemplateTypes))
         return ErrorInfo("type: \'" +toString(type) +"\', is invalid", 0);
 
     stringstream ss;

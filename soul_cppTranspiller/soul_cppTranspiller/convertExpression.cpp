@@ -156,13 +156,13 @@ static inline Result<shared_ptr<Increment>> _convertBeforeVarIncrement(TokenIter
         return ErrorInfo("token after \'" + incrementToken + "\' has to be a variable", iterator.currentLine);
 
     VarInfo* var = varResult.value();
-    Result<RawType> varType = getRawType_fromStringedRawType(var->stringedRawType, metaData.classStore, iterator.currentLine);
+    Result<RawType> varType = getRawType_fromStringedRawType(var->stringedRawType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
     if (varType.hasError)
         return varType.error;
 
     *type = varType.value();
 
-    Result<RawType> typeResult = getRawType_fromStringedRawType((*var).stringedRawType, metaData.classStore, iterator.currentLine);
+    Result<RawType> typeResult = getRawType_fromStringedRawType((*var).stringedRawType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
     if (typeResult.hasError)
         return typeResult.error;
 
@@ -194,7 +194,7 @@ static inline Result<shared_ptr<ConstructArray>> _getConstructArray(TokenIterato
     }
     else if (isVariable(varResult))
     {
-        Result<RawType> varType = getRawType_fromStringedRawType(varResult.value()->stringedRawType, metaData.classStore, iterator.currentLine);
+        Result<RawType> varType = getRawType_fromStringedRawType(varResult.value()->stringedRawType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
         if (varType.hasError)
             return varType.error;
 
@@ -221,7 +221,7 @@ static inline Result<BodyStatment_Result<SuperExpression>> _getVariableExpressio
 
     string& token = iterator.currentToken;
 
-    Result<RawType> varType = getRawType_fromStringedRawType(varResult.value()->stringedRawType, metaData.classStore, iterator.currentLine);
+    Result<RawType> varType = getRawType_fromStringedRawType(varResult.value()->stringedRawType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
     if (varType.hasError)
         return varType.error;
 
@@ -272,7 +272,7 @@ static inline Result<BodyStatment_Result<SuperExpression>> _getVariableExpressio
 
         if (shouldBeType != nullptr)
         {
-            Result<void> isCompatible = varType.value().areTypeCompatible(*shouldBeType, metaData.classStore, iterator.currentLine);
+            Result<void> isCompatible = varType.value().areTypeCompatible(*shouldBeType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
             if (isCompatible.hasError)
                 return isCompatible.error;
         }
@@ -292,7 +292,7 @@ static inline Result<shared_ptr<SuperExpression>> _getNewExpression(TokenIterato
     if (!iterator.nextToken())
         return ERROR_convertExpression_outOfBounds(iterator);
 
-    Result<RawType> newTypeResult = getRawType(iterator, metaData.classStore);
+    Result<RawType> newTypeResult = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
     if (newTypeResult.hasError)
         return newTypeResult.error;
 
@@ -462,7 +462,7 @@ static inline Result<void> _getCopyExpression
 
     if (shouldBeType != nullptr)
     {
-        Result<void> result = type.isEqual(*shouldBeType, metaData.classStore, iterator.currentLine, shouldBeMutable);
+        Result<void> result = type.isEqual(*shouldBeType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine, shouldBeMutable);
         if (result.hasError)
             return result.error;
     }
@@ -588,7 +588,7 @@ static inline Result<void> _getAllExpressions
             bodyResult.addToBodyResult(funcCallResult.value());
             shared_ptr<FunctionCall> funcCall = funcCallResult.value().expression;
 
-            Result<RawType> type = getRawType_fromStringedRawType(funcCall->getReturnType(), metaData.classStore, iterator.currentLine);
+            Result<RawType> type = getRawType_fromStringedRawType(funcCall->getReturnType(), metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
             if (type.hasError)
                 return type.error;
 
@@ -682,7 +682,13 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertExpression(To
     }
 
     if (isType != nullptr)
-        *isType = typeStack.pop();
+        *isType = typeStack.peek();
+
+    if (context.functionRuleSet == CurrentContext::FuncRuleSet::Functional)
+    {
+        if (typeStack.peek().isMutable)
+            return ErrorInfo("Functional function can not have mutable expressions", iterator.currentLine);
+    }
 
     bodyResult.expression = nodeStack.pop();
     return bodyResult;

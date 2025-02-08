@@ -10,7 +10,7 @@ static inline const char* accessLevelToCpp(ClassAccessLevel access)
     return (access == ClassAccessLevel::pub) ? "public:" : "private:";
 }
 
-Result<string> convertClassNode_ToCpp(std::shared_ptr<ClassNode> classNode, MetaData& metaData)
+Result<string> convertClassNode_ToCpp(std::shared_ptr<ClassNode> classNode, MetaData& metaData, unordered_set<string>& templateTypes)
 {
     stringstream ss;
 
@@ -30,7 +30,7 @@ Result<string> convertClassNode_ToCpp(std::shared_ptr<ClassNode> classNode, Meta
 
     for(shared_ptr<MethodeNode> methode : classNode->methodes)    
     {
-        Result<string> methodeDeclr = convert_Cpp_FuncDeclaration(methode->func->funcDecl, metaData);
+        Result<string> methodeDeclr = convert_Cpp_FuncDeclaration(methode->func->funcDecl, metaData, templateTypes);
         if (methodeDeclr.hasError)
             return methodeDeclr.error;
 

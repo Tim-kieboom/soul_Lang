@@ -2,6 +2,7 @@
 #include "stringTools.h" 
 #include "Variable.h" 
 #include "CurrentContext.h" 
+#include "FunctionCall.h" 
 #include "BinairyExpression.h" 
 
 using namespace std;
@@ -142,6 +143,10 @@ static bool isExpression_CompileConst(SyntaxNodeId expressionId, shared_ptr<Supe
 			return false;
 
 		return var.value()->isCompileConst;
+	}
+	else if(expressionId == SyntaxNodeId::FunctionCall)
+	{
+		return dynamic_pointer_cast<FunctionCall>(expression)->funcInfo.isConstexpr;
 	}
 
 	return expressionId == SyntaxNodeId::CompileConstVariable ||

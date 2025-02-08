@@ -13,7 +13,7 @@ static inline Result<BodyStatment_Result<CompileConstVariable>> _convertCompileC
 	if (!iterator.nextToken())
 		return ErrorInfo("unexpected end while parsing CompileConstVariable", iterator.currentLine);
 
-	Result<RawType> typeResult = getRawType(iterator, metaData.classStore);
+	Result<RawType> typeResult = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
 	if (typeResult.hasError)
 		return ErrorInfo("invalid Type", iterator.currentLine);
 

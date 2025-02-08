@@ -89,7 +89,7 @@ static inline Result<GetArgs_Result> _getArgs(TokenIterator& iterator, MetaData&
             if (!iterator.nextToken())
                 return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
 
-            Result<RawType> typeResult = getRawType(iterator, metaData.classStore);
+            Result<RawType> typeResult = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
             bool hasType = isType(typeResult);
 
             if (!iterator.peekToken(nextToken))
@@ -215,7 +215,7 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
 
     if(shouldBeType != nullptr && shouldBeType->toPrimitiveType() != PrimitiveType::none)
     {
-        Result<void> isCompatible = shouldBeType->areTypeCompatible(funcInfo.returnType, metaData.classStore, iterator.currentLine);
+        Result<void> isCompatible = shouldBeType->areTypeCompatible(funcInfo.returnType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
         if (isCompatible.hasError)
             return isCompatible.error;
     }

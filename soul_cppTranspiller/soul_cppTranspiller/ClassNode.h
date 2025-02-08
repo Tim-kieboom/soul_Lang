@@ -9,10 +9,12 @@ public:
 	std::string className;
 	std::vector<std::shared_ptr<FieldVariable>> fields;
 	std::vector<std::shared_ptr<MethodeNode>> methodes;
+	
+	std::shared_ptr<TemplateTypes> templatesTypes;
 
 	ClassNode() = default;
-	ClassNode(std::string& className)
-		: className(className)
+	ClassNode(std::string& className, std::shared_ptr<TemplateTypes> templatesTypes)
+		: className(className), templatesTypes(templatesTypes)
 	{
 	}
 
@@ -34,7 +36,12 @@ public:
 	std::string printToString() const override
 	{
 		std::stringstream ss;
-		ss << "className::" << className << "\n{\n";
+		ss << "className::" << className;
+		
+		if (templatesTypes)
+			ss << templatesTypes->printToString() << ' ';
+
+		ss << "\n{\n";
 		
 		for (const std::shared_ptr<FieldVariable>& field : fields)
 			ss << field->printToString() << '\n';

@@ -90,7 +90,7 @@ static inline Result<string> _convertBinairyExpression(shared_ptr<SuperExpressio
 	if (right.hasError)
 		return right.error;
 
-	bool isCompileConst = isExpression_CompileConstant(expression, metaData, context);
+	bool isCompileConst = context.functionRuleSet == CurrentContext::FuncRuleSet::Functional || isExpression_CompileConstant(expression, metaData, context);
 
 	if(opType == SyntaxTree_Operator::Pow)
 	{
@@ -149,7 +149,7 @@ static inline Result<string> _convertConstructArray(shared_ptr<SuperExpression> 
 {
 	stringstream ss;
 	shared_ptr<ConstructArray> ctorArray = dynamic_pointer_cast<ConstructArray>(expression);
-	Result<RawType> typeResult = getRawType_fromStringedRawType(ctorArray->type, metaData.classStore, 0);
+	Result<RawType> typeResult = getRawType_fromStringedRawType(ctorArray->type, metaData.classStore, context.currentTemplateTypes, 0);
 	if (typeResult.hasError)
 		return typeResult.error;
 
@@ -157,7 +157,7 @@ static inline Result<string> _convertConstructArray(shared_ptr<SuperExpression> 
 	if (result.hasError)
 		return result.error;
 
-	Result<string> cppType = soulToCpp_Type(typeResult.value(), metaData);
+	Result<string> cppType = soulToCpp_Type(typeResult.value(), metaData, context);
 	if (cppType.hasError)
 		return cppType.error;
 

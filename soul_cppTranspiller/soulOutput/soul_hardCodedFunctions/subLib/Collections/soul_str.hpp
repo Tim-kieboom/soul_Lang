@@ -204,7 +204,7 @@ private:
 
 };
 
-inline uint64_t arrSize(__Soul_STR__ str) 
+inline uint64_t len(__Soul_STR__ str) 
 { 
     return str.size(); 
 }

@@ -9,6 +9,7 @@ static const FuncDeclaration interalFunc_print = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true), "msg", ArgumentType::default_, 1)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -19,6 +20,7 @@ static const FuncDeclaration interalFunc_println = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true), "msg", ArgumentType::default_, 1)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -29,6 +31,7 @@ static const FuncDeclaration interalFunc_print_arr = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true, {TypeWrapper::array_}), "msg", ArgumentType::default_, 1)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -39,6 +42,7 @@ static const FuncDeclaration interalFunc_println_arr = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true, {TypeWrapper::array_}), "msg", ArgumentType::default_, 1)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -47,6 +51,7 @@ static const FuncDeclaration interalFunc_println_empty = FuncDeclaration
 	"println",
 	toString(PrimitiveType::none),
 	{},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -57,6 +62,7 @@ static const FuncDeclaration interalFunc__soul_format_string__ = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true), "args", ArgumentType::default_, 1, /*canBeMultiple:*/true)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -67,6 +73,7 @@ static const FuncDeclaration interalFunc_Fail = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), true), "msg", ArgumentType::default_, 1)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -77,6 +84,7 @@ static const FuncDeclaration interalFunc_Throw = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), true), "msg", ArgumentType::default_, 1)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -88,6 +96,7 @@ static const FuncDeclaration interalFunc_checkFail_debug = FuncDeclaration
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::bool_), true), "condition", ArgumentType::default_, 1),
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), true), "msg", ArgumentType::default_, 2)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -99,6 +108,7 @@ static const FuncDeclaration interalFunc_checkThrow_debug = FuncDeclaration
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::bool_), true), "condition", ArgumentType::default_, 1),
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), true), "msg", ArgumentType::default_, 2)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -110,6 +120,7 @@ static const FuncDeclaration interalFunc_checkFail = FuncDeclaration
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::bool_), true), "condition", ArgumentType::default_, 1),
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), true), "msg", ArgumentType::default_, 2)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -121,6 +132,7 @@ static const FuncDeclaration interalFunc_checkThrow = FuncDeclaration
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::bool_), true), "condition", ArgumentType::default_, 1),
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), true), "msg", ArgumentType::default_, 2)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -131,26 +143,29 @@ static const FuncDeclaration interalFunc_toStr = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true), "value", ArgumentType::default_, 1)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
-static const FuncDeclaration interalFunc_size_array = FuncDeclaration
+static const FuncDeclaration interalFunc_length_array = FuncDeclaration
 (
-	"arrSize",
+	"len",
 	toString(PrimitiveType::u64),
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), false, {TypeWrapper::array_}), "array", ArgumentType::default_, 1)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
-static const FuncDeclaration interalFunc_size_str = FuncDeclaration
+static const FuncDeclaration interalFunc_length_str = FuncDeclaration
 (
-	"strSize",
+	"len",
 	toString(PrimitiveType::u64),
 	{
-		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), false), "str", ArgumentType::default_, 1)
+		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), false), "array", ArgumentType::default_, 1)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -162,6 +177,7 @@ static const FuncDeclaration interalFunc_log = FuncDeclaration
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), false), "base", ArgumentType::default_, 1),
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), false), "x", ArgumentType::default_, 2)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -172,6 +188,7 @@ static const FuncDeclaration interalFunc_log10 = FuncDeclaration
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::f64), false), "base", ArgumentType::default_, 1)
 	},
+	std::unordered_set<std::string>(),
 	false
 );
 
@@ -185,12 +202,12 @@ static const std::initializer_list<FuncDeclaration> internalFunctions =
 	interalFunc_toStr,
 	interalFunc_log10,
 	interalFunc_println,
-	interalFunc_size_str,
 	interalFunc_print_arr,
 	interalFunc_checkFail,
 	interalFunc_checkThrow,
-	interalFunc_size_array,
+	interalFunc_length_str,
 	interalFunc_println_arr,
+	interalFunc_length_array,
 	interalFunc_println_empty,
 	interalFunc_checkFail_debug,
 	interalFunc_checkThrow_debug,

@@ -16,10 +16,11 @@ static inline bool isInternalFunc(FuncDeclaration& funcInfo, unordered_map<strin
     if (internalFuncs.find(funcInfo.functionName) != internalFuncs.end())
     {
         vector<FuncDeclaration>& skipFuncs = internalFuncs[funcInfo.functionName];
+        auto dummyHashSet = std::unordered_set<std::string>();
 
         for (auto& skipFunc : skipFuncs)
         {
-            if (funcInfo.argsCompatible(skipFunc.args, skipFunc.optionals, metaData.classStore, 0, _))
+            if (funcInfo.argsCompatible(skipFunc.args, skipFunc.optionals, metaData.classStore, dummyHashSet, 0, _))
                 return true;
         }
     }
@@ -40,7 +41,8 @@ static inline Result<string> forwardFunction(vector<FuncDeclaration>& funcs, uno
             continue;
 
         bool isMethode = false;
-        Result<string> func = convert_Cpp_FuncDeclaration(funcInfo, metaData, &isMethode);
+        unordered_set<string> dummyHashSet;
+        Result<string> func = convert_Cpp_FuncDeclaration(funcInfo, metaData, dummyHashSet, &isMethode);
         if (func.hasError)
             return func.error;
 
@@ -135,8 +137,8 @@ Result<string> convertToCpp(SyntaxTree& tree, MetaData& metaData)
         if(funcOrClass->getId() == SyntaxNodeId::FuncNode)
         {
             const shared_ptr<FuncNode> funcNode = dynamic_pointer_cast<FuncNode>(funcOrClass);
-
-            Result<string> funcDeclr = convert_Cpp_FuncDeclaration(funcNode->funcDecl, metaData);
+            
+            Result<string> funcDeclr = convert_Cpp_FuncDeclaration(funcNode->funcDecl, metaData, funcNode->templatesTypes->templateTypes);
             if (funcDeclr.hasError)
                 return funcDeclr.error;
 
@@ -149,7 +151,7 @@ Result<string> convertToCpp(SyntaxTree& tree, MetaData& metaData)
         else if(funcOrClass->getId() == SyntaxNodeId::ClassNode)
         {
             const shared_ptr<ClassNode> classNode = dynamic_pointer_cast<ClassNode>(funcOrClass);
-            Result<string> classResult = convertClassNode_ToCpp(classNode, metaData);
+            Result<string> classResult = convertClassNode_ToCpp(classNode, metaData, classNode->templatesTypes->templateTypes);
             if (classResult.hasError)
                 return classResult.error;
 
