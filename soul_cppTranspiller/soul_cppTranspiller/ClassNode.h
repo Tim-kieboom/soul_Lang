@@ -36,11 +36,11 @@ public:
 	std::string printToString() const override
 	{
 		std::stringstream ss;
-		ss << "className::" << className;
-		
+		ss << '\n';
 		if (templatesTypes)
-			ss << templatesTypes->printToString() << ' ';
+			ss << templatesTypes->printToString() << '\n';
 
+		ss << "className::" << className;
 		ss << "\n{\n";
 		
 		for (const std::shared_ptr<FieldVariable>& field : fields)
@@ -49,7 +49,7 @@ public:
 		for (const std::shared_ptr<MethodeNode>& methode : methodes)
 			ss << methode->printToString() << '\n';
 		
-		ss << "\n}";
+		ss << "\n}\n";
 		return ss.str();
 	}
 

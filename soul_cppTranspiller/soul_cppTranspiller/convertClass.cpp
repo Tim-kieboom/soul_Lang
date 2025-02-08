@@ -26,7 +26,9 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 	if (!checkName(token))
 		return ErrorInfo("\'" + token + "\' is not a valid name for a class", iterator.currentLine);
 
-	ClassInfo& classInfo = metaData.classStore[token];
+	string className = token;
+
+	ClassInfo& classInfo = metaData.classStore[className];
 	
 	CurrentContext classContext = CurrentContext(ScopeIterator(make_shared<vector<Nesting>>(vector<Nesting>())));
 	classContext.scope.scope->emplace_back(Nesting());
@@ -50,9 +52,11 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 			return templatesTypesResult.error;
 
 		templatesTypes = templatesTypesResult.value();
+		if (!iterator.nextToken())
+			return ERROR_convertClass_outOfBounds(iterator);
 	}
 	
-	ClassNode classNode = ClassNode(token, templatesTypes);
+	ClassNode classNode = ClassNode(className, templatesTypes);
 	
 	if (token != "{")
 	{

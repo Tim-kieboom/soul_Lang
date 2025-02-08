@@ -34,7 +34,7 @@ struct CurrentContext
 	}
 
 	CurrentContext(CurrentContext& other, uint64_t currentScopeIndex)
-		: scope(other.scope), inClass(other.inClass), functionRuleSet(other.functionRuleSet)
+		: scope(other.scope), inClass(other.inClass), functionRuleSet(other.functionRuleSet), currentTemplateTypes(other.currentTemplateTypes)
 	{
 		scope.currentIndex = currentScopeIndex;
 	}

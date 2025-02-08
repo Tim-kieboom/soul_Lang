@@ -104,9 +104,11 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 				return ERROR_convertBody_outOfBounds(funcInfo, iterator);
 		}
 
+
+
 		Result<RawType> returnTypeResult = getRawType_fromStringedRawType(funcInfo.returnType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
 		if (returnTypeResult.hasError)
-			return returnTypeResult.error;
+			returnTypeResult = Result<RawType>(RawType("<invalid>", false));
 
 		RawType& returnType = returnTypeResult.value();
 
@@ -292,6 +294,9 @@ Result<shared_ptr<BodyNode>> convertBody(TokenIterator& iterator, MetaData& meta
 	uint32_t openCurlyBracketCounter = 0;
 	while (iterator.nextToken())
 	{
+		if (iterator.currentLine == 150)
+			int d = 0;
+
 		Result<BodyStatment_Result<SuperStatement>> bodyElementResult = convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, parentNode);
 		if (bodyElementResult.hasError)
 			return bodyElementResult.error;

@@ -56,6 +56,9 @@ Result<FuncDeclaration_Result> getFunctionDeclaration(TokenIterator& iterator, M
 
 		if (token == "<")
 		{
+			if (funcInfo.functionName == "main")
+				return ErrorInfo("'main' func can not have any templateTypes (so remove '<>' is, 'func main<..>(..)')", iterator.currentLine);
+
 			Result<std::shared_ptr<TemplateTypes>> templatesTypesResult = getTemplateTypes(iterator, context);
 			if (templatesTypesResult.hasError)
 				return templatesTypesResult.error;

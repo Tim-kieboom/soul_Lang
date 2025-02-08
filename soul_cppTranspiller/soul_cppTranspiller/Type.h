@@ -171,6 +171,11 @@ public:
 			if (!classInfo.isEqual(classInfo_other))
 				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
 		}
+		else
+		{
+			if (rawType != other.rawType)
+				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+		}
 
 		return {};
 	}
@@ -223,6 +228,11 @@ public:
 			ClassInfo classInfo = toClassInfo(classStore).value();
 			ClassInfo classInfo_other = toClassInfo(classStore).value();
 			if(!classInfo.isEqual(classInfo_other))
+				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+		}
+		else
+		{
+			if (rawType != other.rawType)
 				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
 		}
 

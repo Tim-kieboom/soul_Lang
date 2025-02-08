@@ -230,6 +230,8 @@ static inline Result<ClassInfo> _forwardDeclareClass(TokenIterator& iterator, Me
     if (!checkName(token))
         return ErrorInfo("\'" + token + "\' is an invalid name for class", iterator.currentLine);
 
+    string className = token;
+
     string nextToken;
     if (!iterator.peekToken(nextToken))
         return ErrorInfo("unexpected end while forwardDeclaring class", iterator.currentLine);
@@ -240,6 +242,9 @@ static inline Result<ClassInfo> _forwardDeclareClass(TokenIterator& iterator, Me
     shared_ptr<TemplateTypes> templates;
     if(nextToken == "<")
     {
+        if (!iterator.nextToken())
+            return ErrorInfo("unexpected end while forwardDeclaring class", iterator.currentLine);
+
         Result<shared_ptr<TemplateTypes>> templatesResult = getTemplateTypes(iterator, /*out*/context);
         if (templatesResult.hasError)
             return templatesResult.error;
@@ -247,7 +252,7 @@ static inline Result<ClassInfo> _forwardDeclareClass(TokenIterator& iterator, Me
         templates = templatesResult.value();
     }
 
-    ClassInfo classInfo = ClassInfo(token, context.currentTemplateTypes);
+    ClassInfo classInfo = ClassInfo(className, context.currentTemplateTypes);
     int64_t openBracketStack = 0;
 
     while (iterator.nextToken())
@@ -311,16 +316,18 @@ static inline Result<ClassInfo> _forwardDeclareClass(TokenIterator& iterator, Me
             if (!iterator.nextToken(/*steps:*/-1))
                 break;
 
-            auto scope = make_shared<vector<Nesting>>();
-            scope->emplace_back(Nesting());
-            CurrentContext dummyContext = CurrentContext(ScopeIterator(scope));
+            uint64_t methodeIndex = context.scope.scope->size();
+            context.scope.scope->emplace_back();
+            CurrentContext methodeContext = CurrentContext(context, methodeIndex);
 
-            Result<FuncDeclaration_Result> funcDeclResult = getFunctionDeclaration(iterator, metaData, /*isForwardDeclared:*/false, dummyContext, /*currentClassName:*/&classInfo);
+            Result<FuncDeclaration_Result> funcDeclResult = getFunctionDeclaration(iterator, metaData, /*isForwardDeclared:*/false, methodeContext, /*currentClassName:*/&classInfo);
             if (funcDeclResult.hasError)
                 return funcDeclResult.error;
 
             FuncDeclaration& funcDecl = funcDeclResult.value().funcInfo;
             MethodeDecleration methode = MethodeDecleration(funcDecl.functionName, funcDecl.args, access);
+
+            context.scope.scope->pop_back();
 
             _skipMethodeBody(/*out*/iterator);
 

@@ -19,7 +19,7 @@ bool checkName(const std::string& name)
 	if (initListEquals(illigalNames, name))
 		return false;
 
-	return !string_contains(name, illigalNameSymbols);
+	return !string_containsChars(name, illigalNameSymbols);
 }
 
 bool checkValue(const std::string& value, const RawType& type, MetaData& metaData)

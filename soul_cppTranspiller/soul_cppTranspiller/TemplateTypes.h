@@ -20,7 +20,7 @@ public:
 	std::string printToString() const override
 	{
 		std::stringstream ss;
-		ss << "<";
+		ss << "Templates::<";
 		for (auto& type : templateTypes)
 			ss << type << ", ";
 		ss << ">";

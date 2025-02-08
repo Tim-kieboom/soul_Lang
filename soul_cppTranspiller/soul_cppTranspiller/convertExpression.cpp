@@ -592,6 +592,13 @@ static inline Result<void> _getAllExpressions
             if (type.hasError)
                 return type.error;
 
+            if (shouldBeType != nullptr)
+            {
+                Result<void> result = type.value().areTypeCompatible(*shouldBeType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
+                if (result.hasError)
+                    return ErrorInfo("functionCall:\'" + funcCall->funcName + "\' returnType: \'" + toString(type.value()) + "\' is not compatible with Type: \'" + toString(*shouldBeType) + "\'", iterator.currentLine);
+            }
+
             typeStack.push(type.value());
             nodeStack.push(funcCall);
         }

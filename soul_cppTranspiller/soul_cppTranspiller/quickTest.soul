@@ -130,6 +130,30 @@ CompileConst u32 MAX_U32 = (32 ** 2) - 1;
 //    //}
 //}
 
+class objT<T>
+{
+    T value;
+    pub ctor(this.value) { }
+    pub ctor(T value_, bool randomArgForOverloading) { value = value_; }
+
+    pub SetValue(T value_): none
+    {
+        value = value_;
+    }
+
+    pub GetValue(): T&
+    {
+        return value;
+    }
+
+    pub testMethodeTemplate<K>(K foo): none
+    {
+        T temp = GetValue();
+        temp = value;
+        K ktemp = foo;
+    }
+}
+
 func template<T>(T value): none 
 { 
     T temp = value; 
@@ -268,6 +292,8 @@ func template<T>(T value): none
 //    println(list.Data());
 //    return;
 //}
+
+func foo_(): i32 { return 1; }
 
 func main(mut str[] args): i32
 {

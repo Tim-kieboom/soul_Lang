@@ -28,12 +28,13 @@ public:
 	std::string printToString() const override
 	{
 		std::stringstream ss;
+		ss << '\n';
+		if (templatesTypes)
+			ss << templatesTypes->printToString() << '\n'; 
+
 		ss << funcDecl.printToString();
 
-		if (templatesTypes)
-			ss << templatesTypes->printToString() << ' ';
-
-		ss << body->printToString();
+		ss << body->printToString() << '\n';
 		return ss.str();
 	}
 
