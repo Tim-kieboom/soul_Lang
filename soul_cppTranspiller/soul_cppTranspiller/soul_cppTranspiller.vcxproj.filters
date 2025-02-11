@@ -256,9 +256,6 @@
     <ClCompile Include="convertIndexArray.cpp">
       <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression\convertIndexArray</Filter>
     </ClCompile>
-    <ClCompile Include="convertToCpp.cpp">
-      <Filter>Source Files\AbstractSyntaxTree\convertToCpp</Filter>
-    </ClCompile>
     <ClCompile Include="convert_Cpp_FuncDeclaration.cpp">
       <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convert_Cpp_FuncDeclaration</Filter>
     </ClCompile>
@@ -288,6 +285,9 @@
     </ClCompile>
     <ClCompile Include="getTemplateTypes.cpp">
       <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convert_Cpp_FuncDeclaration\getTemplateTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="convertToCpp.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertToCpp\soulToCpp_Type</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

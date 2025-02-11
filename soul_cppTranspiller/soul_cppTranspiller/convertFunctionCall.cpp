@@ -173,7 +173,7 @@ static inline Result<vector<shared_ptr<SuperExpression>>> _getExpressionsOfArgs(
     return normalExpressions;
 }
 
-static inline Result<void> _templateTypeToType(MetaData& metaData, CurrentContext& context, shared_ptr<FunctionCall>& funcCall, std::unordered_map<string, TemplateType_ToType>& templateTypeDefines, GetArgs_Result& called_args, const uint32_t currentLine)
+static inline Result<void> _templateTypeToType(MetaData& metaData, CurrentContext& context, shared_ptr<FunctionCall>& funcCall, std::map<string, TemplateType_ToType>& templateTypeDefines, GetArgs_Result& called_args, const uint32_t currentLine)
 {
     if (funcCall->funcInfo.templateTypes.size() == 0)
         return {};
@@ -188,7 +188,16 @@ static inline Result<void> _templateTypeToType(MetaData& metaData, CurrentContex
         string rawFuncType = funcArg.valueType.getType_WithoutWrapper();
 
         if (templateTypeDefines.find(rawFuncType) != templateTypeDefines.end())
+        {
             funcArg.valueType = templateTypeDefines[rawFuncType].type;
+
+            map<string, TemplateType> dummyTemplate;
+            dummyTemplate[rawFuncType] = TemplateType(rawFuncType);
+            
+            Result<void> isEqual = funcArg.valueType.areTypeCompatible(calledArg.valueType, metaData.classStore, dummyTemplate, currentLine);
+            if (isEqual.hasError)
+                return isEqual.error;
+        }
     }
 
     i = 0;
@@ -199,7 +208,16 @@ static inline Result<void> _templateTypeToType(MetaData& metaData, CurrentContex
         string rawFuncType = calledArg.valueType.getType_WithoutWrapper();
 
         if (templateTypeDefines.find(rawFuncType) != templateTypeDefines.end())
+        {
             funcArg.valueType = templateTypeDefines[rawFuncType].type;
+
+            map<string, TemplateType> dummyTemplate;
+            dummyTemplate[rawFuncType] = TemplateType(rawFuncType);
+
+            Result<void> isEqual = funcArg.valueType.isEqual(calledArg.valueType, metaData.classStore, dummyTemplate, currentLine, true);
+            if (isEqual.hasError)
+                return isEqual.error;
+        }
     }
 
     Result<vector<string>> typeTokensResult = getTypeTokens(funcInfo.returnType, currentLine);
@@ -235,7 +253,7 @@ static inline Result<void> _templateTypeToType(MetaData& metaData, CurrentContex
     return {};
 }
 
-static inline Result<void> _getTemplateDefines_FromCallArgs(std::unordered_map<string, TemplateType_ToType>& templateTypeDefines, shared_ptr<FunctionCall> funcCall, GetArgs_Result& called_args, const uint32_t currentLine)
+static inline Result<void> _getTemplateDefines_FromCallArgs(std::map<string, TemplateType_ToType>& templateTypeDefines, shared_ptr<FunctionCall> funcCall, GetArgs_Result& called_args, const uint32_t currentLine)
 {
     if (templateTypeDefines.size() == funcCall->funcInfo.templateTypes.size())
         return {};
@@ -251,7 +269,7 @@ static inline Result<void> _getTemplateDefines_FromCallArgs(std::unordered_map<s
         if (templateTypeDefines.find(rawFuncType) != templateTypeDefines.end())
             continue;
 
-         if(funcInfo.templateTypes.find(rawFuncType) != funcInfo.templateTypes.end())
+         if(funcInfo.templateTypes.find(rawFuncType) != funcInfo.templateTypes.end() && templateTypeDefines.find(rawFuncType) == templateTypeDefines.end())
             templateTypeDefines[rawFuncType] = TemplateType_ToType(funcInfo.templateTypes[rawFuncType], calledArg.valueType);
     }
 
@@ -264,16 +282,26 @@ static inline Result<void> _getTemplateDefines_FromCallArgs(std::unordered_map<s
         if (templateTypeDefines.find(rawFuncType) != templateTypeDefines.end())
             continue;
 
-        if (funcInfo.templateTypes.find(rawFuncType) != funcInfo.templateTypes.end())
+        if (funcInfo.templateTypes.find(rawFuncType) != funcInfo.templateTypes.end() && templateTypeDefines.find(rawFuncType) == templateTypeDefines.end())
             templateTypeDefines[rawFuncType] = TemplateType_ToType(funcInfo.templateTypes[rawFuncType], calledArg.valueType);
     }
 
     return {};
 }
 
-static inline Result<void> _convertAndCheck_TemplateTypes(MetaData& metaData, CurrentContext& context, shared_ptr<FunctionCall> funcCall, GetArgs_Result& called_args, const uint32_t currentLine)
+static inline Result<void> _convertAndCheck_TemplateTypes(MetaData& metaData, CurrentContext& context, shared_ptr<FunctionCall> funcCall, GetArgs_Result& called_args, vector<RawType>& definedTemplateTypes, const uint32_t currentLine)
 {
-    std::unordered_map<string, TemplateType_ToType>& templateTypeDefines = funcCall->templateTypeDefines;
+    std::map<string, TemplateType_ToType>& templateTypeDefines = funcCall->templateTypeDefines;
+    
+    uint32_t i = 0;
+    for(auto& kv : funcCall->funcInfo.templateTypes)
+    {
+        if (i + 1 > definedTemplateTypes.size())
+            break;
+
+        templateTypeDefines[kv.first] = TemplateType_ToType(kv.second, definedTemplateTypes.at(i++));
+    }
+        
 
     Result<void> result = _getTemplateDefines_FromCallArgs(/*out*/templateTypeDefines, funcCall, called_args, currentLine);
     if (result.hasError)
@@ -286,6 +314,39 @@ static inline Result<void> _convertAndCheck_TemplateTypes(MetaData& metaData, Cu
     return {};
 }
 
+static inline Result<vector<RawType>> _getDefinedTemplateType(TokenIterator& iterator, MetaData& metaData, CurrentContext& context)
+{
+    string& token = iterator.currentToken;
+    vector<RawType> types;
+
+    while (iterator.nextToken())
+    {
+        Result<RawType> defineType = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
+        if (defineType.hasError)
+            return defineType.error;
+
+        types.push_back(defineType.value());
+        
+        if (!iterator.nextToken())
+            break;
+
+        if (token == ",")
+        {
+            continue;
+        }
+        else if (token == ">")
+        {
+            return types;
+        }
+        else
+        {
+            return ErrorInfo("\'" + token + "\' is invalid in templateType ctor", iterator.currentLine);
+        }
+    }
+
+    return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
+}
+
 static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName, RawType* shouldBeType = nullptr)
 {
     BodyStatment_Result<FunctionCall> bodyResult;
@@ -296,6 +357,19 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
 
     if (!iterator.nextToken())
         return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
+
+    vector<RawType> definedTemplateTypes;
+    if(token == "<")
+    {
+        Result<vector<RawType>> TemplateTypesResult = _getDefinedTemplateType(iterator, metaData, context);
+        if (TemplateTypesResult.hasError)
+            return TemplateTypesResult.error;
+
+        definedTemplateTypes = TemplateTypesResult.value();
+
+        if (!iterator.nextToken())
+            return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
+    }
 
     if (token != "(")
         return ErrorInfo("FunctionCall: \'" + funcName + "\' had to start with '('", iterator.currentLine);
@@ -336,7 +410,7 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
             FunctionCall(funcName, funcInfo.returnType, funcInfo, expressionsOfArgs.value())
         );
 
-    Result<void> result = _convertAndCheck_TemplateTypes(metaData, context, /*out*/bodyResult.expression, args, iterator.currentLine);
+    Result<void> result = _convertAndCheck_TemplateTypes(metaData, context, /*out*/bodyResult.expression, args, definedTemplateTypes, iterator.currentLine);
     if (result.hasError)
         return result.error;
 

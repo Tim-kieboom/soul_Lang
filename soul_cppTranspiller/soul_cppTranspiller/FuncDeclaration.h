@@ -1,6 +1,8 @@
 #pragma once
+#include <map>
 #include <string>
 #include <iostream>
+#include <unordered_map>
 
 #include "Result.h"
 #include "ArgumentInfo.h"
@@ -12,13 +14,13 @@ struct FuncDeclaration
 	std::string functionName;
 	std::vector<ArgumentInfo> args;
 	std::unordered_map<std::string, ArgumentInfo> optionals;
-	std::unordered_map<std::string, TemplateType> templateTypes;
+	std::map<std::string, TemplateType> templateTypes;
 	bool isForwardDeclared = true;
 	bool hasReturnStament = false;
 	bool isConstexpr = false;
 
 	FuncDeclaration() = default;
-	FuncDeclaration(const std::string& funcName, const std::string& returnType, std::initializer_list<ArgumentInfo> args_, std::unordered_map<std::string, TemplateType> templateTypes, bool isForwardDeclared = true)
+	FuncDeclaration(const std::string& funcName, const std::string& returnType, std::initializer_list<ArgumentInfo> args_, std::map<std::string, TemplateType> templateTypes, bool isForwardDeclared = true)
 		: returnType(returnType), functionName(funcName), args(), isForwardDeclared(isForwardDeclared), templateTypes(templateTypes)
 	{
 		for (const ArgumentInfo& arg : args_)
@@ -72,7 +74,7 @@ struct FuncDeclaration
 		return ss.str();
 	}
 
-	bool argsCompatible(const std::vector<ArgumentInfo>& other, const std::unordered_map<std::string, ArgumentInfo>& other_optionals, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, int64_t currentLine, ErrorInfo& error) const
+	bool argsCompatible(const std::vector<ArgumentInfo>& other, const std::unordered_map<std::string, ArgumentInfo>& other_optionals, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, int64_t currentLine, ErrorInfo& error) const
 	{
 		uint64_t j = 0;
 		for (uint64_t i = 0; i < other.size(); i++)
@@ -111,7 +113,7 @@ struct FuncDeclaration
 		return true;
 	}
 
-	bool argsCompatible(const std::vector<ArgumentInfo>& other_args, const std::vector<ArgumentInfo>& other_optionals, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, int64_t currentLine, ErrorInfo& error) const
+	bool argsCompatible(const std::vector<ArgumentInfo>& other_args, const std::vector<ArgumentInfo>& other_optionals, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, int64_t currentLine, ErrorInfo& error) const
 	{
 		if (other_args.size() < args.size())
 			return false;

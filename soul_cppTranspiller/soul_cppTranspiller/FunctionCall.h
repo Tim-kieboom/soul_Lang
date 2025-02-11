@@ -3,6 +3,7 @@
 #include "SuperExpression.h"
 #include "TemplateType.h"
 #include "TemplateType_ToType.h"
+#include <map>
 
 class FunctionCall : public SuperExpression
 {
@@ -11,7 +12,7 @@ public:
     std::string returnType;
     FuncDeclaration funcInfo;
     std::vector<std::shared_ptr<SuperExpression>> args;
-    std::unordered_map<std::string, TemplateType_ToType> templateTypeDefines;
+    std::map<std::string, TemplateType_ToType> templateTypeDefines;
 
     FunctionCall() = default;
 

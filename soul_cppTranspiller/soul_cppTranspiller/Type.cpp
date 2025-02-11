@@ -32,7 +32,7 @@ static inline bool isClass(const std::string& token, std::unordered_map<std::str
     return classStore.find(token) != classStore.end();
 }
 
-static inline bool isTemplateType(const std::string& token, std::unordered_map<std::string, TemplateType>& templateTypes)
+static inline bool isTemplateType(const std::string& token, std::map<std::string, TemplateType>& templateTypes)
 {
     return templateTypes.find(token) != templateTypes.end();
 }
@@ -54,7 +54,7 @@ Result<std::vector<std::string>> getTypeTokens(const std::string& stringedRawTyp
     return typeTokens;
 }
 
-Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, const uint64_t currentLine)
+Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, const uint64_t currentLine)
 {
     Result<vector<string>> typeTokensResult = getTypeTokens(stringedRawType, currentLine);
     if (typeTokensResult.hasError)
@@ -116,7 +116,7 @@ static inline bool isTemplateType(std::string& token, std::unordered_map<std::st
     return templateTypes.find(token) != templateTypes.end();
 }
 
-Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes)
+Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes)
 {
 	const uint64_t beginIndex = iterator.i;
 	string& token = iterator.currentToken;

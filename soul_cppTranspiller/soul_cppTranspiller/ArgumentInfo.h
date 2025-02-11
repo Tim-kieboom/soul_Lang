@@ -38,7 +38,7 @@ struct ArgumentInfo
 	{
 	}
 	 
-	Result<void> Compatible(const ArgumentInfo& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, int64_t currentLine) const
+	Result<void> Compatible(const ArgumentInfo& other, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, int64_t currentLine) const
 	{
 		if (isOptional != other.isOptional)
 		{

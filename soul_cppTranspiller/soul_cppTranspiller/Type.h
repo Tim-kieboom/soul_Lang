@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 #include <unordered_map>
 
 #include "Token.h"
@@ -16,8 +17,8 @@ DuckType getDuckType(RawType& type);
 std::string toString(const RawType& type);
 Result<RawType> getRawType_fromLiteralValue(const std::string& value, const uint64_t currentLine);
 Result<std::vector<std::string>> getTypeTokens(const std::string& stringedRawType, const uint32_t currentLine);
-Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes);
-Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, const uint64_t currentLine);
+Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes);
+Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, const uint64_t currentLine);
 
 class RawType
 {
@@ -144,7 +145,7 @@ public:
 		return true;
 	}
 
-	Result<void> isEqual(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, uint64_t currentLine, bool checkMutable = true) const
+	Result<void> isEqual(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, uint64_t currentLine, bool checkMutable = true) const
 	{
 		if (checkMutable && isMutable != other.isMutable)
 			return ErrorInfo("argument: \'" + toString(*this)+ "\' and argument: \'" + toString(other) + "\' have diffrent mutability", currentLine);
@@ -188,7 +189,7 @@ public:
 		return {};
 	}
 
-	Result<void> areTypeCompatible(const std::string& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, uint64_t currentLine) const
+	Result<void> areTypeCompatible(const std::string& other, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, uint64_t currentLine) const
 	{
 		Result<RawType> type = getRawType_fromStringedRawType(other, classStore, templateTypes, currentLine);
 		if (type.hasError)
@@ -197,7 +198,7 @@ public:
 		return areTypeCompatible(type.value(), classStore, templateTypes, currentLine);
 	}
 
-	Result<void> areTypeCompatible(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, uint64_t currentLine) const
+	Result<void> areTypeCompatible(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, uint64_t currentLine) const
 	{
 		if (!typeWrapperEquals(other))
 			return ErrorInfo("typeWrappers '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
@@ -257,7 +258,7 @@ public:
 		return classStore.find(rawType) != classStore.end();
 	}
 
-	bool isTemplate(const std::unordered_map<std::string, TemplateType>& templateTypes) const
+	bool isTemplate(const std::map<std::string, TemplateType>& templateTypes) const
 	{
 		return templateTypes.find(rawType) != templateTypes.end();
 	}
@@ -295,7 +296,7 @@ public:
 		return rawType;
 	}
 
-	bool isValid(std::unordered_map<std::string, ClassInfo>& classStore, const std::unordered_map<std::string, TemplateType>& templateTypes) const
+	bool isValid(std::unordered_map<std::string, ClassInfo>& classStore, const std::map<std::string, TemplateType>& templateTypes) const
 	{
 		if (isPrimitiveType() || isClass(classStore) || isTemplate(templateTypes))
 			return true;

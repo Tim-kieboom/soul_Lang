@@ -16,7 +16,7 @@ static inline bool isInternalFunc(FuncDeclaration& funcInfo, unordered_map<strin
     if (internalFuncs.find(funcInfo.functionName) != internalFuncs.end())
     {
         vector<FuncDeclaration>& skipFuncs = internalFuncs[funcInfo.functionName];
-        auto dummyHashMap = std::unordered_map<std::string, TemplateType>();
+        auto dummyHashMap = std::map<std::string, TemplateType>();
 
         for (auto& skipFunc : skipFuncs)
         {
@@ -41,7 +41,7 @@ static inline Result<string> forwardFunction(vector<FuncDeclaration>& funcs, uno
             continue;
 
         bool isMethode = false;
-        unordered_map<string, TemplateType> dummyHashMap;
+        map<string, TemplateType> dummyHashMap;
         Result<string> func = convert_Cpp_FuncDeclaration(funcInfo, metaData, dummyHashMap, &isMethode);
         if (func.hasError)
             return func.error;

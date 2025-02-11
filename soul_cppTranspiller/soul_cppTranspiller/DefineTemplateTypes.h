@@ -1,5 +1,5 @@
 #pragma once
-#include <unordered_map>
+#include <map>
 
 #include "TemplateType.h"
 #include "SuperExpression.h"
@@ -7,10 +7,10 @@
 class DefineTemplateTypes : public SuperExpression
 {
 public:
-	std::unordered_map<std::string, TemplateType> templateTypes;
+	std::map<std::string, TemplateType> templateTypes;
 
 	DefineTemplateTypes() { }
-	DefineTemplateTypes(std::unordered_map<std::string, TemplateType>& templateTypes)
+	DefineTemplateTypes(std::map<std::string, TemplateType>& templateTypes)
 		: templateTypes(std::move(templateTypes)) 
 	{
 	}

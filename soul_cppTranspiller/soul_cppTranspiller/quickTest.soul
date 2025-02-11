@@ -313,11 +313,12 @@ func main(mut str[] args): i32
 {
     println();
 
-    //template<i32>(1);
+    template<i32>(1);
     template(1);
-    //template<f32>(1);
-    //template<str>("foo");
-    i32 value = returnTemplate(2);
+    template('c');
+    template(true);
+template<str>("foo");
+    i32 value = returnTemplate<i32>(1);
 
     //Result<none> result = testList()
 

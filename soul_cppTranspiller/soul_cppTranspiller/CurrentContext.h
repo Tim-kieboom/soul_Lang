@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 #include <unordered_map>
 #include "Nullable.h"
 #include "ClassInfo.h"
@@ -11,7 +12,7 @@ struct CurrentContext
 
 	ScopeIterator scope;
 	Nullable<ClassInfo> inClass;
-	std::unordered_map<std::string, TemplateType> currentTemplateTypes;
+	std::map<std::string, TemplateType> currentTemplateTypes;
 	FuncRuleSet functionRuleSet = FuncRuleSet::default_;
 
 	static FuncRuleSet getFuncRuleSet(std::string& token)

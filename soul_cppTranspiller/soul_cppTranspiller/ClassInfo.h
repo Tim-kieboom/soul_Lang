@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <map>
 
 #include "Result.h"
 #include "ClassAccessLevel.h"
@@ -41,10 +41,10 @@ struct ClassInfo
 	std::string name;
 	std::vector<FieldsInfo> fields;
 	std::vector<MethodeDecleration> methodes;
-	std::unordered_map<std::string, TemplateType> templateTypes;
+	std::map<std::string, TemplateType> templateTypes;
 
 	ClassInfo() = default;
-	ClassInfo(std::string& name, std::unordered_map<std::string, TemplateType>& templateTypes)
+	ClassInfo(std::string& name, std::map<std::string, TemplateType>& templateTypes)
 		: name(name), templateTypes(templateTypes)
 	{
 	}
