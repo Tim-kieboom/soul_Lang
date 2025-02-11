@@ -166,7 +166,7 @@ static inline Result<shared_ptr<Increment>> _convertBeforeVarIncrement(TokenIter
     if (typeResult.hasError)
         return typeResult.error;
 
-    if (getDuckType(typeResult.value()) != DuckType::number)
+    if (getDuckType(typeResult.value()) != DuckType::Number)
         return ErrorInfo("variable: \'" + (*var).name + "\' has to be of DuckType::number to use de/increment", iterator.currentLine);
 
     return make_shared<Increment>
@@ -206,7 +206,7 @@ static inline Result<shared_ptr<ConstructArray>> _getConstructArray(TokenIterato
         return ErrorInfo("\'" + token + "\' is invalid for array Constructor", iterator.currentLine);
     }
 
-    if(ctorArgType.toDuckType() != DuckType::number)
+    if(ctorArgType.toDuckType() != DuckType::Number)
         return ErrorInfo("\'" + token + "\' invalid type: \'"+ toString(ctorArgType) + "\' for array Constructor", iterator.currentLine);
 
     if (!iterator.nextToken())
@@ -382,7 +382,7 @@ static inline Result<void> _setNegativeExpression
     if (isType != nullptr)
         *isType = type;
 
-    if (type.toDuckType() != DuckType::number)
+    if (type.toDuckType() != DuckType::Number)
         return ErrorInfo("you can only make DuckType::number negative (remove '-' from: \'"+token+"\')", iterator.currentLine);
 
     return {};

@@ -1,7 +1,8 @@
 #pragma once
 #include "SuperStatement.h"
 #include "SuperExpression.h"
-
+#include "TemplateType.h"
+#include "TemplateType_ToType.h"
 
 class FunctionCall : public SuperExpression
 {
@@ -10,6 +11,7 @@ public:
     std::string returnType;
     FuncDeclaration funcInfo;
     std::vector<std::shared_ptr<SuperExpression>> args;
+    std::unordered_map<std::string, TemplateType_ToType> templateTypeDefines;
 
     FunctionCall() = default;
 

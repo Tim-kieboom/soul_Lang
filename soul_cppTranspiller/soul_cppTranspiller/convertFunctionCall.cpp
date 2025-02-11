@@ -42,7 +42,7 @@ static inline bool isType(Result<RawType>& typeResult)
     return !typeResult.hasError;
 }
 
-static inline void AddOutInitVariableExpression(const string& varName, RawType& type, vector<shared_ptr<ISyntaxNode>>& functionCallExpression)
+static inline void _AddOutInitVariableExpression(const string& varName, RawType& type, vector<shared_ptr<ISyntaxNode>>& functionCallExpression)
 {
     functionCallExpression.push_back
     (
@@ -133,7 +133,7 @@ static inline Result<GetArgs_Result> _getArgs(TokenIterator& iterator, MetaData&
     return args;
 }
 
-static inline Result<vector<shared_ptr<SuperExpression>>> getExpressionVector(GetArgs_Result& argsResult, FuncDeclaration& funcInfo)
+static inline Result<vector<shared_ptr<SuperExpression>>> _getExpressionsOfArgs(GetArgs_Result& argsResult, FuncDeclaration& funcInfo)
 {
     constexpr bool isOptional = true;
 
@@ -171,6 +171,119 @@ static inline Result<vector<shared_ptr<SuperExpression>>> getExpressionVector(Ge
         normalExpressions.push_back(optional);
 
     return normalExpressions;
+}
+
+static inline Result<void> _templateTypeToType(MetaData& metaData, CurrentContext& context, shared_ptr<FunctionCall>& funcCall, std::unordered_map<string, TemplateType_ToType>& templateTypeDefines, GetArgs_Result& called_args, const uint32_t currentLine)
+{
+    if (funcCall->funcInfo.templateTypes.size() == 0)
+        return {};
+
+    FuncDeclaration& funcInfo = funcCall->funcInfo;
+
+    uint32_t i = 0;
+    for (ArgumentInfo& calledArg : called_args.args)
+    {
+        ArgumentInfo& funcArg = funcInfo.args.at(i++);
+
+        string rawFuncType = funcArg.valueType.getType_WithoutWrapper();
+
+        if (templateTypeDefines.find(rawFuncType) != templateTypeDefines.end())
+            funcArg.valueType = templateTypeDefines[rawFuncType].type;
+    }
+
+    i = 0;
+    for (ArgumentInfo& calledArg : called_args.optionals)
+    {
+        ArgumentInfo& funcArg = funcInfo.args.at(i++);
+
+        string rawFuncType = calledArg.valueType.getType_WithoutWrapper();
+
+        if (templateTypeDefines.find(rawFuncType) != templateTypeDefines.end())
+            funcArg.valueType = templateTypeDefines[rawFuncType].type;
+    }
+
+    Result<vector<string>> typeTokensResult = getTypeTokens(funcInfo.returnType, currentLine);
+    if (typeTokensResult.hasError)
+        return typeTokensResult.error;
+
+    vector<string>& typeTokens = typeTokensResult.value();
+    if (typeTokens.empty())
+        return ErrorInfo("returnType invalid", currentLine);
+
+    uint8_t rawReturnTypeIndex = (typeTokens.at(0) == "const") ? 1 : 0;
+    string rawReturnType = typeTokens.at(rawReturnTypeIndex);
+
+
+    if (templateTypeDefines.find(rawReturnType) != templateTypeDefines.end())
+    {
+        RawType newReturnType = templateTypeDefines[rawReturnType].type;
+        
+        for (uint32_t i = rawReturnTypeIndex+1; i < typeTokens.size(); i++) 
+        {
+            Result<void> result = newReturnType.addTypeWrapper(getTypeWrapper(typeTokens[i]), currentLine);
+            if (result.hasError)
+                return result.error;
+        }
+
+        if (typeTokens.at(0) == "const")
+            newReturnType.isMutable = false;
+
+        funcInfo.returnType = toString(newReturnType);
+        funcCall->returnType = toString(newReturnType);
+    }
+
+    return {};
+}
+
+static inline Result<void> _getTemplateDefines_FromCallArgs(std::unordered_map<string, TemplateType_ToType>& templateTypeDefines, shared_ptr<FunctionCall> funcCall, GetArgs_Result& called_args, const uint32_t currentLine)
+{
+    if (templateTypeDefines.size() == funcCall->funcInfo.templateTypes.size())
+        return {};
+
+    FuncDeclaration& funcInfo = funcCall->funcInfo;
+
+    uint32_t i = 0;
+    for (ArgumentInfo& calledArg : called_args.args)
+    {
+        ArgumentInfo& funcArg = funcInfo.args.at(i++);
+
+        string rawFuncType = funcArg.valueType.getType_WithoutWrapper();
+        if (templateTypeDefines.find(rawFuncType) != templateTypeDefines.end())
+            continue;
+
+         if(funcInfo.templateTypes.find(rawFuncType) != funcInfo.templateTypes.end())
+            templateTypeDefines[rawFuncType] = TemplateType_ToType(funcInfo.templateTypes[rawFuncType], calledArg.valueType);
+    }
+
+    i = 0;
+    for (ArgumentInfo& calledArg : called_args.optionals)
+    {
+        ArgumentInfo& funcArg = funcInfo.args.at(i++);
+
+        string rawFuncType = calledArg.valueType.getType_WithoutWrapper();
+        if (templateTypeDefines.find(rawFuncType) != templateTypeDefines.end())
+            continue;
+
+        if (funcInfo.templateTypes.find(rawFuncType) != funcInfo.templateTypes.end())
+            templateTypeDefines[rawFuncType] = TemplateType_ToType(funcInfo.templateTypes[rawFuncType], calledArg.valueType);
+    }
+
+    return {};
+}
+
+static inline Result<void> _convertAndCheck_TemplateTypes(MetaData& metaData, CurrentContext& context, shared_ptr<FunctionCall> funcCall, GetArgs_Result& called_args, const uint32_t currentLine)
+{
+    std::unordered_map<string, TemplateType_ToType>& templateTypeDefines = funcCall->templateTypeDefines;
+
+    Result<void> result = _getTemplateDefines_FromCallArgs(/*out*/templateTypeDefines, funcCall, called_args, currentLine);
+    if (result.hasError)
+        return result.error;
+
+    result = _templateTypeToType(metaData, context, /*out*/funcCall, templateTypeDefines, called_args, currentLine);
+    if (result.hasError)
+        return result.error;
+
+    return {};
 }
 
 static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName, RawType* shouldBeType = nullptr)
@@ -213,22 +326,26 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
     if (!metaData.tryGetFunction(funcName, context, args.args, args.optionals, /*out*/funcInfo, iterator.currentLine, error))
         return ErrorInfo("functionCall: \'" + funcName + "\' not found with given arguments\n" + error.message, iterator.currentLine);
 
-    if(shouldBeType != nullptr && shouldBeType->toPrimitiveType() != PrimitiveType::none)
+    Result<vector<shared_ptr<SuperExpression>>> expressionsOfArgs = _getExpressionsOfArgs(args, funcInfo);
+    if (expressionsOfArgs.hasError)
+        return expressionsOfArgs.error;
+
+    bodyResult.expression =
+        make_shared<FunctionCall>
+        (
+            FunctionCall(funcName, funcInfo.returnType, funcInfo, expressionsOfArgs.value())
+        );
+
+    Result<void> result = _convertAndCheck_TemplateTypes(metaData, context, /*out*/bodyResult.expression, args, iterator.currentLine);
+    if (result.hasError)
+        return result.error;
+
+    if (shouldBeType != nullptr && shouldBeType->toPrimitiveType() != PrimitiveType::none)
     {
         Result<void> isCompatible = shouldBeType->areTypeCompatible(funcInfo.returnType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
         if (isCompatible.hasError)
             return isCompatible.error;
     }
-
-    Result<vector<shared_ptr<SuperExpression>>> expressions = getExpressionVector(args, funcInfo);
-    if (expressions.hasError)
-        return expressions.error;
-
-    bodyResult.expression =
-        make_shared<FunctionCall>
-        (
-            FunctionCall(funcName, funcInfo.returnType, funcInfo, expressions.value())
-        );
 
     return bodyResult;
 }

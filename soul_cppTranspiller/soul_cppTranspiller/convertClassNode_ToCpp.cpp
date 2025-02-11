@@ -10,7 +10,7 @@ static inline const char* accessLevelToCpp(ClassAccessLevel access)
     return (access == ClassAccessLevel::pub) ? "public:" : "private:";
 }
 
-Result<string> convertClassNode_ToCpp(std::shared_ptr<ClassNode> classNode, MetaData& metaData, unordered_set<string>& templateTypes)
+Result<string> convertClassNode_ToCpp(std::shared_ptr<ClassNode> classNode, MetaData& metaData, unordered_map<string, TemplateType>& templateTypes)
 {
     stringstream ss;
 

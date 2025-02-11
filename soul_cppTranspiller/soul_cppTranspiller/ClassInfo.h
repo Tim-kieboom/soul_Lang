@@ -1,10 +1,11 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <unordered_set>
+#include <unordered_map>
 
 #include "Result.h"
 #include "ClassAccessLevel.h"
+#include "TemplateType.h"
 
 struct FieldsInfo
 {
@@ -40,10 +41,10 @@ struct ClassInfo
 	std::string name;
 	std::vector<FieldsInfo> fields;
 	std::vector<MethodeDecleration> methodes;
-	std::unordered_set<std::string> templateTypes;
+	std::unordered_map<std::string, TemplateType> templateTypes;
 
 	ClassInfo() = default;
-	ClassInfo(std::string& name, std::unordered_set<std::string>& templateTypes)
+	ClassInfo(std::string& name, std::unordered_map<std::string, TemplateType>& templateTypes)
 		: name(name), templateTypes(templateTypes)
 	{
 	}

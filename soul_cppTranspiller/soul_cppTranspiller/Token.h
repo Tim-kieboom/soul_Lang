@@ -41,10 +41,12 @@ struct TokenIterator
 		if (i + step >= (int64_t)tokens.size())
 			return false;
 
+
 		i += step;
 		const Token& token = tokens.at(i);
 		currentToken = token.text;
 		currentLine = token.lineNumber;
+
 		return true;
 	}
 

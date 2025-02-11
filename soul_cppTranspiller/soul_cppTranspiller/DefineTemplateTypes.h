@@ -1,13 +1,16 @@
 #pragma once
+#include <unordered_map>
+
+#include "TemplateType.h"
 #include "SuperExpression.h"
 
-class TemplateTypes: public SuperExpression
+class DefineTemplateTypes : public SuperExpression
 {
 public:
-	std::unordered_set<std::string> templateTypes;
+	std::unordered_map<std::string, TemplateType> templateTypes;
 
-	TemplateTypes() { }
-	TemplateTypes(std::unordered_set<std::string> templateTypes)
+	DefineTemplateTypes() { }
+	DefineTemplateTypes(std::unordered_map<std::string, TemplateType>& templateTypes)
 		: templateTypes(std::move(templateTypes)) 
 	{
 	}
@@ -22,13 +25,13 @@ public:
 		std::stringstream ss;
 		ss << "Templates::<";
 		for (auto& type : templateTypes)
-			ss << type << ", ";
+			ss << type.first << ", ";
 		ss << ">";
 		return ss.str();
 	}
 
 	SyntaxNodeId getId() const override
 	{
-		return SyntaxNodeId::TemplateTypes;
+		return SyntaxNodeId::DefineTemplateTypes;
 	}
 };

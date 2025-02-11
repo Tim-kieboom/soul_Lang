@@ -157,7 +157,7 @@ Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterato
 	varInfo->isAssigned = true;
 	if (initListEquals({ "++", "--" }, symbool))
 	{
-		if (assignVar_type.toDuckType() != DuckType::number)
+		if (assignVar_type.toDuckType() != DuckType::Number)
 			return ErrorInfo("invalid symbol after variable symbool: \'" + symbool + "\'", iterator.currentLine);
 
 		if (token != ";")

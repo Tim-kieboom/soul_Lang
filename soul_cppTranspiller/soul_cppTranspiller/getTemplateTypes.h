@@ -1,5 +1,5 @@
 #pragma once
 #include "MetaData.h"
-#include "TemplateTypes.h"
+#include "DefineTemplateTypes.h"
 
-Result<std::shared_ptr<TemplateTypes>> getTemplateTypes(TokenIterator& iterator, CurrentContext& context);
+Result<std::shared_ptr<DefineTemplateTypes>> getTemplateTypes(TokenIterator& iterator, CurrentContext& context);

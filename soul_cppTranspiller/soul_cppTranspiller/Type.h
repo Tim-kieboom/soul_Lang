@@ -1,6 +1,5 @@
 #pragma once
 #include <unordered_map>
-#include <unordered_set>
 
 #include "Token.h"
 #include "Result.h"
@@ -8,15 +7,17 @@
 #include "DuckType.h"
 #include "ClassInfo.h"
 #include "TypeWrapper.h"
+#include "TemplateType.h"
 
 class RawType;
 
 DuckType getDuckType(RawType& type);
 
 std::string toString(const RawType& type);
-Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes);
-Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, const uint64_t currentLine);
 Result<RawType> getRawType_fromLiteralValue(const std::string& value, const uint64_t currentLine);
+Result<std::vector<std::string>> getTypeTokens(const std::string& stringedRawType, const uint32_t currentLine);
+Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes);
+Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, const uint64_t currentLine);
 
 class RawType
 {
@@ -37,6 +38,13 @@ public:
 	}
 
 	RawType(const std::string rawType, bool isMutable, std::initializer_list<TypeWrapper> wrappers)
+		: rawType(rawType), isMutable(isMutable)
+	{
+		for (auto& wrap : wrappers)
+			typeWrappers.push_back(wrap);
+	}
+
+	RawType(const std::string rawType, bool isMutable, std::vector<TypeWrapper> wrappers)
 		: rawType(rawType), isMutable(isMutable)
 	{
 		for (auto& wrap : wrappers)
@@ -136,7 +144,7 @@ public:
 		return true;
 	}
 
-	Result<void> isEqual(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, uint64_t currentLine, bool checkMutable = true) const
+	Result<void> isEqual(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, uint64_t currentLine, bool checkMutable = true) const
 	{
 		if (checkMutable && isMutable != other.isMutable)
 			return ErrorInfo("argument: \'" + toString(*this)+ "\' and argument: \'" + toString(other) + "\' have diffrent mutability", currentLine);
@@ -180,7 +188,7 @@ public:
 		return {};
 	}
 
-	Result<void> areTypeCompatible(const std::string& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, uint64_t currentLine) const
+	Result<void> areTypeCompatible(const std::string& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, uint64_t currentLine) const
 	{
 		Result<RawType> type = getRawType_fromStringedRawType(other, classStore, templateTypes, currentLine);
 		if (type.hasError)
@@ -189,7 +197,7 @@ public:
 		return areTypeCompatible(type.value(), classStore, templateTypes, currentLine);
 	}
 
-	Result<void> areTypeCompatible(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, uint64_t currentLine) const
+	Result<void> areTypeCompatible(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, uint64_t currentLine) const
 	{
 		if (!typeWrapperEquals(other))
 			return ErrorInfo("typeWrappers '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
@@ -249,7 +257,7 @@ public:
 		return classStore.find(rawType) != classStore.end();
 	}
 
-	bool isTemplate(std::unordered_set<std::string>& templateTypes) const
+	bool isTemplate(const std::unordered_map<std::string, TemplateType>& templateTypes) const
 	{
 		return templateTypes.find(rawType) != templateTypes.end();
 	}
@@ -287,7 +295,7 @@ public:
 		return rawType;
 	}
 
-	bool isValid(std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes) const
+	bool isValid(std::unordered_map<std::string, ClassInfo>& classStore, const std::unordered_map<std::string, TemplateType>& templateTypes) const
 	{
 		if (isPrimitiveType() || isClass(classStore) || isTemplate(templateTypes))
 			return true;

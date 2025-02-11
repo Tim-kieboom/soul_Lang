@@ -262,7 +262,9 @@
     <ClInclude Include="SyntaxNodeId.h" />
     <ClInclude Include="SyntaxTree.h" />
     <ClInclude Include="SyntaxTree_Operator.h" />
-    <ClInclude Include="TemplateTypes.h" />
+    <ClInclude Include="TemplateType.h" />
+    <ClInclude Include="DefineTemplateTypes.h" />
+    <ClInclude Include="TemplateType_ToType.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="tokenizer.h" />
     <ClInclude Include="Type.h" />

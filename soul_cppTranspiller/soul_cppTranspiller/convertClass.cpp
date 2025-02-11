@@ -44,10 +44,10 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 	if (!iterator.nextToken())
 		return ERROR_convertClass_outOfBounds(iterator);
 
-	shared_ptr<TemplateTypes> templatesTypes;
+	shared_ptr<DefineTemplateTypes> templatesTypes;
 	if (token == "<")
 	{
-		Result<shared_ptr<TemplateTypes>> templatesTypesResult = getTemplateTypes(iterator, /*out*/classContext);
+		Result<shared_ptr<DefineTemplateTypes>> templatesTypesResult = getTemplateTypes(iterator, /*out*/classContext);
 		if (templatesTypesResult.hasError)
 			return templatesTypesResult.error;
 

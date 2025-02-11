@@ -7,9 +7,9 @@ enum class DuckType
 	invalid,
 	compile_dynamic,
 
-	text,
-	character,
-	number
+	Text,
+	Char,
+	Number
 };
 
 PrimitiveType DuckToPrimitive(DuckType type);

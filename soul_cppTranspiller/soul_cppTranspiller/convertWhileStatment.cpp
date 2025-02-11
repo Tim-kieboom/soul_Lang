@@ -20,7 +20,7 @@ static inline Result<BodyStatment_Result<SuperExpression>> _convertCondition(Tok
     if (expression.hasError)
         return expression.error;
 
-    if (type.toDuckType() != DuckType::number)
+    if (type.toDuckType() != DuckType::Number)
         return ErrorInfo("condition of of statment has to be of DuckType 'number'", iterator.currentLine);
 
     return expression.value();

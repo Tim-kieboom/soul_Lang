@@ -25,7 +25,7 @@ static inline Result<void> checkIfArgsAreConst(TokenIterator& iterator, StoreArg
 
 Result<FuncDeclaration_Result> getFunctionDeclaration(TokenIterator& iterator, MetaData& metaData, bool isForwardDeclared, CurrentContext& context, ClassInfo* currentClass)
 {
-	std::shared_ptr<TemplateTypes> templateTypes;
+	std::shared_ptr<DefineTemplateTypes> templateTypes;
 
 	FuncDeclaration funcInfo;
 	string& token = iterator.currentToken;
@@ -59,7 +59,7 @@ Result<FuncDeclaration_Result> getFunctionDeclaration(TokenIterator& iterator, M
 			if (funcInfo.functionName == "main")
 				return ErrorInfo("'main' func can not have any templateTypes (so remove '<>' is, 'func main<..>(..)')", iterator.currentLine);
 
-			Result<std::shared_ptr<TemplateTypes>> templatesTypesResult = getTemplateTypes(iterator, context);
+			Result<std::shared_ptr<DefineTemplateTypes>> templatesTypesResult = getTemplateTypes(iterator, context);
 			if (templatesTypesResult.hasError)
 				return templatesTypesResult.error;
 

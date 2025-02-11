@@ -2,16 +2,16 @@
 #include "Token.h"
 #include "Result.h"
 #include "MetaData.h"
-#include "TemplateTypes.h"
+#include "DefineTemplateTypes.h"
 #include "FuncDeclaration.h"
 
 struct FuncDeclaration_Result
 {
 	FuncDeclaration funcInfo;
-	std::shared_ptr<TemplateTypes> templateTypes;
+	std::shared_ptr<DefineTemplateTypes> templateTypes;
 
 	FuncDeclaration_Result() { }
-	FuncDeclaration_Result(FuncDeclaration& funcInfo, std::shared_ptr<TemplateTypes>& templateTypes)
+	FuncDeclaration_Result(FuncDeclaration& funcInfo, std::shared_ptr<DefineTemplateTypes>& templateTypes)
 		: funcInfo(funcInfo), templateTypes(templateTypes) 
 	{
 	}

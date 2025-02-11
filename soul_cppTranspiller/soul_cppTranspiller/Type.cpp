@@ -32,12 +32,12 @@ static inline bool isClass(const std::string& token, std::unordered_map<std::str
     return classStore.find(token) != classStore.end();
 }
 
-static inline bool isTemplateType(const std::string& token, std::unordered_set<std::string>& templateTypes)
+static inline bool isTemplateType(const std::string& token, std::unordered_map<std::string, TemplateType>& templateTypes)
 {
     return templateTypes.find(token) != templateTypes.end();
 }
 
-Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, const uint64_t currentLine)
+Result<std::vector<std::string>> getTypeTokens(const std::string& stringedRawType, const uint32_t currentLine)
 {
     string strType = stringedRawType;
     string_remove(strType, ' ');
@@ -45,37 +45,48 @@ Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawTyp
     if (strType.empty())
         return ErrorInfo("type is <empty>", currentLine);
 
-    uint64_t i = 0;
-    vector<string> strTypes = string_splitOn(strType, {"const", "[]", "*", "&" });
+    vector<string> typeTokens = string_splitOn(strType, { "const", "[]", "*", "&" });
 
     //if first element is empty remove element
-    if (strTypes.front().empty())
-        strTypes.erase(strTypes.begin());
+    if (typeTokens.front().empty())
+        typeTokens.erase(typeTokens.begin());
 
+    return typeTokens;
+}
+
+Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, const uint64_t currentLine)
+{
+    Result<vector<string>> typeTokensResult = getTypeTokens(stringedRawType, currentLine);
+    if (typeTokensResult.hasError)
+        return typeTokensResult.error;
+
+    vector<string>& typeTokens = typeTokensResult.value();
+    
+    uint64_t i = 0;
     bool isMutable = true;
     RawType rawType;
-    if (strTypes.at(i) == "const")
+    if (typeTokens.at(i) == "const")
     {
         isMutable = false;
         i++;
     }
 
-    PrimitiveType type = getPrimitiveType(strTypes.at(i));
-    if (type == PrimitiveType::invalid && !isClass(strTypes.at(i), classStore) && !isTemplateType(strTypes.at(i), templateTypes))
+    PrimitiveType type = getPrimitiveType(typeTokens.at(i));
+    if (type == PrimitiveType::invalid && !isClass(typeTokens.at(i), classStore) && !isTemplateType(typeTokens.at(i), templateTypes))
     {
-        return ErrorInfo("type: \'" + strTypes.at(i) + "\', is not a reconized Type", currentLine);
+        return ErrorInfo("type: \'" + typeTokens.at(i) + "\', is not a reconized Type", currentLine);
     }
 
-    rawType = RawType(strTypes.at(i), isMutable);
+    rawType = RawType(typeTokens.at(i), isMutable);
 
-    if (i == strTypes.size()-1)
+    if (i == typeTokens.size()-1)
         return rawType;
 
     Result<void> result;
     uint8_t refrenceCounter = 0;
-    while (i++ < strTypes.size()-1)
+    while (i++ < typeTokens.size()-1)
     {
-        TypeWrapper wrap = getTypeWrapper(strTypes.at(i));
+        TypeWrapper wrap = getTypeWrapper(typeTokens.at(i));
         if (wrap == TypeWrapper::invalid)
         {
             return rawType;
@@ -100,12 +111,12 @@ Result<RawType> getRawType_fromLiteralValue(const std::string& value, const uint
     return RawType(rawType, false);
 }
 
-static inline bool isTemplateType(std::string& token, std::unordered_set<std::string>& templateTypes)
+static inline bool isTemplateType(std::string& token, std::unordered_map<std::string, TemplateType>& templateTypes)
 {
     return templateTypes.find(token) != templateTypes.end();
 }
 
-Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes)
+Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes)
 {
 	const uint64_t beginIndex = iterator.i;
 	string& token = iterator.currentToken;

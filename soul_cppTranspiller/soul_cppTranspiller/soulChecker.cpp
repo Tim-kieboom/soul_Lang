@@ -42,27 +42,27 @@ bool checkValue(const std::string& value, TypeCategory category)
 	{
 	case TypeCategory::compile_dynamic:
 		return getDuckType_fromValue(value) != DuckType::invalid;
-	case TypeCategory::text:
+	case TypeCategory::Text:
 		return false;
-	case TypeCategory::interger:
+	case TypeCategory::Int:
 	{
 		char* end;
 		errno = 0;
 		auto _ = strtoll(value.c_str(), &end, 10);
 		return *end == '\0' && errno != ERANGE;
 	}
-	case TypeCategory::unsignedInterger:
+	case TypeCategory::Uint:
 	{
 		char* end;
 		errno = 0;
 		auto _ = strtoull(value.c_str(), &end, 10);
 		return *end == '\0' && errno != ERANGE;
 	}
-	case TypeCategory::boolean:
+	case TypeCategory::Bool:
 	{
 		return value == "true" || value == "false";
 	}
-	case TypeCategory::character:
+	case TypeCategory::Char:
 	{
 		if (string_contains(value, '\\'))
 		{
@@ -77,7 +77,7 @@ bool checkValue(const std::string& value, TypeCategory category)
 
 		return string_count(value, '\'') == 2;
 	}
-	case TypeCategory::floatingPoint:
+	case TypeCategory::Float:
 	{
 		char* end;
 		errno = 0;
@@ -96,14 +96,14 @@ PrimitiveType getPrimitiveType_fromValue(const std::string& value)
 
 DuckType getDuckType_fromValue(const std::string& value)
 {
-	if (checkValue(value, DuckType::character))
-		return DuckType::character;
+	if (checkValue(value, DuckType::Char))
+		return DuckType::Char;
 
-	if (checkValue(value, DuckType::number))
-		return DuckType::number;
+	if (checkValue(value, DuckType::Number))
+		return DuckType::Number;
 
-	if (checkValue(value, DuckType::text))
-		return DuckType::text;
+	if (checkValue(value, DuckType::Text))
+		return DuckType::Text;
 
 	return DuckType::invalid;
 }
@@ -112,20 +112,20 @@ bool checkValue(const std::string& value, DuckType type)
 {
 	switch (type)
 	{
-	case DuckType::number:
-		return checkValue(value, TypeCategory::boolean) ||
-			   checkValue(value, TypeCategory::interger) ||
-			   checkValue(value, TypeCategory::floatingPoint) ||
-			   checkValue(value, TypeCategory::unsignedInterger);
+	case DuckType::Number:
+		return checkValue(value, TypeCategory::Bool) ||
+			   checkValue(value, TypeCategory::Int) ||
+			   checkValue(value, TypeCategory::Float) ||
+			   checkValue(value, TypeCategory::Uint);
 
 	case DuckType::compile_dynamic:
 		return checkValue(value, TypeCategory::compile_dynamic);
 
-	case DuckType::text:
-		return checkValue(value, TypeCategory::text);
+	case DuckType::Text:
+		return checkValue(value, TypeCategory::Text);
 
-	case DuckType::character:
-		return checkValue(value, TypeCategory::character);
+	case DuckType::Char:
+		return checkValue(value, TypeCategory::Char);
 
 	default:
 	case DuckType::invalid:

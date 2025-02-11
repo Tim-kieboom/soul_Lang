@@ -575,8 +575,14 @@
     <ClInclude Include="getTemplateTypes.h">
       <Filter>Source Files\AbstractSyntaxTree\convertToCpp\convert_Cpp_FuncDeclaration\getTemplateTypes</Filter>
     </ClInclude>
-    <ClInclude Include="TemplateTypes.h">
+    <ClInclude Include="DefineTemplateTypes.h">
       <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
+    <ClInclude Include="TemplateType.h">
+      <Filter>Source Files\MetaData</Filter>
+    </ClInclude>
+    <ClInclude Include="TemplateType_ToType.h">
+      <Filter>Source Files\MetaData</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

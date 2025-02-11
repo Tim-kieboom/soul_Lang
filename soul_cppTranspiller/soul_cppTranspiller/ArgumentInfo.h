@@ -38,7 +38,7 @@ struct ArgumentInfo
 	{
 	}
 	 
-	Result<void> Compatible(const ArgumentInfo& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_set<std::string>& templateTypes, int64_t currentLine) const
+	Result<void> Compatible(const ArgumentInfo& other, std::unordered_map<std::string, ClassInfo>& classStore, std::unordered_map<std::string, TemplateType>& templateTypes, int64_t currentLine) const
 	{
 		if (isOptional != other.isOptional)
 		{
@@ -52,6 +52,9 @@ struct ArgumentInfo
 
 			return other.valueType.isEqual(valueType, classStore, templateTypes, currentLine);
 		}
+
+		if (valueType.isTemplate(templateTypes) || other.valueType.isTemplate(templateTypes))
+			return {};
 
 		Result<void> result = valueType.areTypeCompatible(other.valueType, classStore, templateTypes, currentLine);
 		if (result.hasError)

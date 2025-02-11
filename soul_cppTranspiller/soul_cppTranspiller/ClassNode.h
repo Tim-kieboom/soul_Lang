@@ -10,10 +10,10 @@ public:
 	std::vector<std::shared_ptr<FieldVariable>> fields;
 	std::vector<std::shared_ptr<MethodeNode>> methodes;
 	
-	std::shared_ptr<TemplateTypes> templatesTypes;
+	std::shared_ptr<DefineTemplateTypes> templatesTypes;
 
 	ClassNode() = default;
-	ClassNode(std::string& className, std::shared_ptr<TemplateTypes> templatesTypes)
+	ClassNode(std::string& className, std::shared_ptr<DefineTemplateTypes> templatesTypes)
 		: className(className), templatesTypes(templatesTypes)
 	{
 	}

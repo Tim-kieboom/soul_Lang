@@ -2,10 +2,10 @@
 #include "soulChecker.h"
 using namespace std;
 
-Result<std::shared_ptr<TemplateTypes>> getTemplateTypes(TokenIterator& iterator, CurrentContext& context)
+Result<std::shared_ptr<DefineTemplateTypes>> getTemplateTypes(TokenIterator& iterator, CurrentContext& context)
 {
 	string& token = iterator.currentToken;
-	shared_ptr<TemplateTypes> types = make_shared<TemplateTypes>(TemplateTypes());
+	shared_ptr<DefineTemplateTypes> types = make_shared<DefineTemplateTypes>(DefineTemplateTypes());
 
 	while (iterator.nextToken())
 	{
@@ -18,8 +18,8 @@ Result<std::shared_ptr<TemplateTypes>> getTemplateTypes(TokenIterator& iterator,
 		if (context.currentTemplateTypes.find(token) != context.currentTemplateTypes.end())
 			return ErrorInfo("\'" + token + "\' is already defined", iterator.currentLine);
 
-		context.currentTemplateTypes.insert(token);
-		types->templateTypes.insert(token);
+		context.currentTemplateTypes[token] = TemplateType(token);
+		types->templateTypes[token] = TemplateType(token);
 
 		if (!iterator.nextToken())
 			break;

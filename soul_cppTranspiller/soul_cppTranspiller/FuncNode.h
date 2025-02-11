@@ -2,7 +2,7 @@
 #include "BodyNode.h"
 #include "ISyntaxNode.h"
 #include "InitVariable.h"
-#include "TemplateTypes.h"
+#include "DefineTemplateTypes.h"
 #include "SuperMainNodes.h"
 #include "FuncDeclaration.h"
 
@@ -11,11 +11,11 @@ class FuncNode : public SuperMainNode
 public:
 	FuncDeclaration funcDecl;
 	std::shared_ptr<BodyNode> body;
-	std::shared_ptr<TemplateTypes> templatesTypes;
+	std::shared_ptr<DefineTemplateTypes> templatesTypes;
 
 	FuncNode() = default;
 
-	FuncNode(FuncDeclaration& funcDecl, std::shared_ptr<BodyNode> body, std::shared_ptr<TemplateTypes> templatesTypes)
+	FuncNode(FuncDeclaration& funcDecl, std::shared_ptr<BodyNode> body, std::shared_ptr<DefineTemplateTypes> templatesTypes)
 		: funcDecl(funcDecl), body(body), templatesTypes(templatesTypes)
 	{
 	}

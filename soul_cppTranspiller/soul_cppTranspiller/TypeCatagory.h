@@ -6,12 +6,12 @@ enum class TypeCategory
 	invalid,
 	compile_dynamic,
 
-	text,
-	boolean,
-	interger,
-	character,
-	floatingPoint,
-	unsignedInterger
+	Int,
+	Text,
+	Bool,
+	Char,
+	Uint,
+	Float
 };
 
 std::string toString(TypeCategory type);

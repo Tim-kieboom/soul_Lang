@@ -33,12 +33,12 @@ enum class SyntaxNodeId
 	IndexArray,
 	FunctionCall,
 	StringLiteral,
-	TemplateTypes,
 	EmptyExpresion,
 	ConstructArray,
 	CopyExpression,
 	RangeExpression,
 	BinairyExpression,
+	DefineTemplateTypes,
 
 	invalid
 };

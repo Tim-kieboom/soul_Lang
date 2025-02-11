@@ -27,7 +27,7 @@ bool isSyntaxTree_Expression(SyntaxNodeId id)
 			id == SyntaxNodeId::Increment ||
 			id == SyntaxNodeId::IndexArray ||
 			id == SyntaxNodeId::FunctionCall ||
-			id == SyntaxNodeId::TemplateTypes ||
+			id == SyntaxNodeId::DefineTemplateTypes ||
 			id == SyntaxNodeId::StringLiteral ||
 			id == SyntaxNodeId::EmptyExpresion ||
 			id == SyntaxNodeId::ConstructArray ||

@@ -10,28 +10,28 @@ TypeCategory getTypeCategory(PrimitiveType type)
 	case PrimitiveType::i16:
 	case PrimitiveType::i32:
 	case PrimitiveType::i64:
-		return TypeCategory::interger;
+		return TypeCategory::Int;
 
 	case PrimitiveType::u8:
 	case PrimitiveType::u16:
 	case PrimitiveType::u32:
 	case PrimitiveType::u64:
 	case PrimitiveType::uSize:
-		return TypeCategory::unsignedInterger;
+		return TypeCategory::Uint;
 
 	case PrimitiveType::f32:
 	case PrimitiveType::f64:
-		return TypeCategory::floatingPoint;
+		return TypeCategory::Float;
 
 	case PrimitiveType::bool_:
-		return TypeCategory::boolean;
+		return TypeCategory::Bool;
 
 	case PrimitiveType::char_:
-		return TypeCategory::character;
+		return TypeCategory::Char;
 
 	case PrimitiveType::str:
 	case PrimitiveType::c_str:
-		return TypeCategory::text;
+		return TypeCategory::Text;
 
 	case PrimitiveType::compile_dynamic:
 		return TypeCategory::compile_dynamic;
@@ -45,30 +45,30 @@ string toString(TypeCategory type)
 {
 	switch (type)
 	{
-	case TypeCategory::boolean:
-		return "boolean";
+	case TypeCategory::Bool:
+		return "Bool";
 
 	case TypeCategory::compile_dynamic:
 		return "compile_dynamic";
 
-	case TypeCategory::character:
-		return "character";
+	case TypeCategory::Char:
+		return "Char";
 
-	case TypeCategory::floatingPoint:
-		return "foatingPoint";
+	case TypeCategory::Float:
+		return "Float";
 
-	case TypeCategory::interger:
-		return "interger";
+	case TypeCategory::Int:
+		return "Int";
 
-	case TypeCategory::unsignedInterger:
-		return "insignedInterger";
+	case TypeCategory::Uint:
+		return "Uint";
 
-	case TypeCategory::text:
-		return "text";
+	case TypeCategory::Text:
+		return "Text";
 
 	default:
 	case TypeCategory::invalid:
-		return "invalid";
+		return "<invalid>";
 	}
 
 }

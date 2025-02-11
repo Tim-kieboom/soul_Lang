@@ -1,6 +1,7 @@
 #pragma once
 #include <sstream>
 #include <unordered_map>
+#include <algorithm>
 
 #include "VarInfo.h"
 #include "C_strPair.h"
@@ -34,6 +35,9 @@ public:
 		
 		uint64_t funcIndex = funcs.size();
 		funcs.push_back(funcInfo);
+
+		sortTemplateFunctionsLast(funcName);
+
 		return funcs.at(funcIndex);
 	}
 
@@ -93,7 +97,7 @@ public:
 		std::vector<FuncDeclaration>& funcs = (isFunctionInClass) ? funcStore.at(getMethodeMapEntryName(funcName, context.inClass.value())) : funcStore.at(funcName);
 		for (FuncDeclaration& func : funcs)
 		{
-			if (func.argsCompatible(args, optionals, classStore, context.currentTemplateTypes, currentLine, error))
+			if (func.argsCompatible(args, optionals, classStore, func.templateTypes, currentLine, error))
 			{
 				if (funcInfoIndex != nullptr)
 					*funcInfoIndex = i;
@@ -144,6 +148,18 @@ private:
 	std::string getMethodeMapEntryName(const std::string& methodeName, const ClassInfo& thisClass)
 	{
 		return thisClass.name + "#" + methodeName;
+	}
+
+	void sortTemplateFunctionsLast(const std::string& funcName)
+	{
+		std::vector<FuncDeclaration>& funcs = funcStore[funcName];
+		
+		auto sortByLeastTemplates = [](const FuncDeclaration& one, const FuncDeclaration& two)
+			{
+				return one.templateTypes.size() < two.templateTypes.size();
+			};
+
+		std::sort(funcs.begin(), funcs.end(), sortByLeastTemplates);
 	}
 
 };

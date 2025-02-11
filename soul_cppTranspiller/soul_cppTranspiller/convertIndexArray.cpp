@@ -42,7 +42,7 @@ static inline Result<BodyStatment_Result<SuperExpression>> getIndex(TokenIterato
     if (index.hasError)
         return index.error;
 
-    if (type.toDuckType() != DuckType::number)
+    if (type.toDuckType() != DuckType::Number)
         return ErrorInfo("index has to be of DuckType::number, type is: \'" + toString(type) + "\'", iterator.currentLine);
 
     if (!iterator.nextToken(-1))

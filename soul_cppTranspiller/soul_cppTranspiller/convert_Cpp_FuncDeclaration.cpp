@@ -36,7 +36,7 @@ static inline bool isFuncCtor(FuncDeclaration& funcInfo)
 	return false;
 }
 
-Result<string> convert_Cpp_FuncDeclaration(FuncDeclaration& funcInfo, MetaData& metaData, unordered_set<string>& templateTypes, bool* isMethode)
+Result<string> convert_Cpp_FuncDeclaration(FuncDeclaration& funcInfo, MetaData& metaData, unordered_map<string, TemplateType>& templateTypes, bool* isMethode)
 {
 	if (funcInfo.functionName == "main" && !funcInfo.args.empty())
 		return string("int main(int __Soul_argc__, char** __Soul_argv__)");

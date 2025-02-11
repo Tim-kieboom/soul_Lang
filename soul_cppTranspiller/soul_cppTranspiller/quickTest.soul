@@ -39,6 +39,7 @@ class f64;
 class str;
 class none;
 class Result;
+class TYPE;
 class f;
 # endInvis
 
@@ -129,35 +130,6 @@ CompileConst u32 MAX_U32 = (32 ** 2) - 1;
 //    //    return error.data;
 //    //}
 //}
-
-class objT<T>
-{
-    T value;
-    pub ctor(this.value) { }
-    pub ctor(T value_, bool randomArgForOverloading) { value = value_; }
-
-    pub SetValue(T value_): none
-    {
-        value = value_;
-    }
-
-    pub GetValue(): T&
-    {
-        return value;
-    }
-
-    pub testMethodeTemplate<K>(K foo): none
-    {
-        T temp = GetValue();
-        temp = value;
-        K ktemp = foo;
-    }
-}
-
-func template<T>(T value): none 
-{ 
-    T temp = value; 
-}
 
 //class Ref<T>
 //{
@@ -293,11 +265,59 @@ func template<T>(T value): none
 //    return;
 //}
 
-func foo_(): i32 { return 1; }
+class objT<T>
+{
+    T value;
+    pub ctor(this.value) { }
+    pub ctor(T value_, bool randomArgForOverloading) { value = value_; }
+
+    pub SetValue(T value_): none
+    {
+        value = value_;
+    }
+
+    pub GetValue(): T&
+    {
+        return value;
+    }
+
+    pub testMethodeTemplate<K>(K foo): none
+    {
+        T temp = GetValue();
+        temp = value;
+        K ktemp = foo;
+    }
+}
+
+func template(i32 value, str string): none
+{ 
+    i32 temp = value; 
+}
+
+func template<T> (T value): none 
+{ 
+    T temp = value; 
+}
+
+func template(i32 value, bool string): none
+{ 
+    i32 temp = value; 
+}
+
+func returnTemplate<T>(T value): T
+{ 
+    return value; 
+}
 
 func main(mut str[] args): i32
 {
     println();
+
+    //template<i32>(1);
+    template(1);
+    //template<f32>(1);
+    //template<str>("foo");
+    i32 value = returnTemplate(2);
 
     //Result<none> result = testList()
 
@@ -317,7 +337,6 @@ func main(mut str[] args): i32
     println(f"log:{log_}, pow 4 ** 0.5={POW}, root 2 </ 4={ROOT}");
 
     //CompileConst f64 foo = sqrt(4);
-
 
     return 0;
 }

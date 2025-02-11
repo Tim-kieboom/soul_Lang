@@ -1,8 +1,9 @@
 #pragma once
-#include <unordered_set>
-#include "ScopeIterator.h"
-#include "ClassInfo.h"
+#include <unordered_map>
 #include "Nullable.h"
+#include "ClassInfo.h"
+#include "ScopeIterator.h"
+#include "TemplateType.h"
 
 struct CurrentContext
 {
@@ -10,7 +11,7 @@ struct CurrentContext
 
 	ScopeIterator scope;
 	Nullable<ClassInfo> inClass;
-	std::unordered_set<std::string> currentTemplateTypes;
+	std::unordered_map<std::string, TemplateType> currentTemplateTypes;
 	FuncRuleSet functionRuleSet = FuncRuleSet::default_;
 
 	static FuncRuleSet getFuncRuleSet(std::string& token)

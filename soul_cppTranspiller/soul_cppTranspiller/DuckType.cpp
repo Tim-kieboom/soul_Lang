@@ -12,15 +12,15 @@ PrimitiveType DuckToPrimitive(DuckType type)
 {
 	switch (type)
 	{
-	case DuckType::number:
+	case DuckType::Number:
 		return PrimitiveType::f64;
 	case DuckType::invalid:
 		return PrimitiveType::invalid;
 	case DuckType::compile_dynamic:
 		return PrimitiveType::compile_dynamic;
-	case DuckType::text:
+	case DuckType::Text:
 		return PrimitiveType::str;
-	case DuckType::character:
+	case DuckType::Char:
 		return PrimitiveType::char_;
 
 	default:
@@ -35,17 +35,17 @@ DuckType getDuckType(TypeCategory type)
 	case TypeCategory::compile_dynamic:
 		return DuckType::compile_dynamic;
 
-	case TypeCategory::boolean:
-	case TypeCategory::interger:
-	case TypeCategory::floatingPoint:
-	case TypeCategory::unsignedInterger:
-		return DuckType::number;
+	case TypeCategory::Bool:
+	case TypeCategory::Int:
+	case TypeCategory::Float:
+	case TypeCategory::Uint:
+		return DuckType::Number;
 
-	case TypeCategory::text:
-		return DuckType::text;
+	case TypeCategory::Text:
+		return DuckType::Text;
 
-	case TypeCategory::character:
-		return DuckType::character;
+	case TypeCategory::Char:
+		return DuckType::Char;
 
 	default:
 	case TypeCategory::invalid:
@@ -57,21 +57,21 @@ string toString(DuckType type)
 {
 	switch (type)
 	{
-	case DuckType::number:
-		return "number";
+	case DuckType::Number:
+		return "Number";
 
 	case DuckType::compile_dynamic:
 		return "compile_dynamic";
 
-	case DuckType::character:
-		return "character";
+	case DuckType::Char:
+		return "Char";
 
-	case DuckType::text:
-		return "text";
+	case DuckType::Text:
+		return "Text";
 
 	default:
 	case DuckType::invalid:
-		return "invalid";
+		return "<invalid>";
 	}
 
 }

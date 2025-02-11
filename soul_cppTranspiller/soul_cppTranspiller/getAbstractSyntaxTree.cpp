@@ -127,9 +127,6 @@ static inline Result<void> _forwardDeclareFunctions(TokenIterator& iterator, Met
         declaredMain = true;
     }
 
-    if (iterator.i >= 236)
-        int d = 1;
-
     string checkBracket;
     if (!iterator.peekToken(checkBracket))
         return ErrorInfo("unexpected end while parsing functionDeclarations", iterator.currentLine);
@@ -239,13 +236,13 @@ static inline Result<ClassInfo> _forwardDeclareClass(TokenIterator& iterator, Me
     shared_ptr<vector<Nesting>> scope = make_shared<vector<Nesting>>();
     scope->emplace_back(Nesting());
     CurrentContext context = CurrentContext(ScopeIterator(scope));
-    shared_ptr<TemplateTypes> templates;
+    shared_ptr<DefineTemplateTypes> templates;
     if(nextToken == "<")
     {
         if (!iterator.nextToken())
             return ErrorInfo("unexpected end while forwardDeclaring class", iterator.currentLine);
 
-        Result<shared_ptr<TemplateTypes>> templatesResult = getTemplateTypes(iterator, /*out*/context);
+        Result<shared_ptr<DefineTemplateTypes>> templatesResult = getTemplateTypes(iterator, /*out*/context);
         if (templatesResult.hasError)
             return templatesResult.error;
 
@@ -384,8 +381,8 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
     iterator.i = beginI;
     while (iterator.nextToken())
     {
-        unordered_set<string> dummyHashSet;
-        typeResult = getRawType(iterator, metaData.classStore, dummyHashSet);
+        unordered_map<string, TemplateType> dummyHashMap;
+        typeResult = getRawType(iterator, metaData.classStore, dummyHashMap);
 
         if(isType(typeResult))
         {
