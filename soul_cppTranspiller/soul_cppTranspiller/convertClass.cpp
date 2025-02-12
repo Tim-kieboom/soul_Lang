@@ -1,299 +1,137 @@
 #include "convertClass.h"
-#include "convertField.h"
-#include "soulCheckers.h"
-#include "convertVarInit.h"
-#include "storeArguments.h"
-#include "cppConverter.h"
+#include "soulChecker.h"
 #include "convertBody.h"
-
+#include "getTemplateTypes.h"
+#include "convertInitVariable.h"
+#include "getFunctionDeclaration.h"
 using namespace std;
 
-static inline ErrorInfo ERROR_convertClass_OutOfBounds(TokenIterator& iterator, string className)
+static inline ErrorInfo ERROR_convertClass_outOfBounds(TokenIterator& iterator)
 {
-	return ErrorInfo("enexpected end of class: \'" + className + "\'", iterator.currentLine);
+	return ErrorInfo("unexpected end while parsing class", iterator.currentLine);
 }
 
-static inline Result<string> convertMethodeDeclaration_arguments
-(
-	/*out*/TokenIterator& iterator,
-	/*out*/MetaData& metaData,
-	/*out*/FuncInfo& funcInfo,
-	ScopeIterator& scope,
-	string className,
-	bool isCtor = false
-)
+static inline bool isType(Result<RawType> type)
 {
-	Nesting _;
-	Result<void> result = storeArguments(/*out*/iterator, /*out*/metaData, /*out*/funcInfo, /*out*/scope.getCurrentNesting(), isCtor);
-	if (result.hasError)
-		return result.error;
-
-	vector<ArgumentInfo>& args = funcInfo.args;
-	stringstream ss;
-
-	ss << '(';
-	for (uint32_t i = 0; i < args.size(); i++)
-	{
-		const ArgumentInfo& arg = args.at(i);
-		ss << "/*" << toString(arg.argType) << "*/" << ArgToCppArg(arg.argType, arg.valueType) << ' ' << arg.name;
-
-		if (i != args.size() - 1)
-			ss << ", ";
-	}
-	ss << ')';
-
-	return ss.str();
+	return !type.hasError;
 }
 
-static inline Result<string> convertClassConstructor(TokenIterator& iterator, MetaData& metaData, ClassInfo& classInfo, ScopeIterator& scope, ClassAccessType classAccess)
+Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 {
-	stringstream ss;
-
-	FuncInfo constructor(classInfo.className);
-	constructor.returnType = TypeInfo(&classInfo);
-	Result<string> argResult = convertMethodeDeclaration_arguments(iterator, metaData, constructor, scope, classInfo.className, /*isCtor:*/true);
-	if (argResult.hasError)
-		return argResult.error;
-
-	metaData.addMethode(classInfo, constructor, classAccess);
-
-	if (metaData.transpillerOption.addEndLines)
-		ss << '\t';
-
-	if (classAccess == ClassAccessType::private_)
-		ss << "private: ";
-	else if (classAccess == ClassAccessType::public_)
-		ss << "public: ";
-
-	ss << classInfo.className << argResult.value();
-	if (metaData.transpillerOption.addEndLines)
-		ss << '\n';
-
-	Result<string> bodyResult = convertBody_inClass(iterator, constructor, metaData, classInfo, scope);
-	if (bodyResult.hasError)
-		return bodyResult.error;
-
-	ss << bodyResult.value();
-	return ss.str();
-}
-
-static inline Result<string> convertClassDeleter(TokenIterator& iterator, MetaData& metaData, ClassInfo& classInfo, ScopeIterator& scope, ClassAccessType classAccess)
-{
-	stringstream ss;
-
 	string& token = iterator.currentToken;
-
-	if (token != "(")
-		return ErrorInfo("'(' has to come after '~ctor'", iterator.currentLine);
 
 	if (!iterator.nextToken())
-		return ERROR_convertClass_OutOfBounds(iterator, classInfo.className);
-
-	if(token != ")")
-		return ErrorInfo("'~ctor' can not have any arguments", iterator.currentLine);
-	FuncInfo deleter("~"+classInfo.className);
-	deleter.returnType = TypeInfo(PrimitiveType::none);
-
-	metaData.addMethode(classInfo, deleter, classAccess);
-
-	if (classAccess == ClassAccessType::private_)
-		return ErrorInfo("'~ctor' has to be public, in class: \'" +classInfo.className+ "\'", iterator.currentLine);
-
-	if (metaData.transpillerOption.addEndLines)
-		ss << '\t';
-	ss << "public: " << '~' << classInfo.className << "()";
-	if (metaData.transpillerOption.addEndLines)
-		ss << '\n';
-
-	Result<string> bodyResult = convertBody_inClass(iterator, deleter, metaData, classInfo, scope);
-	if (bodyResult.hasError)
-		return bodyResult.error;
-
-	ss << bodyResult.value();
-	return ss.str();
-}
-
-static inline Result<string> convertMethode(TokenIterator& iterator, MetaData& metaData, ClassInfo& classInfo, ScopeIterator& scope, ClassAccessType methodeAccess)
-{
-	stringstream ss;
-	string& token = iterator.currentToken;
+		return ERROR_convertClass_outOfBounds(iterator);
 
 	if (!checkName(token))
-		return ErrorInfo("methode name is invalid, name: \'" +token+ "\'", iterator.currentLine);
+		return ErrorInfo("\'" + token + "\' is not a valid name for a class", iterator.currentLine);
 
-	FuncInfo rawMethode(token);
+	string className = token;
 
-	if (!iterator.nextToken())
-		return ERROR_convertClass_OutOfBounds(iterator, classInfo.className);
-
-	Result<string> methodeDeclrResult = convertMethodeDeclaration_arguments(iterator, metaData, rawMethode, scope, classInfo.className);
-	if (methodeDeclrResult.hasError)
-		return methodeDeclrResult.error;
-
-	if (!iterator.nextToken())
-		return ERROR_convertClass_OutOfBounds(iterator, classInfo.className);
-
-	if(token != ":")
-
-
-	metaData.addMethode(classInfo, rawMethode, methodeAccess);
-
-	if (metaData.transpillerOption.addEndLines)
-		ss << '\t';
-
-	if (methodeAccess == ClassAccessType::private_)
-		ss << "private: ";
-	else if (methodeAccess == ClassAccessType::public_)
-		ss << "public: ";
-
-	ss << rawMethode.funcName << methodeDeclrResult.value();
-	if (metaData.transpillerOption.addEndLines)
-		ss << '\n';
-
-	Result<string> bodyResult = convertBody_inClass(iterator, rawMethode, metaData, classInfo, scope);
-	if (bodyResult.hasError)
-		return bodyResult.error;
-
-	ss << bodyResult.value();
-	return ss.str();
-}
-
-static inline Result<string> convertClassBody(TokenIterator& iterator, MetaData& metaData, const string& className)
-{
-	stringstream ss;
-	string& token = iterator.currentToken;
-
-	if (!iterator.nextToken())
-		return ERROR_convertClass_OutOfBounds(iterator, className);
-
-	if (token != "{")
-		return ErrorInfo("no '{' after class declaration, className: \'" + className + '\'', iterator.currentLine);
-
-	ss << '{';
-	if (metaData.transpillerOption.addEndLines)
-		ss << '\n';
-
-	metaData.classStore[className] = ClassInfo();
 	ClassInfo& classInfo = metaData.classStore[className];
-	classInfo.className = className;
+	
+	CurrentContext classContext = CurrentContext(ScopeIterator(make_shared<vector<Nesting>>(vector<Nesting>())));
+	classContext.scope.scope->emplace_back(Nesting());
+	classContext.inClass = Nullable<ClassInfo>(classInfo);
 
-	vector<Nesting> _classScope;
-	_classScope.emplace_back(Nesting());
-	ScopeIterator classScope(_classScope);
-
-	Result<string> result;
-	ClassAccessType classAccess;
-	int64_t openCurlyBracketCounter = 1;
-	while (iterator.nextToken())
+	for (auto& field : classInfo.fields)
 	{
-		if (iterator.currentLine == 173)
-			int f = 0;
+		auto var = VarInfo(field.name, field.stringRawType);
+		var.isForwardDecl = true;
+		classContext.scope.getCurrentNesting().addVariable(var);
+	}
 
-		Result<TypeInfo> typeResult;
+	if (!iterator.nextToken())
+		return ERROR_convertClass_outOfBounds(iterator);
 
-		if (token == "{")
+	shared_ptr<DefineTemplateTypes> templatesTypes;
+	if (token == "<")
+	{
+		Result<shared_ptr<DefineTemplateTypes>> templatesTypesResult = getTemplateTypes(iterator, /*out*/classContext);
+		if (templatesTypesResult.hasError)
+			return templatesTypesResult.error;
+
+		templatesTypes = templatesTypesResult.value();
+		if (!iterator.nextToken())
+			return ERROR_convertClass_outOfBounds(iterator);
+	}
+	
+	ClassNode classNode = ClassNode(className, templatesTypes);
+	
+	if (token != "{")
+	{
+		return ErrorInfo("class \'" + classNode.className + "\' has to start with '{'", iterator.currentLine);
+	}
+
+	while(iterator.nextToken())
+	{
+		if (token == "}")
+			return classNode;
+
+		ClassAccessLevel access = getClassAccessLevel(token);
+		Result<RawType> typeResult;
+
+		if(access == ClassAccessLevel::invalid)
 		{
-			openCurlyBracketCounter++;
-			continue;
-		}
-		else if (token == "}")
-		{
-			openCurlyBracketCounter--;
+			access = ClassAccessLevel::priv;
 
-			if (openCurlyBracketCounter > 0)
-				continue;
-
-			ss << "};";
-			if (metaData.transpillerOption.addEndLines)
-				ss << "\n\n";
-
-			return ss.str();
-		}
-
-		if (initListEquals({ "priv", "pub" }, token))
-		{
-			if (token == "priv")
-				classAccess = ClassAccessType::private_;
-			else if (token == "pub")
-				classAccess = ClassAccessType::public_;
-			
-			if (!iterator.nextToken())
-				break;
-
-			typeResult = getTypeInfo(iterator, metaData.classStore);
+			typeResult = getRawType(iterator, metaData.classStore, classContext.currentTemplateTypes);
+			if (!isType(typeResult))
+				return ErrorInfo("methode needs to start with 'pub' or 'priv'", iterator.currentLine);
 		}
 		else
 		{
-			classAccess = ClassAccessType::private_;
-			typeResult = getTypeInfo(iterator, metaData.classStore);
-			if (typeResult.hasError)
-				return ErrorInfo("methode has to start with 'pub' or 'priv'", iterator.currentLine);
-		}
-
-		if(!typeResult.hasError)
-		{
-			Result<string> fieldResult = convertField(iterator, metaData, classInfo, typeResult.value(), classScope, classAccess);
-			if (fieldResult.hasError)
-				return fieldResult.error;
-
-			ss << fieldResult.value();
-		}
-		else if (token == "ctor") 
-		{
 			if (!iterator.nextToken())
 				break;
 
-			Result<string> ctorResult = convertClassConstructor(iterator, metaData, classInfo, classScope, classAccess);
-			if (ctorResult.hasError)
-				return ctorResult.error;
-
-			ss << ctorResult.value();
+			typeResult = getRawType(iterator, metaData.classStore, classContext.currentTemplateTypes);
 		}
-		else if (token == "~ctor")
+
+
+		if(isType(typeResult))
 		{
-			if (!iterator.nextToken())
+			Result<BodyStatment_Result<InitializeVariable>> initResult = convertInitVariable(iterator, metaData, typeResult.value(), classContext);
+			if (initResult.hasError)
+				return initResult.error;
+
+			auto field = make_shared<FieldVariable>(FieldVariable(access, initResult.value().expression));
+			classNode.addField(field);
+		}
+		else//(isMethode)
+		{
+			if (!checkName(token))
+				return ErrorInfo("\'" + token + "\' is invalid name for Methode", iterator.currentLine);
+
+			if (!iterator.nextToken(/*steps:*/-1))
 				break;
 
-			Result<string> deleterResult = convertClassDeleter(iterator, metaData, classInfo, classScope, classAccess);
-			if (deleterResult.hasError)
-				return deleterResult.error;
+			uint64_t nestingIndex = classContext.scope.scope->size();
+			classContext.scope.scope->emplace_back(Nesting::makeChild(&classContext.scope.scope->at(0)));
+			CurrentContext methodeContext = CurrentContext(classContext, nestingIndex);
 
-			ss << deleterResult.value();
-		}
-		else 
-		{
-			Result<string> methodeResult = convertMethode(iterator, metaData, classInfo, classScope, classAccess);
-			if (methodeResult.hasError)	
-				return methodeResult.error;
+			Result<FuncDeclaration_Result> funcDeclResult = getFunctionDeclaration(iterator, metaData, /*isForwardDeclared:*/false, methodeContext, /*currentClassName:*/&classInfo);
+			if (funcDeclResult.hasError)
+				return funcDeclResult.error;
 
-			ss << methodeResult.value();
+			FuncDeclaration& funcDecl = funcDeclResult.value().funcInfo;
+
+			for(auto& arg : funcDecl.args)
+			{
+				auto var = VarInfo(arg.argName, toString(arg.valueType));
+				methodeContext.scope.getCurrentNesting().addVariable(var);
+			}
+
+			Result<std::shared_ptr<BodyNode>> methodeBody = convertBody(iterator, metaData, funcDecl, methodeContext, SyntaxNodeId::MethodeNode);
+			if (methodeBody.hasError)
+				return methodeBody.error;
+
+			classContext.scope.scope->pop_back();
+
+			auto funcNode = make_shared<FuncNode>(FuncNode(funcDecl, methodeBody.value(), funcDeclResult.value().templateTypes));
+			classNode.addMethode(make_shared<MethodeNode>(MethodeNode(access, funcNode)));
 		}
-		//else
-		//{
-		//	return ErrorInfo("token invalid, token: \'" + token + "\'", iterator.currentLine);
-		//}
 	}
-	return ERROR_convertClass_OutOfBounds(iterator, className);
-}
 
-Result<string> convertClass(TokenIterator& iterator, MetaData& metaData)
-{
-	stringstream ss;
-	string& token = iterator.currentToken;
-	if (!iterator.nextToken())
-		return ERROR_convertClass_OutOfBounds(iterator, "<name-unknown>");
-
-	if (!checkName(token))
-		return ErrorInfo("name of class is not allowed, name: \'" +token+ "\'", iterator.currentLine);
-	string className = token;
-	ss << "class " << className;
-	if (metaData.transpillerOption.addEndLines)
-		ss << '\n';
-
-	Result<string> bodyResult = convertClassBody(iterator, metaData, className);
-	if (bodyResult.hasError)
-		return bodyResult.error;
-
-	ss << bodyResult.value();
-	return ss.str();
+	
+	return ERROR_convertClass_outOfBounds(iterator);
 }

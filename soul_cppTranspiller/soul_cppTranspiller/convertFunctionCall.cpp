@@ -1,218 +1,58 @@
 #include "convertFunctionCall.h"
-#include "soulCheckers.h"
-#include "convertVarSetter.h"
+#include "Refrence.h"
+#include "soulChecker.h"
+#include "EmptyStatment.h"
+#include "convertExpression.h"
+#include "convertInitVariable.h"
 
 using namespace std;
 
-struct ArgumentPair
-{
-	string argument;
-	uint64_t argumentPosition = 0;
+static const shared_ptr<SuperStatement> emptyStatment = make_shared<EmptyStatment>(EmptyStatment());
 
-	ArgumentPair() = default;
-	ArgumentPair(string&& str, uint64_t pos)
-		: argument(str), argumentPosition(pos)
-	{
-	}
+struct GetArgs_Result
+{
+    vector<ArgumentInfo> args;
+    vector<ArgumentInfo> optionals;
+    vector<pair<bool, shared_ptr<SuperExpression>>> expressions;
+
+    GetArgs_Result() = default;
+    void push(RawType& type, int64_t argPosition, const std::string& argName, ArgumentType argType, shared_ptr<SuperExpression>& expression, bool isOptional)
+    {
+        expressions.emplace_back(isOptional, expression);
+
+        if (isOptional)
+        {
+            optionals.emplace_back
+            (
+                ArgumentInfo(isOptional, type, argName, argType, argPosition)
+            );
+        }
+        else
+        {
+            args.emplace_back
+            (
+                ArgumentInfo(isOptional, type, argName, argType, argPosition)
+            );
+        }
+    }
 };
 
-struct CallArgInfo
+static inline bool isType(Result<RawType>& typeResult)
 {
-	vector<ArgumentPair> args;
-	uint64_t skipedTokens = 0;
-	
-	CallArgInfo() = default;
-	CallArgInfo(vector<ArgumentPair>& args, uint64_t skipedTokens)
-		: args(args), skipedTokens(skipedTokens)
-	{
-	}
-};
-
-static inline ErrorInfo ERROR_convertFunctionCall_outOfBounds(string& callFuncName, TokenIterator& iterator)
-{
-    return ErrorInfo("incomplete functionBody funcName: \'" + callFuncName + "\'", iterator.currentLine);
+    return !typeResult.hasError;
 }
 
-static inline Result<ArgumentInfo> _getArgInfo(uint32_t argPosition, const FuncInfo& callFunc)
+static inline void _AddOutInitVariableExpression(const string& varName, RawType& type, vector<shared_ptr<ISyntaxNode>>& functionCallExpression)
 {
-	if(argPosition == 0)
-		return ErrorInfo("argPosition can not be null", 0);
-
-
-	if (argPosition > callFunc.args.size())
-		return ErrorInfo("not found", 0);
-
-	return callFunc.args.at(argPosition-1);
+    functionCallExpression.push_back
+    (
+        make_shared<InitializeVariable>(InitializeVariable(toString(type), varName, emptyStatment))
+    );
 }
 
-static inline Result<CallArgInfo> _getCallArgument
-(
-	TokenIterator iterator, 
-	MetaData& metaData, 
-	FuncInfo& inCurrentFunc, 
-	FuncInfo& callFunc,
-	ScopeIterator& scope, 
-	uint32_t& currentArgument, 
-	string* className,
-	bool& lastArgument
-)
+static inline Result<GetArgs_Result> _getArgs(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string& funcName, BodyStatment_Result<FunctionCall>& bodyResult)
 {
-	uint64_t beginI = iterator.i;
-	stringstream ss;
-	string& token = iterator.currentToken;
-
-	vector<ArgumentPair> args;
-	args.reserve(6);
-
-	int64_t openBracketStack = 1;
-	lastArgument = false;
-
-	while (iterator.nextToken())
-	{
-		if (token == "(")
-		{
-			openBracketStack++;
-			ss << '(';
-			continue;
-		}
-		else if (token == ")")
-		{
-			openBracketStack--;
-			ss << ')';
-			if (openBracketStack <= 0)
-			{
-				lastArgument = true;
-				args.emplace_back(ArgumentPair(ss.str(), currentArgument++));
-				return CallArgInfo(args, iterator.i - beginI);
-			}
-			continue;
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	Result<ArgumentInfo> argResult = _getArgInfo(currentArgument, callFunc);
-	if (argResult.hasError)
-		return ErrorInfo(argResult.error.message + "\ncould not get argument", iterator.currentLine);
-
-	string prevToken;
-	ArgumentInfo argInfo = argResult.value();
-	while(true)
-	{
-		if(argType_isOut(argInfo.argType))
-		{
-			if (token != "out")
-				return ErrorInfo("argument: \'" + argInfo.name + "\' needs \'out\' when calling function", iterator.currentLine);
-
-			ss << "/*out*/";
-			if (!iterator.nextToken())
-				break;
-		}
-
-		Result<string> varSetResult = convertVarSetter(iterator, metaData, argInfo.valueType, callFunc, scope, varSetter_Option::endComma_or_RoundBrasket, openBracketStack, className, /*addEndl:*/false);
-		if (varSetResult.hasError)
-			return varSetResult.error;
-		ss << varSetResult.value();
-
-		prevToken = token;
-		if (!iterator.nextToken())
-			break;
-
-		if(prevToken == ")")
-		{
-			openBracketStack--;
-			if (openBracketStack <= 0)
-			{
-				if (!iterator.nextToken(/*step:*/-1))
-					break;
-
-				lastArgument = true;
-				args.emplace_back(ArgumentPair(ss.str(), currentArgument++));
-				return CallArgInfo(args, iterator.i - beginI);
-			}
-			continue;
-		}
-		else if (token == ",")
-		{
-			args.emplace_back(ArgumentPair(ss.str(), currentArgument));
-			ss.str("");
-		}
-		else
-		{
-			return ErrorInfo("argument in funcCall has to end with ',' or ')'", iterator.currentLine);
-		}
-
-		if (!argInfo.canBeMultiple)
-			return CallArgInfo(args, iterator.i - beginI);
-
-		if (!iterator.nextToken())
-			break;
-		
-	}
-
-	return ERROR_convertFunctionCall_outOfBounds(callFunc.funcName, iterator);
-}
-
-static inline Result< pair<vector<ArgumentPair>, FuncInfo> > _getAllArguments
-(
-	TokenIterator& iterator,
-	MetaData& metaData,
-	FuncInfo& inCurrentFunc,
-	vector<FuncInfo>& callFuncs,
-	string& funcCallName,
-	ScopeIterator& scope,
-	uint32_t& currentArgument,
-	string* className,
-	bool& lastArgument
-)
-{
-	if (callFuncs.empty())
-		return ErrorInfo("no function found to match with functionCall", iterator.currentLine);
-
-	uint64_t i = 0;
-	Result<CallArgInfo> argResult;
-	for (FuncInfo& callFunc : callFuncs)
-	{
-		argResult = _getCallArgument(iterator, metaData, inCurrentFunc, callFunc, scope, /*out*/currentArgument, className, /*out*/lastArgument);
-
-		if (!argResult.hasError)
-		{
-			CallArgInfo& argInfo = argResult.value();
-			if (!iterator.nextToken(/*steps:*/argInfo.skipedTokens))
-				return ERROR_convertFunctionCall_outOfBounds(funcCallName, iterator);
-
-			return make_pair(argInfo.args, callFunc);
-		}
-	}
-
-	return ErrorInfo(argResult.error.message + "\nfunction decl of: \'" + callFuncs.at(0).funcName + "\', does not match args in call", iterator.currentLine);
-}
-
-Result<std::string> convertFunctionCall(TokenIterator& iterator, MetaData& metaData, ScopeIterator& scope, string& _callFuncName, FuncInfo& funcInfo, string* className)
-{
-    stringstream ss;
     string& token = iterator.currentToken;
-<<<<<<< Updated upstream
-	string callFuncName = _callFuncName;
-
-    ss << token;
-
-	vector<FuncInfo> callFuncs;
-	if (metaData.isFunction(callFuncName))
-	{
-		callFuncs = metaData.funcStore[callFuncName];
-	}
-	else if(className != nullptr && metaData.isMethode(callFuncName, *className))
-	{
-
-	}
-	else
-	{
-		return ErrorInfo("function: \'" + callFuncName + "\', is not found", iterator.currentLine);
-	}
-=======
     GetArgs_Result args;
     int64_t argPosition = 1;
 
@@ -403,8 +243,6 @@ static inline Result<void> _templateTypeToType(MetaData& metaData, CurrentContex
                 return result.error;
         }
 
-
-
         if (typeTokens.at(0) == "const")
             newReturnType.isMutable = false;
 
@@ -454,17 +292,7 @@ static inline Result<void> _getTemplateDefines_FromCallArgs(std::map<string, Tem
 static inline Result<void> _convertAndCheck_TemplateTypes(MetaData& metaData, CurrentContext& context, shared_ptr<FunctionCall> funcCall, GetArgs_Result& called_args, vector<RawType>& definedTemplateTypes, const uint32_t currentLine)
 {
     std::map<string, TemplateType_ToType>& templateTypeDefines = funcCall->templateTypeDefines;
-
-    if (called_args.args.size() + called_args.optionals.size() == 0)
-    {
-        if (definedTemplateTypes.size() != funcCall->funcInfo.templateTypes.size())
-        {
-            stringstream ss;
-            ss << "in func: \'" << funcCall->funcName << "\', amount of template types defined: \'" << definedTemplateTypes.size() << "\' does not equal the amount of template types in class: \'" << funcCall->funcInfo.templateTypes.size() << "\'";
-            return ErrorInfo(ss.str(), currentLine);
-        }
-    }
-
+    
     uint32_t i = 0;
     for(auto& kv : funcCall->funcInfo.templateTypes)
     {
@@ -528,49 +356,89 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
     {
         funcName = "bool_";
     }
-    else if (funcName == "char")
+    else if(funcName == "char")
     {
         funcName = "char_";
     }
 
     if (!metaData.isFunction(funcName, context))
         return ErrorInfo("\'" + funcName + "\' is not a function", iterator.currentLine);
->>>>>>> Stashed changes
 
     if (!iterator.nextToken())
-        return ERROR_convertFunctionCall_outOfBounds(callFuncName, iterator);
+        return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
+
+    vector<RawType> definedTemplateTypes;
+    if(token == "<")
+    {
+        Result<vector<RawType>> TemplateTypesResult = _getDefinedTemplateType(iterator, metaData, context);
+        if (TemplateTypesResult.hasError)
+            return TemplateTypesResult.error;
+
+        definedTemplateTypes = TemplateTypesResult.value();
+
+        if (!iterator.nextToken())
+            return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
+    }
 
     if (token != "(")
-        return ErrorInfo("function call has to start with \'(\'", iterator.currentLine);
+        return ErrorInfo("FunctionCall: \'" + funcName + "\' had to start with '('", iterator.currentLine);
 
-    ss << '(';
+    string nextToken;
+    if (!iterator.peekToken(nextToken))
+        return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
 
-	uint32_t argCounter = 1;
-	vector<ArgumentPair> argsStrings;
-	argsStrings.reserve(6);
+    GetArgs_Result args;
+    if(nextToken == ")")
+    {
+        args = GetArgs_Result();
 
-	FuncInfo callFunc;
+        if (!iterator.nextToken())
+            return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
+    }
+    else
+    {
+        Result<GetArgs_Result> argsResult = _getArgs(iterator, metaData, context, funcName, bodyResult);
+        if (argsResult.hasError)
+            return argsResult.error;
 
-	uint32_t currentArgument = 1;
-	bool lastArgument = false;
-	while (!lastArgument)
-	{
-		Result< pair<vector<ArgumentPair>, FuncInfo> > argResult = _getAllArguments(iterator, metaData, funcInfo, callFuncs, callFuncName, scope, currentArgument, className, lastArgument);
-		if (argResult.hasError)
-			return argResult.error;
+        args = argsResult.value();
+    }
 
-		callFunc = argResult.value().second;
-		for (const auto& pair : argResult.value().first)
-			argsStrings.push_back(pair);
+    ErrorInfo error;
+    FuncDeclaration funcInfo;
+    if (!metaData.tryGetFunction(funcName, context, args.args, args.optionals, /*out*/funcInfo, iterator.currentLine, error))
+        return ErrorInfo("functionCall: \'" + funcName + "\' not found with given arguments\n" + error.message, iterator.currentLine);
 
-		currentArgument++;
-	}
+    Result<vector<shared_ptr<SuperExpression>>> expressionsOfArgs = _getExpressionsOfArgs(args, funcInfo);
+    if (expressionsOfArgs.hasError)
+        return expressionsOfArgs.error;
 
-	if (argsStrings.size() < callFunc.args.size())
-		return ErrorInfo("function call has to little arguments, funcName: \'" +callFuncName+ "\'", iterator.currentLine);
+    bodyResult.expression =
+        make_shared<FunctionCall>
+        (
+            FunctionCall(funcName, funcInfo.returnType, funcInfo, expressionsOfArgs.value())
+        );
 
+    Result<void> result = _convertAndCheck_TemplateTypes(metaData, context, /*out*/bodyResult.expression, args, definedTemplateTypes, iterator.currentLine);
+    if (result.hasError)
+        return result.error;
 
-	for (const auto& pair : argsStrings)
-		ss << pair.argument;
-	return ss.str();
+    if (shouldBeType != nullptr && shouldBeType->toPrimitiveType() != PrimitiveType::none)
+    {
+        Result<void> isCompatible = shouldBeType->areTypeCompatible(funcInfo.returnType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
+        if (isCompatible.hasError)
+            return isCompatible.error;
+    }
+
+    return bodyResult;
+}
+
+Result<BodyStatment_Result<FunctionCall>> convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName)
+{
+    return _convertFunctionCall(iterator, metaData, context, funcName, nullptr);
+}
+
+Result<BodyStatment_Result<FunctionCall>> convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName, RawType& shouldBeType)
+{
+    return _convertFunctionCall(iterator, metaData, context, funcName, &shouldBeType);
 }

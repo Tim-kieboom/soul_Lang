@@ -1,154 +1,304 @@
 //invis till endInvis is removed by tokenizer
 #invis
 //for syntax highlighting
+func Error(str err);
+func Ok(i32 val);
+
 func ctor();
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 func println(str msg);
+func println();
+func len(str[] array);
+func len(str msg);
 func print(str msg);
-func assertThrow(bool condition, str msg);
-func assertFail(bool condition, str msg);
-=======
-=======
->>>>>>> Stashed changes
-none println(str msg);
-none println();
-uSize len(str[] array);
-uSize len(str msg);
-none print(str msg);
-none checkThrow(bool condition, str msg);
-none checkFail(bool condition, str msg);
-none Throw(str msg);
-none Fail(str msg);
+func checkThrow(bool condition, str msg);
+func checkFail(bool condition, str msg);
+func Throw(str msg);
+func Fail(str msg);
 struct pub;
 struct mut;
 struct pass;
 struct copy;
->>>>>>> Stashed changes
 struct func;
-struct pub;
 struct priv;
+struct Range;
 struct delete;
-struct mut;
+struct inline;
+struct Functional;
+struct CompileConst;
+class i8;
+class i16;
 class i32;
+class i64;
+class u8;
+class u16;
+class u32;
+class u64;
+class uSize;
+class f32;
 class f64;
-class ui64;
 class str;
 class none;
+class Result;
+class TYPE;
 class f;
 # endInvis
 
-class Option_i32
+CompileConst u32 MAX_U32 = (32 ** 2) - 1;
+
+//Functional sqrt(f64 x): f64
+//{
+//    return 2 </ x;
+//}
+
+//class Ok<T>
+//{
+//    pub T data;
+//    pub ctor(this.data) { }
+//}
+
+//class Error<T>
+//{
+//    pub T data;
+//    pub ctor(this.data) { }
+//}
+
+//class Result<TValue, TError>
+//{
+//    Ok<TValue>? value = null;
+//    Error<TError>? error = null;
+
+//    pub ctor() { }
+
+//    pub ctor(Ok<TValue> value_) 
+//    {
+//        value = value_;
+//    }
+
+//    pub ctor(Error<TError> error_) 
+//    {
+//        error = error_;
+//    }
+
+//    pub HasError(): bool 
+//    {
+//        return error != null; 
+//    }
+
+//    pub HasValue(): bool
+//    {
+//        return value != null; 
+//    }
+
+//    pub isEmpty() bool
+//    {
+//        return !HasError() && !HasValue();
+//    }
+
+//    pub Error(): TError& 
+//    {
+//        checkFail(!HasError(), "Result does not have error");
+
+//        return error; 
+//    }
+
+//    pub Value(): TValue&
+//    {
+//        checkFail(!HasValue(), "Result does not have value");
+
+//        return value;
+//    }
+
+//    //pub this::pass(): TValue&
+//    //{
+//    //    if(hasValue())
+//    //    {
+//    //        pass::Ok();
+//    //    }
+//    //    else
+//    //    {
+//    //        pass::Error();
+//    //    }
+//    //}
+
+//    //priv this::pass::Ok(): TValue&
+//    //{
+//    //    return value.data;
+//    //}
+
+//    //priv this::pass::Error(): TError&
+//    //{
+//    //    return error.data;
+//    //}
+//}
+
+//class Ref<T>
+//{
+//    T[] ref = new T[1];
+    
+//    pub ctor(mut T& value) { ref[0] = value }
+
+//    pub get(): T&
+//    {
+//        return ref[0];
+//    }
+//}
+
+//class List<T>
+//{
+//    Ref<T[]> arrayRef = Ref<T[]>(new T[0]);
+
+//    pub uSize Size = 0;//{get; priv set;} = 0;
+//    pub uSize Capacity = 0;
+//    //{
+//    //    get 
+//    //    {
+//    //        return len(arrayRef.get());
+//    //    } 
+//    //    priv set(uSize newCapacity)
+//    //    {
+//    //        arrayRef.get() = copy[newCapacity] arrayRef.get();
+//    //    } 
+//    //} = 0;
+
+//    pub ctor() { }
+//    pub ctor(this.Capacity) { }
+//    pub ctor(mut T[] array, this.Size)
+//        : arrayRef(Ref<T[]>(array))
+//    {
+//    }
+
+//    pub isEmpty(): bool
+//    {
+//        return size == 0;
+//    }
+
+//    pub Data(): T[]
+//    {
+//        return arrayRef.get();
+//    }
+
+//    pub Push(T value): none
+//    {
+//        CompileConst u32 LAST_CAPACITY_BEFORE_OVERFLOW = (16 ** 2);
+
+//        if (Size + 1 > Capacity)
+//        {
+//            if((Capacity == 0))
+//            {   
+//                reserve(1);
+//            }
+//            else if(Capacity < LAST_CAPACITY_BEFORE_OVERFLOW)
+//            {
+//                reserve(Capacity * 2);
+//            }
+//            else if(Capacity == MAX_U32)
+//            {
+//                Fail(f"can't increase capacity of List, because List reached max Capacity:{MAX_U32}");
+//            }
+//            else
+//            {
+//                reserve(MAX_U32);
+//            }
+//        }
+
+//        T[]& array = arrayRef.get();
+//        array[Size++] = value;
+//    }
+
+//    pub Peek(): T&
+//    {
+//        checkFail((Size == 0), "can not peek empty list");
+//        return array[Size - 1];
+//    }
+
+//    pub Pop(): T
+//    {
+//        checkFail((Size == 0), "can not pop empty list");
+//        T[]& array = arrayRef.get();
+//        return array[--Size];
+//    }
+
+//    priv reserve(uSize newCapacity): none
+//    {
+//        T[]& array = arrayRef.get();
+//        array = copy[newCapacity] array;
+//        Capacity = len(array);
+//    }
+
+//    //pub At(i64 index, out T& value): Result<none>
+//    //{
+//    //    if ((index < 0 && Size + index < 0) || (index > Size - 1))
+//    //        return Error(f"index:{index}, is to big, size:{Size}");
+        
+//    //    T[]& array = arrayRef.get();
+//    //    value = array[index];
+//    //    return Ok();
+//    //}
+
+//    //pub this::[] (i64 index): i32&
+//    //{
+//    //    return array[index];
+//    //}
+
+//    //pub this::copy(): List
+//    //{
+//    //    return List(copy array, Size);
+//    //}
+
+//    //pub this::copy(u64 capacity): List
+//    //{
+//    //    return List(copy[capacity] array, Size);
+//    //}
+//}
+
+//func testList(): Result<none>
+//{
+//    List<i32> list = List<i32>();
+//    list.Push(1);
+//    list.Push(2);
+//    list.Push(3);
+//    list.Push(4);
+//    list.Push(5);
+//    pass list.At(1, out i32 value)
+
+//    println(list.Data());
+//    return;
+//}
+
+class objT<T>
 {
-<<<<<<< Updated upstream
-    priv i32 value = 0;
-    pub bool hasValue = false;
-=======
     T value;
-    pub ctor() { }
     pub ctor(this.value) { }
     pub ctor(T value_, bool randomArgForOverloading) { value = value_; }
->>>>>>> Stashed changes
 
-    pub ctor() { }
-    pub ctor(i32 initValue)
+    pub SetValue(T value_): none
     {
-        hasValue = initValue;
-        hasValue = true;
+        value = value_;
     }
 
-    pub set(i32 setValue): none
+    pub GetValue(): T&
     {
-        value = setValue;
-        hasValue = true;
+        return value;
     }
 
-    pub tryGet(out i32 outValue): bool
+    pub testMethodeTemplate<K>(K foo): none
     {
-        if(!hasValue)
-        {
-            return false;
-        }
-        outValue = value;
-        return true;
+        T temp = GetValue();
+        temp = value;
+        K ktemp = foo;
     }
 }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-func main(): i32
-=======
-class obj
-=======
-class obj
+func main(mut str[] args): i32
 {
-    i32 foo = 0;
-    pub ctor() { }
-    pub ctor(this.foo) { }
+    println();
 
-    pub GetFoo(): i32
-    {
-        return foo;
-    }
-
-    pub SetFoo(i32 value): none
-    {
-        foo = value;
-    }
-}
-
-func main(str[] args): i32
->>>>>>> Stashed changes
-{
-    i32 foo = 0;
-    pub ctor() { }
-    pub ctor(this.foo) { }
-
-    pub GetFoo(): i32
-    {
-        return foo;
-    }
-
-    pub SetFoo(i32 value): none
-    {
-        foo = value;
-    }
-}
-
-func main(str[] args): i32
->>>>>>> Stashed changes
-{
-    Option_i32 option;
-    i32 value;
-    if(option.tryGet(out value))
-    {
-        println("obj has no value (expected)");
-    }
-
-<<<<<<< Updated upstream
-    option.set(5);
-    if(option.tryGet(out value))
-    {
-        println("obj has no value (unexpected)");
-        return 1;
-    }
-=======
-    obj bar = obj(); 
-    obj bar2 = obj(5);
-
-    objT<i32> bar3 = objT<str>();
-
-<<<<<<< Updated upstream
-=======
-    obj bar = obj(); 
-    obj bar2 = obj(5);
-
-    objT<i32> bar3 = objT<str>();
-
->>>>>>> Stashed changes
+objT<i32> obj;
 
 //Result<none> result = testList()
-i32 ch1 = 'a';
+
+char ch = 47;
+i32 ch1 = i32(ch);
 char ch2 = char(ch1);
 
     str[] array;
@@ -167,8 +317,6 @@ char ch2 = char(ch1);
     println(f"log:{log_}, pow 4 ** 0.5={POW}, root 2 </ 4={ROOT}");
 
     //CompileConst f64 foo = sqrt(4);
->>>>>>> Stashed changes
 
-    println(f"obj value: {value}");
     return 0;
 }

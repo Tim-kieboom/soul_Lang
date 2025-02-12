@@ -1,13 +1,9 @@
 #pragma once
-#include "MetaData.hpp"
-#include "ScopeIterator.h"
+#include "Token.h"
+#include "Result.h"
+#include "MetaData.h"
+#include "FunctionCall.h"
+#include "CurrentContext.h"
 
-Result<std::string> convertFunctionCall
-(
-	TokenIterator& iterator, 
-	MetaData& metaData, 
-	ScopeIterator& scope, 
-	std::string& callFuncName,
-	FuncInfo& funcInfo,
-	std::string* className
-);
+Result<BodyStatment_Result<FunctionCall>> convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName);
+Result<BodyStatment_Result<FunctionCall>> convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName, RawType& shouldBeType);

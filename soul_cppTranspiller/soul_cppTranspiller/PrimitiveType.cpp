@@ -2,11 +2,8 @@
 
 using namespace std;
 
-PrimitiveType getType(const string& rawType)
+PrimitiveType getPrimitiveType(const string& rawType)
 {
-	if (rawType == toString(PrimitiveType::c_str))
-		return PrimitiveType::c_str;
-
 	if (rawType == toString(PrimitiveType::str))
 		return PrimitiveType::str;
 
@@ -18,6 +15,9 @@ PrimitiveType getType(const string& rawType)
 
 	if (rawType == toString(PrimitiveType::compile_dynamic))
 		return PrimitiveType::compile_dynamic;
+
+	if (rawType == toString(PrimitiveType::compile_dynamic_withoutStr))
+		return PrimitiveType::compile_dynamic_withoutStr;
 
 	if (rawType == toString(PrimitiveType::f32))
 		return PrimitiveType::f32;
@@ -37,17 +37,20 @@ PrimitiveType getType(const string& rawType)
 	if (rawType == toString(PrimitiveType::i64))
 		return PrimitiveType::i64;
 
-	if (rawType == toString(PrimitiveType::ui8))
-		return PrimitiveType::ui8;
+	if (rawType == toString(PrimitiveType::u8))
+		return PrimitiveType::u8;
 
-	if (rawType == toString(PrimitiveType::ui16))
-		return PrimitiveType::ui16;
+	if (rawType == toString(PrimitiveType::u16))
+		return PrimitiveType::u16;
 
-	if (rawType == toString(PrimitiveType::ui32))
-		return PrimitiveType::ui32;
+	if (rawType == toString(PrimitiveType::u32))
+		return PrimitiveType::u32;
 
-	if (rawType == toString(PrimitiveType::ui64))
-		return PrimitiveType::ui64;
+	if (rawType == toString(PrimitiveType::u64))
+		return PrimitiveType::u64;
+
+	if (rawType == toString(PrimitiveType::uSize))
+		return PrimitiveType::uSize;
 
 	if (rawType == toString(PrimitiveType::none))
 		return PrimitiveType::none;
@@ -65,14 +68,14 @@ string toString(PrimitiveType type)
 	case PrimitiveType::compile_dynamic:
 		return "compile_dynamic";
 
+	case PrimitiveType::compile_dynamic_withoutStr:
+		return "compile_dynamic_withoutStr";
+
 	case PrimitiveType::bool_:
 		return "bool";
 
 	case PrimitiveType::char_:
 		return "char";
-
-	case PrimitiveType::c_str:
-		return "c_str";
 
 	case PrimitiveType::str:
 		return "str";
@@ -89,17 +92,20 @@ string toString(PrimitiveType type)
 	case PrimitiveType::i64:
 		return "i64";
 
-	case PrimitiveType::ui8:
-		return "ui8";
+	case PrimitiveType::u8:
+		return "u8";
 
-	case PrimitiveType::ui16:
-		return "ui16";
+	case PrimitiveType::u16:
+		return "u16";
 
-	case PrimitiveType::ui32:
-		return "ui32";
+	case PrimitiveType::u32:
+		return "u32";
 
-	case PrimitiveType::ui64:
-		return "ui64";
+	case PrimitiveType::u64:
+		return "u64";
+
+	case PrimitiveType::uSize:
+		return "uSize";
 
 	case PrimitiveType::f32:
 		return "f32";
@@ -108,5 +114,5 @@ string toString(PrimitiveType type)
 		return "f64";
 	}
 
-	return "invalid";
+	return "<invalid>";
 }

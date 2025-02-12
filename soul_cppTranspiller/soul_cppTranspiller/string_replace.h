@@ -1,6 +1,10 @@
 #pragma once
 #include <cstdint>
+#include <initializer_list>
 #include <string>
+
+uint32_t string_replaceFormat(/*out*/ std::string& str, const char* before, std::initializer_list<const char*> dilimiters);
+uint32_t string_replaceFormat(/*out*/ std::string& str, const char* before, const char* after, std::initializer_list<const char*> dilimiters);
 
 uint32_t string_replace(/*out*/ std::string& str, char replaceChar, char withChar);
 uint32_t string_replace(/*out*/ std::string& str, const std::string& replaceStr, const std::string& withStr);

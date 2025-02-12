@@ -1,15 +1,14 @@
 #pragma once
 #include <string>
-#include <unordered_map>
 
 enum class PrimitiveType
 {
 	invalid,
 
 	compile_dynamic,
+	compile_dynamic_withoutStr,
 	none,
 
-	c_str,
 	str,
 
 	char_,
@@ -20,14 +19,15 @@ enum class PrimitiveType
 	i32,
 	i64,
 
-	ui8,
-	ui16,
-	ui32,
-	ui64,
+	u8,
+	u16,
+	u32,
+	u64,
+	uSize,
 
 	f32,
 	f64
 };
 
 std::string toString(PrimitiveType type);
-PrimitiveType getType(const std::string& rawType);
+PrimitiveType getPrimitiveType(const std::string& rawType);

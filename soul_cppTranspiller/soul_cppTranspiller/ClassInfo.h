@@ -1,64 +1,77 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "TypeInfo.h"
-#include "equalTools.h"
+#include <map>
 
-struct TypeInfo;
-
-enum class ClassAccessType
-{
-	public_,
-	private_
-};
+#include "Result.h"
+#include "ClassAccessLevel.h"
+#include "TemplateType.h"
 
 struct FieldsInfo
 {
 	std::string name;
+	std::string stringRawType;
 	bool isProperty = false;
-	ClassAccessType scope = ClassAccessType::private_;
+	ClassAccessLevel accessLevel = ClassAccessLevel::priv;
+
+	FieldsInfo() = default;
+	FieldsInfo(std::string& name, std::string& stringRawType, ClassAccessLevel accessLevel, bool isProperty = false)
+		: name(name), stringRawType(stringRawType), isProperty(isProperty), accessLevel(accessLevel)
+	{
+	}
 };
 
-struct Methode
-{
-	std::string methodeNames;
-	ClassAccessType scope = ClassAccessType::private_;
+struct ArgumentInfo;
 
-	Methode() = default;
-	Methode(std::string& methodeNames, ClassAccessType scope)
-		: methodeNames(methodeNames), scope(scope)
+struct MethodeDecleration
+{
+	std::string methodeName;
+	std::vector<ArgumentInfo> args;
+	ClassAccessLevel accessLevel = ClassAccessLevel::priv;
+
+	MethodeDecleration() = default;
+	MethodeDecleration(std::string& methodeName, std::vector<ArgumentInfo>& args, ClassAccessLevel accessLevel)
+		: methodeName(methodeName), args(args), accessLevel(accessLevel)
 	{
 	}
 };
 
 struct ClassInfo
 {
-	std::string className;
-	std::vector<TypeInfo> fieldsType;
-	std::vector<FieldsInfo> fieldsInfo;
-	std::vector<Methode> methodesNames;
+	std::string name;
+	std::vector<FieldsInfo> fields;
+	std::vector<MethodeDecleration> methodes;
+	std::map<std::string, TemplateType> templateTypes;
 
-	void setField(FieldsInfo& fieldInfo, TypeInfo& type)
+	ClassInfo() = default;
+	ClassInfo(std::string& name, std::map<std::string, TemplateType>& templateTypes)
+		: name(name), templateTypes(templateTypes)
 	{
-		fieldsType.push_back(type);
-		fieldsInfo.push_back(fieldInfo);
 	}
 
-	Result<uint64_t> tryGetFieldIndex(const std::string& name, TypeInfo& type)
+	void addMethode(MethodeDecleration& methode)
 	{
-		uint64_t i = 0;
-		for (; i < fieldsInfo.size(); i++)
+		methodes.push_back(methode);
+	}
+
+	void addField(FieldsInfo field)
+	{
+		fields.push_back(field);
+	}
+
+	Result<FieldsInfo> isField(std::string& name, uint32_t currentLine)
+	{
+		for (FieldsInfo& field : fields)
 		{
-			FieldsInfo& info = fieldsInfo.at(i);
-			if (info.name == name)
-				break;
+			if (field.name == name)
+				return field;
 		}
 
-		return i;
+		return ErrorInfo("isNotField", currentLine);
 	}
 
-	bool equals(ClassInfo& other) const
+	bool isEqual(const ClassInfo& other) const
 	{
-		return className == other.className;
+		return name == other.name;
 	}
 };

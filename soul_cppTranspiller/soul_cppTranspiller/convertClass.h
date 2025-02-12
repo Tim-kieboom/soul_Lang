@@ -1,4 +1,6 @@
 #pragma once
-#include "MetaData.hpp"
+#include "Result.h"
+#include "MetaData.h"
+#include "ClassNode.h"
 
-Result<std::string> convertClass(TokenIterator& iterator, MetaData& metaData);
+Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData);

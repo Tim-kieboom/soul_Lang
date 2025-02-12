@@ -43,9 +43,7 @@ bool string_removeSpan(/*out*/ string& str, int64_t begin, int64_t end)
 uint64_t string_remove(std::string& str, char ch)
 {
 	vector<uint32_t> removes = string_find(str, ch);
-	for (auto index : removes)
-		string_removeAt(str, index);
-
+	str.erase(std::remove(str.begin(), str.end(), ch), str.end());
 	return removes.size();
 }
 

@@ -1,17 +1,19 @@
 #pragma once
 #include <string>
-#include "TypeInfo.h"
 
 struct VarInfo
 {
 	std::string name;
-	TypeInfo type;
+	std::string stringedRawType;
 	bool isOption = false;
+	bool isAssigned = false;
+	bool isForwardDecl = false;
+	bool isCompileConst = false;
 
 	VarInfo() = default;
-
-	VarInfo(const std::string& name, const TypeInfo& type, bool isOption = false)
-		: name(name), type(type), isOption(isOption)
+	
+	VarInfo(const std::string name, const std::string stringedRawType, bool isOption = false)
+		: name(name), stringedRawType(stringedRawType), isOption(isOption)
 	{
 	}
 };

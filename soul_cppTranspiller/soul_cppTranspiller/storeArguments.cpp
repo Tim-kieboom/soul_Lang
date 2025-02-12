@@ -1,114 +1,132 @@
 #include "storeArguments.h"
-#include "TypeInfo.h"
-#include "soulCheckers.h"
+#include "soulChecker.h"
+#include "convertExpression.h"
 
 using namespace std;
 
 struct StoreArgsInfo
 {
-    ArgumentType argType = ArgumentType::tk_default;
-    TypeInfo type;
+    ArgumentType argType = ArgumentType::default_;
     uint32_t openBracketCounter = 1;
-    string defaultValue = "";
+    bool isOptional = false;
+    shared_ptr<SuperExpression> defaultValue;
     string argName = "";
+    RawType type;
 
     uint64_t argumentPosition = 1;
 
-    void reset()
+    void reset(bool isOptional)
     {
+        this->type;
         this->argName = "";
-        this->defaultValue = "";
-        this->argumentPosition++;
-        this->type = TypeInfo();
-        this->argType = ArgumentType::tk_default;
+        
+        if(!isOptional)
+            this->argumentPosition++;
+        
+        this->isOptional = false;
+        this->argType = ArgumentType::default_;
     }
 };
 
 static inline Result<void> storeArgument
 (
-    TokenIterator& iterator,  
-    StoreArgsInfo& storeInfo, 
-    /*out*/ FuncInfo& funcInfo,
-    /*out*/ Nesting& scope
+    TokenIterator& iterator,
+    StoreArgsInfo& storeInfo,
+    MetaData& metaData,
+    CurrentContext& context,
+    vector<ArgumentInfo>& args,
+    vector<ArgumentInfo>& optionals
 )
 {
-    TypeInfo type = storeInfo.type;
+    RawType& type = storeInfo.type;
     string& argName = storeInfo.argName;
     ArgumentType& argType = storeInfo.argType;
     uint64_t& argumentPosition = storeInfo.argumentPosition;
 
-    if (!type.isValid())
-        return ErrorInfo("valueType of argument is invalid argumentNumber: \'" + argumentPosition + string("\'"), iterator.currentLine);
-
     if (argName.empty())
-        return ErrorInfo("no name given to argument, argument type: \'" + toString(type) + "\'", iterator.currentLine);
+        return ErrorInfo("no name given to argument, argumentNumber: \'" + argumentPosition + string("\',") + "argument type : \'" + toString(type) + "\'", iterator.currentLine);
 
-    ArgumentInfo argInfo = ArgumentInfo(argType, type, argName, argumentPosition);
-    VarInfo varInfo = VarInfo(argName, type, argType_isOptions(argType));
+    if (!type.isValid(metaData.classStore, context.currentTemplateTypes))
+        return ErrorInfo("valueType of argument is invalid, argument: \'" + argName + "\'", iterator.currentLine);
 
-    funcInfo.args.emplace_back(argInfo);
-    scope.addVariable(varInfo);
+    if (type.isRefrence())
+        return ErrorInfo("Argument type can not be a refrence, argument: \'" + argName + "\'", iterator.currentLine);
 
-    storeInfo.reset();
+    if (argType == ArgumentType::default_)
+        type.isMutable = false;
+
+    ArgumentInfo arg = ArgumentInfo(storeInfo.isOptional, type, argName, argType, argumentPosition);
+
+    if (arg.isOptional)
+    {
+        arg.defaultValue = storeInfo.defaultValue;
+        optionals.push_back(arg);
+    }
+    else
+    {
+        args.push_back(arg);
+    }
+    storeInfo.reset(arg.isOptional);
     return {};
 }
 
-static inline Result<void> storeLastArgument
+static inline Result<RawType> storeLastArgument
 (
+    TokenIterator& iterator,
     StoreArgsInfo& storeInfo,
-    /*out*/ TokenIterator& iterator, 
-    /*out*/ MetaData& metaData, 
-    /*out*/ FuncInfo& funcInfo, 
-    /*out*/ Nesting& scope,
+    MetaData& metaData,
+    CurrentContext& context,
+    vector<ArgumentInfo>& args,
+    vector<ArgumentInfo>& optionals,
     bool isCtor
 )
 {
     string& token = iterator.currentToken;
-    if (storeInfo.type.isValid())
+    if (storeInfo.type.isValid(metaData.classStore, context.currentTemplateTypes))
     {
-        Result<void> result = storeArgument(iterator, storeInfo, funcInfo, scope);
+        Result<void> result = storeArgument(iterator, storeInfo, metaData, context, args, optionals);
         if (result.hasError)
             return result.error;
     }
 
-    if (!isCtor)
-    {
-        TypeInfo& type = storeInfo.type;
-        if (!iterator.nextToken())
-            return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
+    RawType& type = storeInfo.type;
+    if (isCtor)
+        return type;
 
-        if (token != ":")
-            return ErrorInfo("function Declarations doesn't end with ':'", iterator.currentLine);
+    if (!iterator.nextToken())
+        return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
 
-        if (!iterator.nextToken())
-            return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
+    if (token != ":")
+        return ErrorInfo("function Declarations doesn't have return type", iterator.currentLine);
 
-        Result<TypeInfo> returnType = getTypeInfo(iterator, metaData.classStore);
-        if (returnType.hasError)
-            return returnType.error;
-        
-        funcInfo.returnType = returnType.value();
-    }
+    if (!iterator.nextToken())
+        return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
 
-    return {};
+    Result<RawType> returnType = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
+    if (returnType.hasError)
+        return returnType.error;
+
+    return returnType.value();
 }
 
-Result<void> storeArguments(TokenIterator& iterator, MetaData& metaData, FuncInfo& funcInfo, Nesting& scope, bool isCtor)
+Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, RawType& returnType, ClassArgumentInfo* inClass)
 {
     StoreArgsInfo storeInfo;
     uint32_t& openBracketCounter = storeInfo.openBracketCounter;
+    vector<ArgumentInfo> args;
+    vector<ArgumentInfo> optionals;
 
     string& token = iterator.currentToken;
     while(iterator.nextToken())
     {
-        Result<TypeInfo> typeResult = getTypeInfo(iterator, metaData.classStore);
-        if(token == ",")
+        Result<RawType> typeResult = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
+        if (token == ",")
         {
-            Result<void> result = storeArgument(iterator, storeInfo, funcInfo, scope);
+            Result<void> result = storeArgument(iterator, storeInfo, metaData, context, args, optionals);
             if (result.hasError)
                 return result.error;
         }
-        else if (token == "(")
+        else if(token == "(")
         {
             openBracketCounter++;
         }
@@ -116,29 +134,93 @@ Result<void> storeArguments(TokenIterator& iterator, MetaData& metaData, FuncInf
         {
             if(openBracketCounter <= 1)
             {
-                Result<void> result = storeLastArgument(storeInfo, iterator, metaData, funcInfo, scope, isCtor);
+                Result<RawType> result = storeLastArgument(iterator, storeInfo, metaData, context, args, optionals, (inClass != nullptr && inClass->isCtor));
                 if (result.hasError)
                     return result.error;
 
-                return {};
+                if (inClass == nullptr || !inClass->isCtor)
+                    returnType = result.value();
+                
+                return StoreArguments_Result(args, optionals);
             }
 
             openBracketCounter--;
         }
-        else if(getArgType_symbol(token) != ArgumentType::invalid)
+        else if(getArgumentType(token) != ArgumentType::invalid)
         {
-            storeInfo.argType = getArgType_symbol(token);
+            storeInfo.argType = getArgumentType(token);
         }
         else if(token == "=")
         {
-            storeInfo.argType = argType_ChangeToOptional(storeInfo.argType);
+            storeInfo.isOptional = true;
 
-            if (iterator.nextToken())
+            if (!iterator.nextToken())
                 break;
+
+            RawType type;
+            Result<BodyStatment_Result<SuperExpression>> expression = convertExpression(iterator, metaData, context, { ",", ")" }, false, &type);
+            if (expression.hasError)
+                return expression.error;
+
+            if (!iterator.nextToken(/*steps*/ -1))
+                break;
+
+            Result<void> areCompatible = storeInfo.type.areTypeCompatible(type, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
+            if (areCompatible.hasError)
+                return ErrorInfo("optional defaultValue:\n" + areCompatible.error.message, areCompatible.error.lineNumber);
+
+            storeInfo.defaultValue = expression.value().expression;
         }
         else if (!typeResult.hasError)
         {
             storeInfo.type = typeResult.value();
+        }
+        else if(token == "this")
+        {
+            ClassInfo classInfo;
+
+            if (inClass == nullptr || !inClass->isCtor)
+                return ErrorInfo("'this' is only allowed as argument in ctor methodes", iterator.currentLine);
+            
+            if(inClass != nullptr) 
+                // i HATE compiler 'nooo you can't deref inClass it could be nullptr'
+                classInfo = inClass->classInfo;
+
+            if (!iterator.nextToken())
+                break;
+
+            if(token != ".")
+                return ErrorInfo("'this' allown is an invalid argument (valid argument 'this.<Field-name>')", iterator.currentLine);
+
+            if (!iterator.nextToken())
+                break;
+
+            string fieldName = token;
+
+            Result<FieldsInfo> field = classInfo.isField(token, iterator.currentLine);
+            if (field.hasError)
+                return ErrorInfo("\'" + token + "\' is not a field so can not be used as 'this." + fieldName + "\'", iterator.currentLine);
+
+            Result<RawType> type = getRawType_fromStringedRawType(field.value().stringRawType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
+            if (type.hasError)
+                return type.error;
+
+            if (!iterator.nextToken())
+                break;
+            
+            if (!initListEquals({",", ")"}, token))
+                return ErrorInfo("\'"+token+"\' allowed in argument after 'this." + fieldName + "\'", iterator.currentLine);
+
+            storeInfo.argName = "this." + fieldName;
+            storeInfo.argType = ArgumentType::mut;
+            storeInfo.type = type.value();
+
+            Result<void> result = storeArgument(iterator, storeInfo, metaData, context, args, optionals);
+            if (result.hasError)
+                return result.error;
+
+            if (token == ")")
+                return StoreArguments_Result(args, optionals);
         }
         else
         {
@@ -147,6 +229,5 @@ Result<void> storeArguments(TokenIterator& iterator, MetaData& metaData, FuncInf
             storeInfo.argName = token;
         }
     }
-
     return ErrorInfo("function Declarations arguments incomplete", iterator.currentLine);
 }

@@ -1,86 +1,65 @@
 #pragma once
-#include "TypeInfo.h"
-#include "ArgumentType.h"
+#include <string>
+#include "Type.h"
+#include "Result.h"
+#include "SuperExpression.h"
+
+enum class ArgumentType
+{
+	invalid,
+
+	default_,
+	mut,
+	out
+};
+
+struct ArgumentInfo;
+
+ArgumentType getArgumentType(const std::string& token);
+std::string toString(ArgumentType type);
+std::string toString(const ArgumentInfo& arg);
+std::string toString(std::vector<ArgumentInfo>& args);
 
 struct ArgumentInfo
 {
-	ArgumentType argType = ArgumentType::tk_default;
-	TypeInfo valueType;
+	bool isOptional = false;
+	std::shared_ptr<SuperExpression> defaultValue;
 
-	std::string name;
+	RawType valueType;
+	std::string argName;
+	ArgumentType argType = ArgumentType::invalid;
+
 	uint64_t argPosition = 0;
-	std::string optionalValue;
 	bool canBeMultiple = false;
 
 	ArgumentInfo() = default;
-	ArgumentInfo(ArgumentType argType, TypeInfo&& valueType, const char* name, uint64_t argPosition)
-		: argType(argType),
-		valueType(valueType),
-		name(std::string(name)),
-		argPosition(argPosition)
+	ArgumentInfo(bool isOptional, RawType valueType, std::string argName, ArgumentType argType, uint64_t argPosition, bool canBeMultiple = false)
+		: isOptional(isOptional), valueType(valueType), argName(argName), argType(argType), argPosition(argPosition), canBeMultiple(canBeMultiple)
 	{
 	}
-
-	ArgumentInfo(ArgumentType argType, TypeInfo& valueType, const std::string& name, uint64_t argPosition)
-		: argType(argType),
-		valueType(valueType),
-		name(name),
-		argPosition(argPosition)
+	 
+	Result<void> Compatible(const ArgumentInfo& other, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, int64_t currentLine) const
 	{
-	}
+		if (isOptional != other.isOptional)
+		{
+			return ErrorInfo("Argument1 is and Argument2 both need to be optional", currentLine);
+		}
 
-	ArgumentInfo(ArgumentType argType, TypeInfo&& valueType, const char* name, uint64_t argPosition, bool canBeMultiple)
-		: argType(argType),
-		valueType(valueType),
-		name(std::string(name)),
-		canBeMultiple(canBeMultiple),
-		argPosition(argPosition)
-	{
-	}
+		if(argType == ArgumentType::out)
+		{
+			if (other.argType != ArgumentType::out)
+				return ErrorInfo();
 
-	ArgumentInfo(ArgumentType argType, TypeInfo& valueType, const std::string& name, uint64_t argPosition, bool canBeMultiple)
-		: argType(argType),
-		valueType(valueType),
-		name(name),
-		canBeMultiple(canBeMultiple),
-		argPosition(argPosition)
-	{
-	}
+			return other.valueType.isEqual(valueType, classStore, templateTypes, currentLine);
+		}
 
-	ArgumentInfo(ArgumentType argType, TypeInfo&& valueType, const char* name, uint64_t argPosition, bool canBeMultiple, const char* optionalValue)
-		: argType(argType),
-		valueType(valueType),
-		name(std::string(name)),
-		canBeMultiple(canBeMultiple),
-		optionalValue(std::string(optionalValue)),
-		argPosition(argPosition)
-	{
-	}
+		if (valueType.isTemplate(templateTypes) || other.valueType.isTemplate(templateTypes))
+			return {};
 
-	ArgumentInfo(ArgumentType argType, TypeInfo&& valueType, const std::string& name, uint64_t argPosition, bool canBeMultiple, const std::string& optionalValue)
-		: argType(argType),
-		valueType(valueType),
-		name(name),
-		canBeMultiple(canBeMultiple),
-		optionalValue(optionalValue),
-		argPosition(argPosition)
-	{
-	}
-
-	bool equals(const ArgumentInfo& other) const
-	{
-		return name == other.name &&
-			argType == other.argType &&
-			argPosition == argPosition &&
-			valueType.equals(other.valueType) &&
-			canBeMultiple == other.canBeMultiple;
-	}
-
-	bool about_equals(const ArgumentInfo& other) const
-	{
-		return argPosition == argPosition &&
-			   valueType.equals(other.valueType);
+		Result<void> result = valueType.areTypeCompatible(other.valueType, classStore, templateTypes, currentLine);
+		if (result.hasError)
+			return result.error;
+	
+		return {};
 	}
 };
-
-std::string toString(const ArgumentInfo& arg);

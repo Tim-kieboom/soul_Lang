@@ -1,14 +1,16 @@
 #pragma once
-#include "TypeCategory.h"
+#include "PrimitiveType.h"
+#include "TypeCatagory.h"
 
 enum class DuckType
 {
 	invalid,
 	compile_dynamic,
+	compile_dynamic_withoutStr,
 
-	text,
-	character,
-	number
+	Text,
+	Char,
+	Number
 };
 
 PrimitiveType DuckToPrimitive(DuckType type);

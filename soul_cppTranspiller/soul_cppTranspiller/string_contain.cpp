@@ -30,7 +30,7 @@ bool string_contains(const string& str, char find)
 	return str.find(find) != string::npos;
 }
 
-bool string_contains(const std::string& str, initializer_list<char>& find)
+bool string_containsChars(const std::string& str, initializer_list<char> find)
 {
 	for (const char& ch : str)
 	{

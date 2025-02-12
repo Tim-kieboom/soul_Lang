@@ -45,40 +45,13 @@ Result<std::vector<std::string>> getTypeTokens(const std::string& stringedRawTyp
     if (strType.empty())
         return ErrorInfo("type is <empty>", currentLine);
 
-    vector<string> typeTokens = string_splitOn(strType, { "const", "[]", "*", "&", "<", ",", ">"});
+    vector<string> typeTokens = string_splitOn(strType, { "const", "[]", "*", "&" });
 
     //if first element is empty remove element
     if (typeTokens.front().empty())
         typeTokens.erase(typeTokens.begin());
 
     return typeTokens;
-}
-
-static inline Result<vector<RawType>> _parseTemplateTypeCtor(uint64_t& i, vector<string>& typeTokens, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, const uint64_t currentLine)
-{
-    vector<RawType> definedTemplateType;
-
-    while (true)
-    {
-        if (i < typeTokens.size() - 1)
-            return ErrorInfo("unexpected end of type while parsing templateType ctor", currentLine);
-
-        Result<RawType> defineType = getRawType_fromStringedRawType(typeTokens.at(i++), classStore, templateTypes, currentLine);
-        if (defineType.hasError)
-            return defineType.error;
-
-        if (i < typeTokens.size() - 1)
-            return ErrorInfo("unexpected end of type while parsing templateType ctor", currentLine);
-
-        definedTemplateType.push_back(defineType.value());
-
-        if (typeTokens.at(i) == ">")
-            break;
-        else if (typeTokens.at(i) == ",")
-            i++;
-        else
-            return ErrorInfo("\'" + typeTokens.at(i) + "\' invalid in templateType ctor", currentLine);
-    }
 }
 
 Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, const uint64_t currentLine)
@@ -108,11 +81,6 @@ Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawTyp
 
     if (i == typeTokens.size()-1)
         return rawType;
-
-    if (typeTokens.at(i + 1) == "<")
-    {
-
-    }
 
     Result<void> result;
     uint8_t refrenceCounter = 0;

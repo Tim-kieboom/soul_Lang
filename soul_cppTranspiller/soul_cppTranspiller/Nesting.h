@@ -1,11 +1,11 @@
 #pragma once
-#include <cstdint>
+#include <vector>
 #include "Result.h"
-#include "varInfo.h"
+#include "VarInfo.h"
 
 struct Nesting
 {
-	uint32_t selfIndex;
+	uint32_t selfIndex = 0;
 	int64_t parentIndex = -1;
 	std::vector<VarInfo> vars;
 
@@ -14,8 +14,14 @@ struct Nesting
 		: selfIndex(selfIndex)
 	{
 	}
-
-    Nesting(uint32_t selfIndex, std::initializer_list<VarInfo> vars)
+	Nesting(uint32_t selfIndex, std::initializer_list<VarInfo> vars)
+		: selfIndex(selfIndex)
+	{
+		this->vars.reserve(vars.size());
+		for (const auto& var : vars)
+			this->vars.push_back(var);
+	}
+    Nesting(uint32_t selfIndex, std::vector<VarInfo>& vars)
         : selfIndex(selfIndex)
     {
         this->vars.reserve(vars.size());
@@ -23,7 +29,7 @@ struct Nesting
             this->vars.push_back(var);
     }
 
-    static Nesting makeChild(Nesting* parent, std::vector<Nesting>& scope)
+    static Nesting makeChild(Nesting* parent)
     {
         if (parent == nullptr)
             return Nesting(0);
@@ -34,9 +40,9 @@ struct Nesting
         return child;
     }
 
-    static Nesting makeChild(Nesting* parent, std::vector<Nesting>& scope, std::initializer_list<VarInfo> vars)
+    static Nesting makeChild(Nesting* parent, std::initializer_list<VarInfo> vars)
     {
-        Nesting child = Nesting::makeChild(parent, scope);
+        Nesting child = Nesting::makeChild(parent);
         for (const auto& var : vars)
             child.vars.push_back(var);
 
@@ -48,12 +54,12 @@ struct Nesting
         vars.push_back(info);
     }
 
-    Result<VarInfo> tryGetVariable(const std::string& name, const std::vector<Nesting>& scope, const std::vector<VarInfo>& globalScope)
+    Result<VarInfo*> tryGetVariable(const std::string& name, std::vector<Nesting>& scope, std::vector<VarInfo>& globalScope)
     {
-        for (const VarInfo& varInfo : vars)
+        for (VarInfo& varInfo : vars)
         {
             if (varInfo.name == name)
-                return varInfo;
+                return &varInfo;
         }
 
         int64_t prevIndex = INT64_MIN;
@@ -61,26 +67,26 @@ struct Nesting
         while (currentIndex >= 0)
         {
             if (prevIndex == currentIndex)
-                throw std::logic_error("Nesting cirular ref issue");
+                throw std::exception("Nesting cirular ref issue");
 
             if (currentIndex == this->selfIndex)
                 throw std::exception("Nesting ref's itself");
 
-            const Nesting& parent = scope.at(currentIndex);
-            for (const VarInfo& varInfo : parent.vars)
+            Nesting& parent = scope.at(currentIndex);
+            for (VarInfo& varInfo : parent.vars)
             {
                 if (varInfo.name == name)
-                    return varInfo;
+                    return &varInfo;
             }
 
             prevIndex = currentIndex;
             currentIndex = parent.parentIndex;
         }
 
-        for (const VarInfo& varInfo : globalScope)
+        for (VarInfo& varInfo : globalScope)
         {
             if (varInfo.name == name)
-                return varInfo;
+                return &varInfo;
         }
 
         return ErrorInfo("tryGetVariable(): varNotFound", 0);

@@ -4,6 +4,22 @@
 
 using namespace std;
 
+uint32_t string_replaceFormat(/*out*/ string& str, const char* before, const char* after, initializer_list<const char*> dilimiters)
+{
+	uint32_t replaceCounter = 0;
+	for (const char* dilim : dilimiters)
+	{
+		replaceCounter += string_replace(str, dilim, before + string(dilim) + after);
+	}
+
+	return replaceCounter;
+}
+
+uint32_t string_replaceFormat(/*out*/ string& str, const char* before, initializer_list<const char*> dilimiters)
+{
+	return string_replaceFormat(str, before, "", dilimiters);
+}
+
 uint32_t string_replace(/*out*/ string& str, char replaceChar, char withChar)
 {
 	uint32_t counter = 0;

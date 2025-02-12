@@ -308,16 +308,34 @@ static inline Result<void*> storeRawString_inMap(/*out*/ string& sourceFile, /*o
     return {};
 }
 
+static inline void tokenizeDot(const string& token, vector<Token>& tokenizer, const uint64_t& lineNumber)
+{
+    vector<string> tokenArgs = string_splitOn(token, { "..", "." });
+
+    for (auto& str : tokenArgs)
+    {
+        string_remove(str, ' ');
+        if (!str.empty())
+            tokenizer.emplace_back(str, lineNumber);
+    }
+}
+
 static inline void tokenizeLine(const string& line, vector<Token>& tokenizer, uint64_t& lineNumber)
 {
-    vector<string> splitArgs = string_splitOn(line, { ",", "!=", "!", "[]", "[", "]", "(", ")", "{", "}", ":", ";", "++", "--", ">=", "<=", "==", "+=", "-=", "/=", "*=", "<", ">", "+", "-", "/", "*", "=" });
+    static initializer_list<const char*> parseStrings = {"</", "**", "&", ",", "!=", "!", "[]", "[", "]", "(", ")", "{", "}", ":", ";", "++", "--", ">=", "<=", "==", "+=", "-=", "/=", "*=", "<", ">", "+", "-", "/", "*", "=" };
+
+    vector<string> splitArgs = string_splitOn(line, parseStrings);
     string argsLine = concatToString(splitArgs, " ");
-    string_replace(/*out*/argsLine, ",", " ,");
 
     vector<string> tokens = string_split(argsLine, ' ');
     for (uint32_t i = 0; i < tokens.size(); i++)
     {
         string token = tokens.at(i);
+        if (string_contains(token, {'.'}) && getRawType_fromLiteralValue(token, lineNumber).hasError)
+        {
+            tokenizeDot(token, /*out*/tokenizer, lineNumber);
+            continue;
+        }
 
         string_remove(token, ' ');
         if (!token.empty())

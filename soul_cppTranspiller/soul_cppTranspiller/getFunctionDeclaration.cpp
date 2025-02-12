@@ -38,14 +38,7 @@ Result<FuncDeclaration_Result> getFunctionDeclaration(TokenIterator& iterator, M
 		if (currentClass != nullptr)
 		{
 			bool isCtor = (token == "ctor");
-			if(isCtor)
-			{
-				funcInfo.functionName = currentClass->name;
-			}
-			else
-			{
-				funcInfo.functionName = currentClass->name + "#" + token;
-			}
+			funcInfo.functionName = currentClass->name + "#" + token;
 			isInClass = new ClassArgumentInfo(*currentClass, isCtor);
 		}
 		else
@@ -83,12 +76,6 @@ Result<FuncDeclaration_Result> getFunctionDeclaration(TokenIterator& iterator, M
 		Result<StoreArguments_Result> argsResult = storeArguments(/*out*/iterator, /*out*/metaData, context, /*out*/returnType, isInClass);
 		if (argsResult.hasError)
 			return argsResult.error;
-
-		if (isInClass != nullptr && isInClass->isCtor)
-		{
-			returnType = RawType(isInClass->classInfo.name, true);
-			funcInfo.templateTypes = isInClass->classInfo.templateTypes;
-		}
 
 		if(context.functionRuleSet == CurrentContext::FuncRuleSet::Functional)
 		{
