@@ -6,6 +6,7 @@ enum class DuckType
 {
 	invalid,
 	compile_dynamic,
+	compile_dynamic_withoutStr,
 
 	Text,
 	Char,

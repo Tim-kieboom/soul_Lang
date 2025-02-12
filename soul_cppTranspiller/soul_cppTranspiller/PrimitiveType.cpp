@@ -4,9 +4,6 @@ using namespace std;
 
 PrimitiveType getPrimitiveType(const string& rawType)
 {
-	if (rawType == toString(PrimitiveType::c_str))
-		return PrimitiveType::c_str;
-
 	if (rawType == toString(PrimitiveType::str))
 		return PrimitiveType::str;
 
@@ -18,6 +15,9 @@ PrimitiveType getPrimitiveType(const string& rawType)
 
 	if (rawType == toString(PrimitiveType::compile_dynamic))
 		return PrimitiveType::compile_dynamic;
+
+	if (rawType == toString(PrimitiveType::compile_dynamic_withoutStr))
+		return PrimitiveType::compile_dynamic_withoutStr;
 
 	if (rawType == toString(PrimitiveType::f32))
 		return PrimitiveType::f32;
@@ -68,14 +68,14 @@ string toString(PrimitiveType type)
 	case PrimitiveType::compile_dynamic:
 		return "compile_dynamic";
 
+	case PrimitiveType::compile_dynamic_withoutStr:
+		return "compile_dynamic_withoutStr";
+
 	case PrimitiveType::bool_:
 		return "bool";
 
 	case PrimitiveType::char_:
 		return "char";
-
-	case PrimitiveType::c_str:
-		return "c_str";
 
 	case PrimitiveType::str:
 		return "str";

@@ -18,6 +18,8 @@ PrimitiveType DuckToPrimitive(DuckType type)
 		return PrimitiveType::invalid;
 	case DuckType::compile_dynamic:
 		return PrimitiveType::compile_dynamic;
+	case DuckType::compile_dynamic_withoutStr:
+		return PrimitiveType::compile_dynamic_withoutStr;
 	case DuckType::Text:
 		return PrimitiveType::str;
 	case DuckType::Char:
@@ -34,6 +36,9 @@ DuckType getDuckType(TypeCategory type)
 	{
 	case TypeCategory::compile_dynamic:
 		return DuckType::compile_dynamic;
+
+	case TypeCategory::compile_dynamic_withoutStr:
+		return DuckType::compile_dynamic_withoutStr;
 
 	case TypeCategory::Bool:
 	case TypeCategory::Int:
@@ -62,6 +67,9 @@ string toString(DuckType type)
 
 	case DuckType::compile_dynamic:
 		return "compile_dynamic";
+
+	case DuckType::compile_dynamic_withoutStr:
+		return "compile_dynamic_withoutStr";
 
 	case DuckType::Char:
 		return "Char";

@@ -6,9 +6,9 @@ enum class PrimitiveType
 	invalid,
 
 	compile_dynamic,
+	compile_dynamic_withoutStr,
 	none,
 
-	c_str,
 	str,
 
 	char_,

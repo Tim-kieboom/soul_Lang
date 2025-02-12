@@ -347,10 +347,19 @@ static inline Result<vector<RawType>> _getDefinedTemplateType(TokenIterator& ite
     return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
 }
 
-static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, const std::string funcName, RawType* shouldBeType = nullptr)
+static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, std::string funcName, RawType* shouldBeType = nullptr)
 {
     BodyStatment_Result<FunctionCall> bodyResult;
     string& token = iterator.currentToken;
+
+    if (funcName == "bool")
+    {
+        funcName = "bool_";
+    }
+    else if(funcName == "char")
+    {
+        funcName = "char_";
+    }
 
     if (!metaData.isFunction(funcName, context))
         return ErrorInfo("\'" + funcName + "\' is not a function", iterator.currentLine);

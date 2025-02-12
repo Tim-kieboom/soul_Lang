@@ -5,6 +5,7 @@ enum class TypeCategory
 {
 	invalid,
 	compile_dynamic,
+	compile_dynamic_withoutStr,
 
 	Int,
 	Text,

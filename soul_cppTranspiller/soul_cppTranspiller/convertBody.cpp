@@ -118,7 +118,12 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 		return BodyStatment_Result<SuperStatement>(make_shared<EmptyStatment>(EmptyStatment()));
 	}
 
-	Result<RawType> typeResult = getRawType(iterator, metaData.classStore, context.currentTemplateTypes);
+	//if true is type but in invalid type
+	bool isWrongType = false;
+	Result<RawType> typeResult = getRawType(iterator, metaData.classStore, context.currentTemplateTypes, /*out*/isWrongType);
+	if (isWrongType && typeResult.hasError)
+		return typeResult.error;
+	
 	Result<VarInfo*> varResult = context.scope.tryGetVariable_fromCurrent(token, metaData.globalScope, iterator.currentLine);
 
 	string nextToken;
@@ -294,7 +299,7 @@ Result<shared_ptr<BodyNode>> convertBody(TokenIterator& iterator, MetaData& meta
 	uint32_t openCurlyBracketCounter = 0;
 	while (iterator.nextToken())
 	{
-		if (iterator.currentLine == 320)
+		if (iterator.currentLine == 319)
 			int d = 0;
 
 		Result<BodyStatment_Result<SuperStatement>> bodyElementResult = convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, parentNode);

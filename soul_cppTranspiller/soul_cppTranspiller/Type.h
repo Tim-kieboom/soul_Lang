@@ -18,6 +18,7 @@ std::string toString(const RawType& type);
 Result<RawType> getRawType_fromLiteralValue(const std::string& value, const uint64_t currentLine);
 Result<std::vector<std::string>> getTypeTokens(const std::string& stringedRawType, const uint32_t currentLine);
 Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes);
+Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, bool& isWrongType);
 Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawType, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, const uint64_t currentLine);
 
 class RawType
@@ -29,24 +30,25 @@ private:
 
 public:
 	std::vector<TypeWrapper> typeWrappers;
+	std::vector<RawType> templateDefines;
 	bool isMutable = true;
 
 	RawType() = default;
-	
+
 	RawType(const std::string rawType, bool isMutable)
 		: rawType(rawType), isMutable(isMutable)
 	{
 	}
 
-	RawType(const std::string rawType, bool isMutable, std::initializer_list<TypeWrapper> wrappers)
-		: rawType(rawType), isMutable(isMutable)
+	RawType(const std::string rawType, bool isMutable, std::initializer_list<TypeWrapper> wrappers, std::initializer_list<RawType> templateDefines = {})
+		: rawType(rawType), isMutable(isMutable), templateDefines(templateDefines)
 	{
 		for (auto& wrap : wrappers)
 			typeWrappers.push_back(wrap);
 	}
 
-	RawType(const std::string rawType, bool isMutable, std::vector<TypeWrapper> wrappers)
-		: rawType(rawType), isMutable(isMutable)
+	RawType(const std::string rawType, bool isMutable, std::vector<TypeWrapper> wrappers, std::vector<RawType> templateDefines = {})
+		: rawType(rawType), isMutable(isMutable), templateDefines(templateDefines)
 	{
 		for (auto& wrap : wrappers)
 			typeWrappers.push_back(wrap);
@@ -167,8 +169,25 @@ public:
 		{
 			PrimitiveType primType = toPrimitiveType();
 			PrimitiveType primType_other = other.toPrimitiveType();
-			if (primType == PrimitiveType::compile_dynamic || primType_other == PrimitiveType::compile_dynamic)
+
+			if
+				(
+					primType == PrimitiveType::compile_dynamic ||
+					primType_other == PrimitiveType::compile_dynamic
+				)
+			{
 				return {};
+			}
+
+			if
+				(
+					primType == PrimitiveType::compile_dynamic_withoutStr || primType_other == PrimitiveType::compile_dynamic_withoutStr
+					&&
+					primType != PrimitiveType::str || primType_other != PrimitiveType::str
+				)
+			{
+				return {};
+			}
 
 			if (primType != primType_other)
 				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
@@ -217,8 +236,24 @@ public:
 		{
 			PrimitiveType primType = toPrimitiveType();
 			PrimitiveType primType_other = other.toPrimitiveType();
-			if (primType == PrimitiveType::compile_dynamic || primType_other == PrimitiveType::compile_dynamic)
+			if
+				(
+					primType == PrimitiveType::compile_dynamic ||
+					primType_other == PrimitiveType::compile_dynamic
+				)
+			{
 				return {};
+			}
+
+			if
+				(
+					primType == PrimitiveType::compile_dynamic_withoutStr || primType_other == PrimitiveType::compile_dynamic_withoutStr
+					&&
+					primType != PrimitiveType::str || primType_other != PrimitiveType::str
+				)
+			{
+				return {};
+			}
 
 			if (other.isRefrence() || other.isPointer() || other.isArray())
 			{

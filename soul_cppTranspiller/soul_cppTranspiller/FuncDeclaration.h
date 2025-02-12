@@ -20,8 +20,8 @@ struct FuncDeclaration
 	bool isConstexpr = false;
 
 	FuncDeclaration() = default;
-	FuncDeclaration(const std::string& funcName, const std::string& returnType, std::initializer_list<ArgumentInfo> args_, std::map<std::string, TemplateType> templateTypes, bool isForwardDeclared = true)
-		: returnType(returnType), functionName(funcName), args(), isForwardDeclared(isForwardDeclared), templateTypes(templateTypes)
+	FuncDeclaration(const std::string& funcName, const std::string& returnType, std::initializer_list<ArgumentInfo> args_, std::map<std::string, TemplateType> templateTypes, bool isForwardDeclared = true, bool hasReturnStament = false, bool isConstexpr = false)
+		: returnType(returnType), functionName(funcName), args(), isForwardDeclared(isForwardDeclared), templateTypes(templateTypes), hasReturnStament(hasReturnStament), isConstexpr(isConstexpr)
 	{
 		for (const ArgumentInfo& arg : args_)
 		{

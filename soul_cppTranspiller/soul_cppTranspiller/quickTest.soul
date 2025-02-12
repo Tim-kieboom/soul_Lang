@@ -289,38 +289,17 @@ class objT<T>
     }
 }
 
-func template(i32 value, str string): none
-{ 
-    i32 temp = value; 
-}
-
-func template<T> (T value): none 
-{ 
-    T temp = value; 
-}
-
-func template(i32 value, bool string): none
-{ 
-    i32 temp = value; 
-}
-
-func returnTemplate<T>(T value): T
-{ 
-    return value; 
-}
-
 func main(mut str[] args): i32
 {
     println();
 
-    template<i32>(1);
-    template(1);
-    template('c');
-    template(true);
-template<str>("foo");
-    i32 value = returnTemplate<i32>(1);
+objT<i32> obj;
 
-    //Result<none> result = testList()
+//Result<none> result = testList()
+
+char ch = 47;
+i32 ch1 = i32(ch);
+char ch2 = char(ch1);
 
     str[] array;
     array = new str[10];

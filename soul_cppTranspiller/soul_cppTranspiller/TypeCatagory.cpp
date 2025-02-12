@@ -30,8 +30,10 @@ TypeCategory getTypeCategory(PrimitiveType type)
 		return TypeCategory::Char;
 
 	case PrimitiveType::str:
-	case PrimitiveType::c_str:
 		return TypeCategory::Text;
+
+	case PrimitiveType::compile_dynamic_withoutStr:
+		return TypeCategory::compile_dynamic_withoutStr;
 
 	case PrimitiveType::compile_dynamic:
 		return TypeCategory::compile_dynamic;
@@ -50,6 +52,9 @@ string toString(TypeCategory type)
 
 	case TypeCategory::compile_dynamic:
 		return "compile_dynamic";
+
+	case TypeCategory::compile_dynamic_withoutStr:
+		return "compile_dynamic_withoutStr";
 
 	case TypeCategory::Char:
 		return "Char";

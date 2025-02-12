@@ -17,7 +17,6 @@ inline const char* primitiveTypeToCpp(PrimitiveType primType)
 	case PrimitiveType::uSize:
 		return "size_t";
 
-	case PrimitiveType::c_str:
 	case PrimitiveType::str:
 		return "__Soul_STR__";
 

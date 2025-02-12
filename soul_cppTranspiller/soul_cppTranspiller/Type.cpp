@@ -116,10 +116,47 @@ static inline bool isTemplateType(std::string& token, std::unordered_map<std::st
     return templateTypes.find(token) != templateTypes.end();
 }
 
-Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes)
+static inline Result<vector<RawType>> _getDefinedTemplateType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, RawType& rawType)
 {
-	const uint64_t beginIndex = iterator.i;
-	string& token = iterator.currentToken;
+    vector<RawType> templateDefines;
+    string& token = iterator.currentToken;
+    Nullable<ClassInfo> classInfo = rawType.toClassInfo(classStore);
+
+    if (classInfo.isNull())
+        return ErrorInfo("you are defining template type (<TYPE>) but parent type: \'" + toString(rawType) + "\' is not a class", iterator.currentLine);
+
+    while(iterator.nextToken())
+    {
+        Result<RawType> type = getRawType(iterator, classStore, templateTypes);
+        if (type.hasError)
+            return type.error;
+
+        templateDefines.push_back(type.value());
+
+        if(!iterator.nextToken())
+            return ErrorInfo("unexpected end while trying to get Type", iterator.currentLine);
+
+        if (token == ">")
+            break;
+        else if (token == ",")
+            continue;
+        else
+            return ErrorInfo("\'" +token+ "\' is invalid in template type ctor", iterator.currentLine);
+    }
+
+    if (classInfo.value().templateTypes.size() != templateDefines.size())
+    {
+        stringstream ss;
+        ss << "in type: \'" << toString(rawType) << "\', amount of template types defined: \'" << templateDefines.size() << "\' does not equal the amount of template types in class: \'" << rawType.toClassInfo(classStore).value().templateTypes.size() << "\'";
+        return ErrorInfo(ss.str(), iterator.currentLine);
+    }
+
+    return templateDefines;
+}
+
+static inline Result<RawType> _getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, bool* isWrongType = nullptr)
+{
+    string& token = iterator.currentToken;
     bool isMutable = true;
     RawType rawType;
 
@@ -127,24 +164,53 @@ Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::stri
     {
         isMutable = false;
         if (!iterator.nextToken())
-        {
-            iterator.at(beginIndex);
-            return ErrorInfo("unexpected end while trying to get TypeInfo", iterator.currentLine);
-        }
+            return ErrorInfo("unexpected end while trying to get Type", iterator.currentLine);
     }
 
     PrimitiveType type = getPrimitiveType(token);
     if (type == PrimitiveType::invalid && !isClass(token, classStore) && !isTemplateType(token, templateTypes))
-    {  
-        iterator.at(beginIndex);
         return ErrorInfo("type: \'" + token + "\', is not a reconized Type", iterator.currentLine);
-    }
 
     rawType = RawType(token, isMutable);
 
+    string nextToken;
+    if (!iterator.peekToken(nextToken))
+        return ErrorInfo("unexpected end while trying to get Type", iterator.currentLine);
+
+    if (nextToken == "<")
+    {
+        if (!iterator.nextToken())
+            return ErrorInfo("unexpected end while trying to get Type", iterator.currentLine);
+
+        Result<vector<RawType>> templateDefinesResult = _getDefinedTemplateType(iterator, classStore, templateTypes, rawType);
+        if (templateDefinesResult.hasError)
+        {
+            if (isWrongType != nullptr)
+                *isWrongType = true;
+
+            return templateDefinesResult.error;
+        }
+
+        rawType.templateDefines = templateDefinesResult.value();
+    }
+
+    if (rawType.isClass(classStore))
+    {
+        ClassInfo classInfo = rawType.toClassInfo(classStore).value();
+        if (classInfo.templateTypes.size() != rawType.templateDefines.size())
+        {
+            stringstream ss;
+            ss << "in type: \'" << toString(rawType) << "\', amount of template types defined: \'" << rawType.templateDefines.size() << "\' does not equal the amount of template types in class: \'" << rawType.toClassInfo(classStore).value().templateTypes.size() << "\'";
+            if (isWrongType != nullptr)
+                *isWrongType = true;
+
+            return ErrorInfo(ss.str(), iterator.currentLine);
+        }
+    }
+
     Result<void> result;
     uint8_t refrenceCounter = 0;
-    while(iterator.nextToken())
+    while (iterator.nextToken())
     {
         TypeWrapper wrap = getTypeWrapper(token);
         if (wrap == TypeWrapper::invalid)
@@ -157,9 +223,39 @@ Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::stri
 
         result = rawType.addTypeWrapper(wrap, iterator.currentLine);
         if (result.hasError)
+        {
+            if (isWrongType != nullptr)
+                *isWrongType = true;
+
             return result.error;
+        }
     }
 
-    iterator.at(beginIndex);
-    return ErrorInfo("unexpected end while trying to get TypeInfo", iterator.currentLine);
+    return ErrorInfo("unexpected end while trying to get Type", iterator.currentLine);
+}
+
+Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes)
+{
+    const uint64_t beginIndex = iterator.i;
+    Result<RawType> type = _getRawType(iterator, classStore, templateTypes);
+    if (type.hasError)
+    {
+        iterator.at(beginIndex);
+        return type.error;
+    }
+
+    return type;
+}
+
+Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, bool& isWrongType)
+{
+    const uint64_t beginIndex = iterator.i;
+    Result<RawType> type = _getRawType(iterator, classStore, templateTypes, &isWrongType);
+    if(type.hasError)
+    {
+        iterator.at(beginIndex);
+        return type.error;
+    }
+
+    return type;
 }
