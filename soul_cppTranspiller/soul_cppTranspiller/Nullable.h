@@ -10,6 +10,11 @@ private:
 
 public:
 
+	static Nullable<T> makeEmpty() 
+	{
+		return Nullable<T>();
+	}
+
 	Nullable()
 		: isNull_(true), value_({})
 	{

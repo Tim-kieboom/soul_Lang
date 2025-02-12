@@ -138,7 +138,11 @@ Result<string> convertToCpp(SyntaxTree& tree, MetaData& metaData)
         {
             const shared_ptr<FuncNode> funcNode = dynamic_pointer_cast<FuncNode>(funcOrClass);
             
-            Result<string> funcDeclr = convert_Cpp_FuncDeclaration(funcNode->funcDecl, metaData, funcNode->templatesTypes->templateTypes);
+            map<string, TemplateType> templateTypes;
+            if (funcNode->templatesTypes)
+                templateTypes = funcNode->templatesTypes->templateTypes;
+            
+            Result<string> funcDeclr = convert_Cpp_FuncDeclaration(funcNode->funcDecl, metaData, templateTypes);
             if (funcDeclr.hasError)
                 return funcDeclr.error;
 

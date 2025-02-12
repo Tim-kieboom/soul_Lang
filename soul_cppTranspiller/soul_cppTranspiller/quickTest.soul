@@ -45,10 +45,10 @@ class f;
 
 CompileConst u32 MAX_U32 = (32 ** 2) - 1;
 
-//Functional sqrt(f64 x): f64
-//{
-//    return 2 </ x;
-//}
+Functional sqrt(f64 x): f64
+{
+    return 2 </ x;
+}
 
 //class Ok<T>
 //{
@@ -293,13 +293,13 @@ func main(mut str[] args): i32
 {
     println();
 
-objT<i32> obj;
+objT<i32> obj = objT<i32>();
 
 //Result<none> result = testList()
 
-char ch = 47;
-i32 ch1 = i32(ch);
-char ch2 = char(ch1);
+    char ch = 47;
+    i32 ch1 = i32(ch);
+    char ch2 = char(ch1);
 
     str[] array;
     array = new str[10];
@@ -313,8 +313,9 @@ char ch2 = char(ch1);
 
     CompileConst f64 POW  = 4 ** 0.5;
     CompileConst f64 ROOT = 2 </ 4;
+    f64 ROOT2 = sqrt(4);
 
-    println(f"log:{log_}, pow 4 ** 0.5={POW}, root 2 </ 4={ROOT}");
+println(f"log:{log_}, pow 4 ** 0.5={POW}, root 2 </ 4={ROOT}");
 
     //CompileConst f64 foo = sqrt(4);
 

@@ -30,7 +30,7 @@ public:
 		std::stringstream ss;
 		ss << '\n';
 		if (templatesTypes)
-			ss << templatesTypes->printToString() << '\n'; 
+			ss << templatesTypes->printToString() << '\n';
 
 		ss << funcDecl.printToString();
 
