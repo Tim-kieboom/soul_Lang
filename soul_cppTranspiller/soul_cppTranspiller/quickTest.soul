@@ -3,11 +3,14 @@
 //for syntax highlighting
 func ctor();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 func println(str msg);
 func print(str msg);
 func assertThrow(bool condition, str msg);
 func assertFail(bool condition, str msg);
 =======
+=======
+>>>>>>> Stashed changes
 none println(str msg);
 none println();
 uSize len(str[] array);
@@ -72,9 +75,30 @@ class Option_i32
 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 func main(): i32
 =======
 class obj
+=======
+class obj
+{
+    i32 foo = 0;
+    pub ctor() { }
+    pub ctor(this.foo) { }
+
+    pub GetFoo(): i32
+    {
+        return foo;
+    }
+
+    pub SetFoo(i32 value): none
+    {
+        foo = value;
+    }
+}
+
+func main(str[] args): i32
+>>>>>>> Stashed changes
 {
     i32 foo = 0;
     pub ctor() { }
@@ -114,6 +138,14 @@ func main(str[] args): i32
 
     objT<i32> bar3 = objT<str>();
 
+<<<<<<< Updated upstream
+=======
+    obj bar = obj(); 
+    obj bar2 = obj(5);
+
+    objT<i32> bar3 = objT<str>();
+
+>>>>>>> Stashed changes
 
 //Result<none> result = testList()
 i32 ch1 = 'a';
