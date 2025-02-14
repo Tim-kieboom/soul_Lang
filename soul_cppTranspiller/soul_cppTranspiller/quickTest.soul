@@ -295,6 +295,10 @@ func main(mut str[] args): i32
 {
     println();
 
+const i32 foo = 1;
+
+var bar = foo;
+
     var num = 1;
     const constNum = 1;
     var condition = "condition";
