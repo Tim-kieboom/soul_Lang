@@ -297,7 +297,9 @@ func main(mut str[] args): i32
 
     var num = 1;
     const constNum = 1;
-    const obj = ObjT<str>("");
+    var condition = "condition";
+
+    var obj = ObjT<str>("");
 
 //Result<none> result = testList()
 

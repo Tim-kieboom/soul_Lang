@@ -225,7 +225,8 @@ static inline Result<BodyStatment_Result<SuperExpression>> _getVariableExpressio
     if (varType.hasError)
         return varType.error;
 
-    bool canMutate = varType.value().isMutable || !varResult.value()->isAssigned;
+    bool isLiteralStr = varResult.value()->stringedRawType == "const str" && varResult.value()->isCompileConst;
+    bool canMutate = varType.value().isMutable || !varResult.value()->isAssigned || isLiteralStr;
     if (shouldBeMutable && !canMutate)
             return ErrorInfo("can not change a const value, var: \'" + varResult.value()->name + "\', type: \'" + varResult.value()->stringedRawType + "\'", iterator.currentLine);
 
