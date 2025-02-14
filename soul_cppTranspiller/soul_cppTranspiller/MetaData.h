@@ -92,7 +92,6 @@ public:
 			return false;
 		}
 
-
 		uint64_t i = 0;
 		std::vector<FuncDeclaration>& funcs = (isFunctionInClass) ? funcStore.at(getMethodeMapEntryName(funcName, context.inClass.value())) : funcStore.at(funcName);
 		for (FuncDeclaration& func : funcs)
@@ -114,25 +113,45 @@ public:
 		return false;
 	}
 
+	bool tryGetCtor(const std::string& methodeName, ClassInfo& thisClass, CurrentContext& context, std::vector<ArgumentInfo>& args, std::vector<ArgumentInfo>& optionals, FuncDeclaration& funcInfo, int64_t currentLine, ErrorInfo& error, uint64_t* funcInfoIndex = nullptr)
+	{
+		return _tryGetMethode(methodeName, thisClass, context, args, optionals, funcInfo, currentLine, error, funcInfoIndex, true);
+	}
+
 	bool tryGetMethode(const std::string& methodeName, ClassInfo& thisClass, CurrentContext& context, std::vector<ArgumentInfo>& args, std::vector<ArgumentInfo>& optionals, FuncDeclaration& funcInfo, int64_t currentLine, ErrorInfo& error, uint64_t* funcInfoIndex = nullptr)
 	{
-		if (!isMethode(methodeName, thisClass))
+		return _tryGetMethode(methodeName, thisClass, context, args, optionals, funcInfo, currentLine, error, funcInfoIndex, false);
+	}
+
+private:
+	bool _tryGetMethode(const std::string& methodeName, ClassInfo& thisClass, CurrentContext& context, std::vector<ArgumentInfo>& args, std::vector<ArgumentInfo>& optionals, FuncDeclaration& funcInfo, int64_t currentLine, ErrorInfo& error, uint64_t* funcInfoIndex, bool isCtor = false)
+	{
+		bool isValid = (isCtor) ? methodeName == thisClass.name : isMethode(methodeName, thisClass);
+
+		if (!isValid)
 		{
 			error = ErrorInfo("\'" + methodeName + "\' is not a found methode for class: \'" + thisClass.name + "\'", currentLine);
 			return false;
 		}
 
+		std::map<std::string, TemplateType> templates = context.currentTemplateTypes;
+		for (auto& kv : thisClass.templateTypes)
+			templates[kv.first] = kv.second;
 
 		uint64_t i = 0;
-		std::vector<FuncDeclaration>& funcs = funcStore.at(getMethodeMapEntryName(methodeName, thisClass));
+
+		std::string classStoreKey = (isCtor) ? methodeName : getMethodeMapEntryName(methodeName, thisClass);
+		
+		std::vector<FuncDeclaration>& funcs = funcStore.at(classStoreKey);
 		for (FuncDeclaration& func : funcs)
 		{
-			if (func.argsCompatible(args, optionals, classStore, context.currentTemplateTypes, currentLine, error))
+			if (func.argsCompatible(args, optionals, classStore, templates, currentLine, error))
 			{
 				if (funcInfoIndex != nullptr)
 					*funcInfoIndex = i;
 
 				funcInfo = func;
+				funcInfo.templateTypes = thisClass.templateTypes;
 				return true;
 			}
 			i++;
@@ -144,7 +163,6 @@ public:
 		return false;
 	}
 
-private:
 	std::string getMethodeMapEntryName(const std::string& methodeName, const ClassInfo& thisClass)
 	{
 		return thisClass.name + "#" + methodeName;

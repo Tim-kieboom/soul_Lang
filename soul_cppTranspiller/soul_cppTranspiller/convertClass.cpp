@@ -118,6 +118,7 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 			for(auto& arg : funcDecl.args)
 			{
 				auto var = VarInfo(arg.argName, toString(arg.valueType));
+				var.isAssigned = true;
 				methodeContext.scope.getCurrentNesting().addVariable(var);
 			}
 

@@ -14,12 +14,31 @@ DuckType getDuckType(RawType& type)
     return getDuckType(getPrimitiveType(type.getType_WithoutWrapper()));
 }
 
+static inline void _stringTemplateType(const RawType& type, stringstream& ss) 
+{
+    ss << '<';
+
+    for (size_t i = 0; i < type.templateDefines.size(); i++)
+    {
+        ss << toString(type.templateDefines.at(i));
+
+        if (i + 1 < type.templateDefines.size())
+            ss << ",";
+    }
+
+    ss << '>';
+}
+
 std::string toString(const RawType& type)
 {
     stringstream ss;
     if (!type.isMutable)
         ss << "const ";
     ss << type.getType_WithoutWrapper();
+
+    if (type.templateDefines.size() > 0)
+        _stringTemplateType(type, /*out*/ss);
+
     for (TypeWrapper wrap : type.typeWrappers)
     {
         ss << toString(wrap);
@@ -45,7 +64,7 @@ Result<std::vector<std::string>> getTypeTokens(const std::string& stringedRawTyp
     if (strType.empty())
         return ErrorInfo("type is <empty>", currentLine);
 
-    vector<string> typeTokens = string_splitOn(strType, { "const", "[]", "*", "&" });
+    vector<string> typeTokens = string_splitOn(strType, { "const", "[]", "*", "&", "<", ">", ","});
 
     //if first element is empty remove element
     if (typeTokens.front().empty())
@@ -60,33 +79,77 @@ Result<RawType> getRawType_fromStringedRawType(const std::string& stringedRawTyp
     if (typeTokensResult.hasError)
         return typeTokensResult.error;
 
-    vector<string>& typeTokens = typeTokensResult.value();
-    
-    uint64_t i = 0;
+    vector<string>& typeTokens_ = typeTokensResult.value();
+    vector<Token> typeTokens;
+    typeTokens.reserve(typeTokens_.size());
+    for(string& str : typeTokens_)
+    {
+        typeTokens.push_back(Token(str, currentLine));
+    }
+
+    TokenIterator typeIterator = TokenIterator(typeTokens);
+    if(!typeIterator.nextToken())
+        return ErrorInfo("unexpected end while parsing type", currentLine);
+
+    string& token = typeIterator.currentToken;
+
+
     bool isMutable = true;
     RawType rawType;
-    if (typeTokens.at(i) == "const")
+    if (token == "const")
     {
         isMutable = false;
-        i++;
+        if(!typeIterator.nextToken())
+            return ErrorInfo("unexpected end while parsing type", currentLine);
     }
 
-    PrimitiveType type = getPrimitiveType(typeTokens.at(i));
-    if (type == PrimitiveType::invalid && !isClass(typeTokens.at(i), classStore) && !isTemplateType(typeTokens.at(i), templateTypes))
+    PrimitiveType type = getPrimitiveType(token);
+    if (type == PrimitiveType::invalid && !isClass(token, classStore) && !isTemplateType(token, templateTypes))
     {
-        return ErrorInfo("type: \'" + typeTokens.at(i) + "\', is not a reconized Type", currentLine);
+        return ErrorInfo("type: \'" + token + "\', is not a reconized Type", currentLine);
     }
 
-    rawType = RawType(typeTokens.at(i), isMutable);
+    rawType = RawType(token, isMutable);
 
-    if (i == typeTokens.size()-1)
+    if (typeIterator.i == typeIterator.size()-1)
         return rawType;
+
+    string nextToken;
+    typeIterator.peekToken(nextToken);
+
+    if(nextToken == "<")
+    {
+        if (!typeIterator.nextToken())
+            return ErrorInfo("unexpected end while parsing templateType ctor", currentLine);
+
+        while(true)
+        {
+            if (!typeIterator.nextToken())
+                return ErrorInfo("unexpected end while parsing templateType ctor", currentLine);
+
+            Result<RawType> templateType = getRawType(typeIterator, classStore, templateTypes);
+            if (templateType.hasError)
+                return templateType.error;
+
+            rawType.templateDefines.push_back(templateType.value());
+
+            if (!typeIterator.nextToken())
+                return ErrorInfo("unexpected edn while parsing templateType ctor", currentLine);
+
+            if (token == ">")
+                break;
+            else if (token == ",")
+                continue;
+            else
+                return ErrorInfo("\'" +token+ "\' is invalid in templateType ctor", currentLine);
+        }
+    }
 
     Result<void> result;
     uint8_t refrenceCounter = 0;
-    while (i++ < typeTokens.size()-1)
+    while (typeIterator.nextToken())
     {
-        TypeWrapper wrap = getTypeWrapper(typeTokens.at(i));
+        TypeWrapper wrap = getTypeWrapper(token);
         if (wrap == TypeWrapper::invalid)
         {
             return rawType;
@@ -240,7 +303,7 @@ Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::stri
     Result<RawType> type = _getRawType(iterator, classStore, templateTypes);
     if (type.hasError)
     {
-        iterator.at(beginIndex);
+        iterator.goToIndex(beginIndex);
         return type.error;
     }
 
@@ -253,7 +316,7 @@ Result<RawType> getRawType(TokenIterator& iterator, std::unordered_map<std::stri
     Result<RawType> type = _getRawType(iterator, classStore, templateTypes, &isWrongType);
     if(type.hasError)
     {
-        iterator.at(beginIndex);
+        iterator.goToIndex(beginIndex);
         return type.error;
     }
 

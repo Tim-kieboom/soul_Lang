@@ -347,6 +347,16 @@ static inline Result<vector<RawType>> _getDefinedTemplateType(TokenIterator& ite
     return ErrorInfo("unexpected end while parsing functionCall", iterator.currentLine);
 }
 
+static inline bool isCtor(std::string& funcName, MetaData& metaData)
+{
+    return metaData.classStore.find(funcName) != metaData.classStore.end();
+}
+
+static inline bool hasTemplateType(vector<RawType>& definedTemplateTypes)
+{
+    return !definedTemplateTypes.empty();
+}
+
 static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, std::string funcName, RawType* shouldBeType = nullptr)
 {
     BodyStatment_Result<FunctionCall> bodyResult;
@@ -381,7 +391,12 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
     }
 
     if (token != "(")
-        return ErrorInfo("FunctionCall: \'" + funcName + "\' had to start with '('", iterator.currentLine);
+    {
+        if(isCtor(funcName, metaData))
+            return ErrorInfo("class ctor: \'" + funcName + "\' had to start with '('", iterator.currentLine);
+        else
+            return ErrorInfo("FunctionCall: \'" + funcName + "\' had to start with '('", iterator.currentLine);
+    }
 
     string nextToken;
     if (!iterator.peekToken(nextToken))
@@ -406,8 +421,16 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
 
     ErrorInfo error;
     FuncDeclaration funcInfo;
-    if (!metaData.tryGetFunction(funcName, context, args.args, args.optionals, /*out*/funcInfo, iterator.currentLine, error))
-        return ErrorInfo("functionCall: \'" + funcName + "\' not found with given arguments\n" + error.message, iterator.currentLine);
+    if(metaData.isClass(funcName))
+    {
+        if(!metaData.tryGetCtor(funcName, metaData.classStore[funcName], context, args.args, args.optionals, funcInfo, iterator.currentLine, error))
+            return ErrorInfo("class ctor: \'" + funcName + "\' not found with given arguments\n" + error.message, iterator.currentLine);
+    }
+    else 
+    { 
+        if (!metaData.tryGetFunction(funcName, context, args.args, args.optionals, /*out*/funcInfo, iterator.currentLine, error))
+            return ErrorInfo("functionCall: \'" + funcName + "\' not found with given arguments\n" + error.message, iterator.currentLine);
+    }
 
     Result<vector<shared_ptr<SuperExpression>>> expressionsOfArgs = _getExpressionsOfArgs(args, funcInfo);
     if (expressionsOfArgs.hasError)
@@ -422,6 +445,16 @@ static inline Result<BodyStatment_Result<FunctionCall>> _convertFunctionCall(Tok
     Result<void> result = _convertAndCheck_TemplateTypes(metaData, context, /*out*/bodyResult.expression, args, definedTemplateTypes, iterator.currentLine);
     if (result.hasError)
         return result.error;
+
+    if(hasTemplateType(definedTemplateTypes) && isCtor(funcName, metaData))
+    {
+        RawType classType = RawType(funcName, true);
+        classType.templateDefines = definedTemplateTypes;
+        string rawClassType = toString(classType);
+
+        bodyResult.expression->returnType = rawClassType;
+        bodyResult.expression->funcInfo.returnType = rawClassType;
+    }
 
     if (shouldBeType != nullptr && shouldBeType->toPrimitiveType() != PrimitiveType::none)
     {

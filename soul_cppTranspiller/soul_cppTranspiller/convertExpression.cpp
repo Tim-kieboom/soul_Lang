@@ -604,6 +604,9 @@ static inline Result<void> _getAllExpressions
         }
         else if (isVariable(varResult))
         {
+            if (!varResult.value()->isAssigned)
+                return ErrorInfo("\'" + varResult.value()->name + "\' can not be used before it is assigned", iterator.currentLine);
+
             RawType type;
             Result<BodyStatment_Result<SuperExpression>> varExpression = _getVariableExpression(iterator, metaData, context, varResult, shouldBeType, &type, shouldBeMutable);
             if (varExpression.hasError)

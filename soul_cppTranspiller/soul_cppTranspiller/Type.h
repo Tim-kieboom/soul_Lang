@@ -147,13 +147,30 @@ public:
 		return true;
 	}
 
+	bool templateTypesEquals(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, uint64_t currentLine) const
+	{
+		if (templateDefines.size() != other.templateDefines.size())
+			return false;
+
+		for (size_t i = 0; i < templateDefines.size(); i++)
+		{
+			if (templateDefines.at(i).isEqual(other.templateDefines.at(i), classStore, templateTypes, currentLine, true).hasError)
+				return false;
+		}
+
+		return true;
+	}
+
 	Result<void> isEqual(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, uint64_t currentLine, bool checkMutable = true) const
 	{
 		if (checkMutable && isMutable != other.isMutable)
 			return ErrorInfo("argument: \'" + toString(*this)+ "\' and argument: \'" + toString(other) + "\' have diffrent mutability", currentLine);
 
 		if(!typeWrapperEquals(other))
-			return ErrorInfo("typeWrappers '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+			return ErrorInfo("typeWrappers of: \'" + toString(*this) + "\' and \'" + toString(other) + "\' are not compatible", currentLine);
+
+		if(!templateTypesEquals(other, classStore, templateTypes, currentLine))
+			return ErrorInfo("templateType of: \'" + toString(*this) + "\' and \'" + toString(other) + "\' are not compatible", currentLine);
 
 		if
 			(
@@ -162,7 +179,7 @@ public:
 				isTemplate(templateTypes) != other.isTemplate(templateTypes)
 			)
 		{
-			return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+			return ErrorInfo("types \'" + toString(*this) + "\' and \'" + toString(other) + "\' are not compatible", currentLine);
 		}
 
 		if (isPrimitiveType())
@@ -181,28 +198,28 @@ public:
 
 			if
 				(
-					primType == PrimitiveType::compile_dynamic_withoutStr || primType_other == PrimitiveType::compile_dynamic_withoutStr
+					(primType == PrimitiveType::compile_dynamic_withoutStr || primType_other == PrimitiveType::compile_dynamic_withoutStr)
 					&&
-					primType != PrimitiveType::str || primType_other != PrimitiveType::str
+					(primType != PrimitiveType::str || primType_other != PrimitiveType::str)
 				)
 			{
 				return {};
 			}
 
 			if (primType != primType_other)
-				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+				return ErrorInfo("types \'" + toString(*this) + "\' and \'" + toString(other) + "\' are not compatible", currentLine);
 		}
 		else if(isClass(classStore))
 		{
 			ClassInfo classInfo = toClassInfo(classStore).value();
 			ClassInfo classInfo_other = toClassInfo(classStore).value();
 			if (!classInfo.isEqual(classInfo_other))
-				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+				return ErrorInfo("types \'" + toString(*this) + "\' and \'" + toString(other) + "\' are not compatible", currentLine);
 		}
 		else
 		{
 			if (rawType != other.rawType)
-				return ErrorInfo("types '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+				return ErrorInfo("types \'" + toString(*this) + "\' and \'" + toString(other) + "\' are not compatible", currentLine);
 		}
 
 		return {};
@@ -220,7 +237,10 @@ public:
 	Result<void> areTypeCompatible(const RawType& other, std::unordered_map<std::string, ClassInfo>& classStore, std::map<std::string, TemplateType>& templateTypes, uint64_t currentLine) const
 	{
 		if (!typeWrapperEquals(other))
-			return ErrorInfo("typeWrappers '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+			return ErrorInfo("typeWrappers of: '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
+
+		if (!templateTypesEquals(other, classStore, templateTypes, currentLine))
+			return ErrorInfo("templateType of: '" + toString(*this) + "' and '" + toString(other) + "' are not compatible", currentLine);
 
 		if
 			(

@@ -69,7 +69,7 @@ static inline Result<void> _isSymboolAllowed(string& symbool, MetaData& metaData
 	return {};
 }
 
-static inline shared_ptr<SuperExpression> addCompountAssignment(const std::string& symbool, const std::string& varName, shared_ptr<SuperExpression>& right)
+static inline shared_ptr<SuperExpression> _addCompountAssignment(const std::string& symbool, const std::string& varName, shared_ptr<SuperExpression>& right)
 {
 	shared_ptr<SuperExpression> expression = right;
 	shared_ptr<SuperExpression> left = make_shared<Variable>(varName);
@@ -154,9 +154,10 @@ Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterato
 	if (!iterator.nextToken())
 		return ERROR_convertAssignment_outOfBounds(iterator);
 
-	varInfo->isAssigned = true;
 	if (initListEquals({ "++", "--" }, symbool))
 	{
+		varInfo->isAssigned = true;
+
 		if (assignVar_type.toDuckType() != DuckType::Number)
 			return ErrorInfo("invalid symbol after variable symbool: \'" + symbool + "\'", iterator.currentLine);
 
@@ -173,9 +174,12 @@ Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterato
 	}
 
 	RawType type;
-	Result<BodyStatment_Result<SuperExpression>> expressionResult = convertExpression(iterator, metaData, context, assignVar_type, {";"}, /*shouldBeMutable:*/(assignVar_type.isMutable && assignVar_type.isRefrence()), &type);
+	bool shouldBeMutable = (assignVar_type.isMutable && assignVar_type.isRefrence());
+	Result<BodyStatment_Result<SuperExpression>> expressionResult = convertExpression(iterator, metaData, context, assignVar_type, {";"}, shouldBeMutable, &type);
 	if (expressionResult.hasError)
 		return ErrorInfo("in assingment of Variable: \'" +varInfo->name+ "\'\n" + expressionResult.error.message, expressionResult.error.lineNumber);
+
+	varInfo->isAssigned = true;
 
 	if (assignVar_type.isArray() || assignVar_type.isRefrence() || assignVar_type.isPointer())
 	{
@@ -183,7 +187,7 @@ Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterato
 			return ErrorInfo("argument: \'" + toString(type) + "\' and argument: \'" + toString(assignVar_type) + "\' have diffrent mutability", iterator.currentLine);
 	}
 
-	shared_ptr<SuperExpression> expression = addCompountAssignment(symbool, varInfo->name, expressionResult.value().expression);
+	shared_ptr<SuperExpression> expression = _addCompountAssignment(symbool, varInfo->name, expressionResult.value().expression);
 
 	bodyResult.expression = make_shared<Assignment>(Assignment(setVariable, expression));
 

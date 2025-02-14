@@ -184,6 +184,16 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 		BodyStatment_Result<InitializeVariable>& init = initResult.value();
 		return BodyStatment_Result<SuperStatement>(init.expression, init);
 	}
+	else if (initListEquals({ "const", "var"}, token))
+	{
+		bool isConst = (token == "const");
+		Result<BodyStatment_Result<InitializeVariable>> initResult = convertInitVariable(iterator, metaData, context, isConst);
+		if (initResult.hasError)
+			return initResult.error;
+
+		BodyStatment_Result<InitializeVariable>& init = initResult.value();
+		return BodyStatment_Result<SuperStatement>(init.expression, init);
+	}
 	else if (isVariable(varResult))
 	{
 		Result<BodyStatment_Result<Assignment>> assignResult = convertAssignment(iterator, metaData, varResult.value(), context);
@@ -299,7 +309,7 @@ Result<shared_ptr<BodyNode>> convertBody(TokenIterator& iterator, MetaData& meta
 	uint32_t openCurlyBracketCounter = 0;
 	while (iterator.nextToken())
 	{
-		if (iterator.currentLine == 319)
+		if (iterator.currentLine == 298)
 			int d = 0;
 
 		Result<BodyStatment_Result<SuperStatement>> bodyElementResult = convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, parentNode);

@@ -77,6 +77,13 @@ Result<FuncDeclaration_Result> getFunctionDeclaration(TokenIterator& iterator, M
 		if (argsResult.hasError)
 			return argsResult.error;
 
+		if(isInClass != nullptr && isInClass->isCtor)
+		{
+			string& className = isInClass->classInfo.name;
+			funcInfo.functionName = className;
+			returnType = RawType(className, true);
+		}
+
 		if(context.functionRuleSet == CurrentContext::FuncRuleSet::Functional)
 		{
 			Result<void> result = checkIfArgsAreConst(iterator, argsResult.value());

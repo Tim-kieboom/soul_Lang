@@ -61,11 +61,12 @@ struct TokenIterator
 		return true;
 	}
 
-	bool at(int64_t index)
+	bool goToIndex(int64_t index)
 	{
 		if (index < 0 || index >= (int64_t)tokens.size())
 			return false;
 
+		i = index;
 		const Token& token = tokens.at(i);
 		currentToken = token.text;
 		currentLine = token.lineNumber;

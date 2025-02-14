@@ -424,11 +424,10 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
             FuncDeclaration& funcInfo = funcDeclResult.value().funcInfo;
             _addArgsToCurrentScope(context, funcInfo);
 
-
             Result<shared_ptr<BodyNode>> funcResult = convertBody(iterator, metaData, funcInfo, context, /*parentNode:*/SyntaxNodeId::FuncNode);
             if (funcResult.hasError)
                 return funcResult.error;
-
+            
             _addFunc(/*out*/tree, FuncNode(funcInfo, funcResult.value(), funcDeclResult.value().templateTypes));
         }
         else if(token == "class")
