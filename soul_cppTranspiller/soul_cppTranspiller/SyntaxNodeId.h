@@ -37,6 +37,7 @@ enum class SyntaxNodeId
 	ConstructArray,
 	CopyExpression,
 	RangeExpression,
+	MemberExpression,
 	BinairyExpression,
 	DefineTemplateTypes,
 

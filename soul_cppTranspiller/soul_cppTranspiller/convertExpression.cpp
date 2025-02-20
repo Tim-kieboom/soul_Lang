@@ -8,8 +8,10 @@
 #include "CopyExpression.h"
 #include "RangeExpression.h"
 #include "EmptyExpression.h"
+#include "MemberExpression.h"
 #include "convertIndexArray.h"
 #include "convertFunctionCall.h"
+#include "convertMemberExpression.h"
 using namespace std;
 
 template <typename T>
@@ -215,74 +217,154 @@ static inline Result<shared_ptr<ConstructArray>> _getConstructArray(TokenIterato
     return make_shared<ConstructArray>(ConstructArray(toString(arrayType), amountElementsExpression));
 }
 
-static inline Result<BodyStatment_Result<SuperExpression>> _getVariableExpression(TokenIterator& iterator, MetaData& metaData, CurrentContext& context, Result<VarInfo*> varResult, RawType* shouldBeType, RawType* isType, bool shouldBeMutable)
+Result<BodyStatment_Result<SuperExpression>> getVariableExpression
+(
+    TokenIterator& iterator, 
+    MetaData& metaData, 
+    CurrentContext& context, 
+    Result<VarInfo*> varResult, 
+    RawType* shouldBeType, 
+    RawType* isType, 
+    bool shouldBeMutable
+)
 {
+
     BodyStatment_Result<SuperExpression> bodyResult;
 
     string& token = iterator.currentToken;
 
-    Result<RawType> varType = getRawType_fromStringedRawType(varResult.value()->stringedRawType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
-    if (varType.hasError)
-        return varType.error;
+    Result<RawType> varTypeResult = getRawType_fromStringedRawType(varResult.value()->stringedRawType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
+    if (varTypeResult.hasError)
+        return varTypeResult.error;
 
-    bool constVar_allowedToMutate = varType.value().isPrimitiveType() && !(varType.value().isArray() || varType.value().isPointer() || varType.value().isRefrence());
-    bool canMutate = varType.value().isMutable || !varResult.value()->isAssigned || constVar_allowedToMutate;
-    if (shouldBeMutable && !canMutate)
-            return ErrorInfo("can not change a const value, var: \'" + varResult.value()->name + "\', type: \'" + varResult.value()->stringedRawType + "\'", iterator.currentLine);
+    RawType& varType = varTypeResult.value();
+    VarInfo* var = varResult.value();
 
     string nextToken;
     if (!iterator.peekToken(nextToken))
-        nextToken = "";
+        nextToken = "<invalid>";
 
     shared_ptr<SuperExpression> variableExpression;
-
-    if (initListEquals({ "++", "--" }, nextToken))
+    if (nextToken == ".")
     {
-        auto variable = make_shared<Variable>(Variable(token));
-
-        if (!iterator.nextToken())
+        if(!iterator.nextToken(/*steps:*/2))
             return ERROR_convertExpression_outOfBounds(iterator);
 
-        variableExpression = make_shared<Increment>
-            (
-                Increment(variable, false, (nextToken == "--"), 1)
-            );
-    }
-    else if (nextToken == "[")
-    {
-        Result<BodyStatment_Result<IndexArray>> indexResult = convertIndexArray(iterator, metaData, context);
-        if (indexResult.hasError)
-            return indexResult.error;
+        CurrentContext memberContext = context;
+        memberContext.parentOfCurrentMember = CurrentContext::MemberInfo(var->stringedRawType, false);
 
-        bodyResult.addToBodyResult(indexResult.value());
-        variableExpression = indexResult.value().expression;
-        
-        if (indexResult.value().expression->index->getId() == SyntaxNodeId::RangeExpression)
+        RawType memberType;
+        Result<BodyStatment_Result<MemberExpression>> member = convertMemberExpression(iterator, metaData, memberContext, *var, shouldBeMutable, /*out*/memberType);
+        if (member.hasError)
+            return member.error;
+
+        bodyResult.addToBodyResult(member.value());
+        varType = memberType;
+
+        if (shouldBeType != nullptr)
         {
-            if (shouldBeType != nullptr && !varType.value().isMutable && shouldBeType->isMutable)
-                return ErrorInfo("argument: \'" + toString(varType.value()) + "\' and argument: \'" + toString(*shouldBeType) + "\' have diffrent mutability", iterator.currentLine);
+            Result<void> isCompatible = memberType.areTypeCompatible(*shouldBeType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
+            if (isCompatible.hasError)
+                return isCompatible.error;
         }
-        else 
-        {
-            varType = getArrayItemType(varType.value(), iterator);
-        }
+
+        variableExpression = member.value().expression;
     }
     else
     {
         variableExpression = make_shared<Variable>(Variable(token));
+    }
 
-        if (shouldBeType != nullptr)
+    bool constVar_allowedToMutate;
+    if (var->stringedRawType == "const str")
+    {
+        constVar_allowedToMutate = var->isCompileConst;
+    }
+    else
+    {
+        constVar_allowedToMutate = varType.isPrimitiveType() && !(varType.isArray() || varType.isPointer() || varType.isRefrence());
+    }
+
+    bool canMutate = varType.isMutable || !var->isAssigned || constVar_allowedToMutate;
+    if (shouldBeMutable && !canMutate)
+            return ErrorInfo("can not change a const value, var: \'" + var->name + "\', type: \'" + var->stringedRawType + "\'", iterator.currentLine);
+
+
+
+    while(true)
+    {
+        if (!iterator.peekToken(nextToken))
+            return ERROR_convertExpression_outOfBounds(iterator);
+
+        if (nextToken == ".")
         {
-            Result<void> isCompatible = varType.value().areTypeCompatible(*shouldBeType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
-            if (isCompatible.hasError)
-                return isCompatible.error;
+            if (!iterator.nextToken(/*steps:*/2))
+                return ERROR_convertExpression_outOfBounds(iterator);
+
+            CurrentContext memberContext = context;
+            memberContext.parentOfCurrentMember = CurrentContext::MemberInfo(var->stringedRawType, false);
+
+            RawType memberType;
+            Result<BodyStatment_Result<MemberExpression>> member = convertMemberExpression(iterator, metaData, memberContext, *var, shouldBeMutable, /*out*/memberType);
+            if (member.hasError)
+                return member.error;
+
+            bodyResult.addToBodyResult(member.value());
+            varType = memberType;
+
+            if (shouldBeType != nullptr)
+            {
+                Result<void> isCompatible = memberType.areTypeCompatible(*shouldBeType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
+                if (isCompatible.hasError)
+                    return isCompatible.error;
+            }
+
+            variableExpression = member.value().expression;
+        }
+        else if (nextToken == "[")
+        {
+            if (!iterator.nextToken())
+                return ERROR_convertExpression_outOfBounds(iterator);
+
+            Result<BodyStatment_Result<IndexArray>> indexResult = convertIndexArray(iterator, variableExpression, metaData, context);
+            if (indexResult.hasError)
+                return indexResult.error;
+
+
+            if (indexResult.value().expression->index->getId() == SyntaxNodeId::RangeExpression)
+            {
+                if (shouldBeType != nullptr && !varType.isMutable && shouldBeType->isMutable)
+                    return ErrorInfo("argument: \'" + toString(varType) + "\' and argument: \'" + toString(*shouldBeType) + "\' have diffrent mutability", iterator.currentLine);
+            }
+            else
+            {
+                varTypeResult = getArrayItemType(varType, iterator);
+                if (varTypeResult.hasError)
+                    return varTypeResult.error;
+
+                varType = varTypeResult.value();
+            }
+
+            bodyResult.addToBodyResult(indexResult.value());
+            variableExpression = indexResult.value().expression;
+        }
+        else
+        {
+            if (shouldBeType != nullptr)
+            {
+                Result<void> isCompatible = varType.areTypeCompatible(*shouldBeType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
+                if (isCompatible.hasError)
+                    return isCompatible.error;
+            }
+
+            bodyResult.expression = variableExpression;
+            break;
         }
     }
 
     if (isType != nullptr)
-        *isType = varType.value();
+        *isType = varType;
 
-    bodyResult.expression = variableExpression;
     return bodyResult;
 }
 
@@ -355,7 +437,7 @@ static inline Result<void> _setNegativeExpression
     RawType type;
     if (isVariable(varResult))
     {
-        Result<BodyStatment_Result<SuperExpression>> varExpression = _getVariableExpression(iterator, metaData, context, varResult, shouldBeType, &type, shouldBeMutable);
+        Result<BodyStatment_Result<SuperExpression>> varExpression = getVariableExpression(iterator, metaData, context, varResult, shouldBeType, &type, shouldBeMutable);
         if (varExpression.hasError)
             return varExpression.error;
 
@@ -419,7 +501,7 @@ static inline Result<void> _getCopyExpression
         RawType indexShouldBeType = RawType("f64", true);
         if (isVariable(varResult))
         {
-            Result<BodyStatment_Result<SuperExpression>> varExpression = _getVariableExpression(iterator, metaData, context, varResult, &indexShouldBeType, &type, shouldBeMutable);
+            Result<BodyStatment_Result<SuperExpression>> varExpression = getVariableExpression(iterator, metaData, context, varResult, &indexShouldBeType, &type, shouldBeMutable);
             if (varExpression.hasError)
                 return varExpression.error;
 
@@ -609,7 +691,7 @@ static inline Result<void> _getAllExpressions
                 return ErrorInfo("\'" + varResult.value()->name + "\' can not be used before it is assigned", iterator.currentLine);
 
             RawType type;
-            Result<BodyStatment_Result<SuperExpression>> varExpression = _getVariableExpression(iterator, metaData, context, varResult, shouldBeType, &type, shouldBeMutable);
+            Result<BodyStatment_Result<SuperExpression>> varExpression = getVariableExpression(iterator, metaData, context, varResult, shouldBeType, &type, shouldBeMutable);
             if (varExpression.hasError)
                 return varExpression.error;
 

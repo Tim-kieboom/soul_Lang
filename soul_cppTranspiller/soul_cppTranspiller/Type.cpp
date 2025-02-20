@@ -66,10 +66,13 @@ Result<std::vector<std::string>> getTypeTokens(const std::string& stringedRawTyp
 
     vector<string> typeTokens = string_splitOn(strType, { "const", "[]", "*", "&", "<", ">", ","});
 
-    //if first element is empty remove element
-    if (typeTokens.front().empty())
-        typeTokens.erase(typeTokens.begin());
-
+    //if element is empty remove element
+    for (uint32_t i = 0; i < typeTokens.size(); i++)
+    {
+        string& token = typeTokens.at(i);
+        if(token.empty())
+            typeTokens.erase(typeTokens.begin() + i);
+    }
     return typeTokens;
 }
 

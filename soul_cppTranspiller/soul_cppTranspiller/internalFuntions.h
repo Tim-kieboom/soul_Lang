@@ -151,13 +151,13 @@ static const FuncDeclaration interalFunc_checkThrow = FuncDeclaration
 static const FuncDeclaration interalFunc_toStr = FuncDeclaration
 (
 	"toStr",
-	toString(PrimitiveType::none),
+	toString(PrimitiveType::str),
 	{
 		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::compile_dynamic), true), "value", ArgumentType::default_, 1)
 	},
 	std::map<std::string, TemplateType>(),
 	false,
-	false
+	true
 );
 
 static const FuncDeclaration interalFunc_length_array = FuncDeclaration
@@ -403,6 +403,42 @@ static const FuncDeclaration interalFunc_cast_bool_ = FuncDeclaration
 	/*isConstexpr*/true
 );
 
+static const FuncDeclaration interalFunc_Parse_f64 = FuncDeclaration
+(
+	"__Parse_f64__",
+	toString(PrimitiveType::f64),
+	{
+		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), false), "string", ArgumentType::default_, 1)
+	},
+	std::map<std::string, TemplateType>(),
+	false,
+	true
+);
+
+static const FuncDeclaration interalFunc_Parse_i64 = FuncDeclaration
+(
+	"__Parse_i64__",
+	toString(PrimitiveType::i64),
+	{
+		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), false), "string", ArgumentType::default_, 1)
+	},
+	std::map<std::string, TemplateType>(),
+	false,
+	true
+);
+
+static const FuncDeclaration interalFunc_Parse_u64 = FuncDeclaration
+(
+	"__Parse_u64__",
+	toString(PrimitiveType::u64),
+	{
+		ArgumentInfo(/*isOptional:*/false, RawType(toString(PrimitiveType::str), false), "string", ArgumentType::default_, 1)
+	},
+	std::map<std::string, TemplateType>(),
+	false,
+	true
+);
+
 static const std::initializer_list<FuncDeclaration> internalFunctions =
 {
 	interalFunc_log,
@@ -437,5 +473,9 @@ static const std::initializer_list<FuncDeclaration> internalFunctions =
 	interalFunc_cast_char,
 	interalFunc_cast_bool,
 	interalFunc_cast_char_,
-	interalFunc_cast_bool_
+	interalFunc_cast_bool_,
+
+	interalFunc_Parse_f64,
+	interalFunc_Parse_i64,
+	interalFunc_Parse_u64
 };

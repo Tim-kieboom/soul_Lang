@@ -14,6 +14,7 @@ func checkThrow(bool condition, str msg);
 func checkFail(bool condition, str msg);
 func Throw(str msg);
 func Fail(str msg);
+struct self;
 struct pub;
 struct mut;
 struct pass;
@@ -47,7 +48,8 @@ CompileConst u32 MAX_U32 = (32 ** 2) - 1;
 
 Functional sqrt(f64 x): f64
 {
-    return 2 </ x;
+    const result = 2 </ x;
+    return result;
 }
 
 //class Ok<T>
@@ -268,8 +270,12 @@ Functional sqrt(f64 x): f64
 class ObjT<T>
 {
     T value;
+    pub bool field = true;
+    pub bool[] fields = new bool[1];
     pub ctor(this.value) { }
     pub ctor(T value_, bool randomArgForOverloading) { value = value_; }
+
+    pub Test(i32 foo): str {if(foo == 2) field = false; return "";}
 
     pub SetValue(T value_): none
     {
@@ -289,24 +295,27 @@ class ObjT<T>
     }
 }
 
-func template<T>(T value): none { }
+
 
 func main(mut str[] args): i32
 {
     println();
+    //CompileConst f64 foo = sqrt(4);
+    bool[][][][] fields = new bool[][][][10];
 
-const i32 foo = 1;
+bool[][][] arr2 = fields[0];
+bool[][] arr = arr2[1];
+bool[] ar = arr[2];
+println(ar[1]);
 
-var bar = foo;
-
-    var num = 1;
-    const constNum = 1;
-    var condition = "condition";
+    fields[0][1]++;
+    ++fields[0][1];
 
     var obj = ObjT<str>("");
+    ++obj.fields[0];
+    //str f = obj.Test(2);
+    //obj.SetValue("");
 
-//Result<none> result = testList()
-
-//CompileConst f64 foo = sqrt(4);
-return 0;
+    //Result<none> result = testList()
+    return 0;
 }

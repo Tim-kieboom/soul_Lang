@@ -197,7 +197,7 @@ Result<StoreArguments_Result> storeArguments(TokenIterator& iterator, MetaData& 
 
             string fieldName = token;
 
-            Result<FieldsInfo> field = classInfo.isField(token, iterator.currentLine);
+            Result<FieldsInfo> field = classInfo.getField(token, iterator.currentLine);
             if (field.hasError)
                 return ErrorInfo("\'" + token + "\' is not a field so can not be used as 'this." + fieldName + "\'", iterator.currentLine);
 

@@ -1,0 +1,127 @@
+//invis till endInvis is removed by tokenizer
+#invis
+//for syntax highlighting
+func Error(str err);
+func Ok(i32 val);
+
+func ctor();
+func println(str msg);
+func println();
+func len(str[] array);
+func len(str msg);
+func print(str msg);
+func checkThrow(bool condition, str msg);
+func checkFail(bool condition, str msg);
+func Throw(str msg);
+func Fail(str msg);
+struct self;
+struct pub;
+struct mut;
+struct pass;
+struct copy;
+struct func;
+struct priv;
+struct Range;
+struct delete;
+struct inline;
+struct Functional;
+struct CompileConst;
+class i8;
+class i16;
+class i32;
+class i64;
+class u8;
+class u16;
+class u32;
+class u64;
+class uSize;
+class f32;
+class f64;
+class str;
+class none;
+class Result;
+class TYPE;
+class f;
+# endInvis
+
+func max<T = DuckType::number>(T[] array, out uSize index): bool
+{
+    if(len(array) == 0)
+        return false;
+
+    uSize i = 0;
+    T highscore = array[0];
+    for (const T& el : array) 
+    {
+        if(el > highscore)
+        {
+            highscore = el;
+            index = i;
+        }
+        i++    
+    }
+
+    return true;
+}
+
+func min<T = DuckType::number>(T[] array, out uSize index): bool
+{
+    if(len(array) == 0)
+        return false;
+
+    uSize i = 0;
+    T highscore = array[0];
+    for (const T&el : array) 
+    {
+        if(el < highscore)
+        {
+            highscore = el;
+            index = i;
+        }
+        i++
+    }
+
+    return true;
+}
+
+func max(str[] array, out uSize index): bool
+{
+    if(len(array) == 0)
+        return false;
+
+    uSize i = 0;
+    uSize highscore = 0;
+    for (const T&el : array) 
+    {
+        uSize elLen = len(el);
+        if(elLen > highscore)
+        {
+            highscore = elLen;
+            index = i;
+        }
+        i++
+    }
+
+    return true;
+}
+
+func min(str[] array, out uSize index): bool
+{
+    if(len(array) == 0)
+        return false;
+
+    uSize i = 0;
+    uSize highscore = uSize::Max();
+    for (const T&el : array) 
+    {
+        uSize elLen = len(el);
+        if(elLen < highscore)
+        {
+            highscore = elLen;
+            index = i;
+        }
+        i++
+    }
+
+    return true;
+}

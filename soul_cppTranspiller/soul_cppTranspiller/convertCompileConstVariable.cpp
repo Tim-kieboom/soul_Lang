@@ -37,7 +37,10 @@ static inline Result<BodyStatment_Result<CompileConstVariable>> _convertCompileC
 	if (varResult.hasError)
 		return varResult.error;
 
-	Result<BodyStatment_Result<Assignment>> assignResult = convertAssignment(iterator, metaData, varResult.value(), context);
+	if (!iterator.nextToken())
+		return ErrorInfo("unexpected end while parsing CompileConstVariable", iterator.currentLine);
+
+	Result<BodyStatment_Result<Assignment>> assignResult = convertAssignment(iterator, make_shared<Variable>(Variable(varName)), typeResult.value(), metaData, varResult.value(), context);
 	if (assignResult.hasError)
 		return assignResult.error;
 

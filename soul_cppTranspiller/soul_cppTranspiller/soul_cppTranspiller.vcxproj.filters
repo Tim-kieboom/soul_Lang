@@ -152,6 +152,9 @@
     <Filter Include="Source Files\AbstractSyntaxTree\convertToCpp\convert_Cpp_FuncDeclaration\getTemplateTypes">
       <UniqueIdentifier>{f8c3d7e4-ff57-401b-9234-7bceb802e741}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression\convertMemberExpression">
+      <UniqueIdentifier>{87e68b0c-620b-4c3d-9060-3f876685442b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -289,12 +292,21 @@
     <ClCompile Include="convertToCpp.cpp">
       <Filter>Source Files\AbstractSyntaxTree\convertToCpp\soulToCpp_Type</Filter>
     </ClCompile>
+    <ClCompile Include="convertMemberExpression.cpp">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression\convertMemberExpression</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.soul">
       <Filter>Source Files</Filter>
     </None>
     <None Include="quickTest.soul">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="primTypes.soul">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="math.soul">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
@@ -336,9 +348,6 @@
       <Filter>Source Files\MetaData</Filter>
     </ClInclude>
     <ClInclude Include="MetaData.h">
-      <Filter>Source Files\MetaData</Filter>
-    </ClInclude>
-    <ClInclude Include="C_strPair.h">
       <Filter>Source Files\MetaData</Filter>
     </ClInclude>
     <ClInclude Include="getAbstractSyntaxTree.h">
@@ -583,6 +592,15 @@
     </ClInclude>
     <ClInclude Include="TemplateType_ToType.h">
       <Filter>Source Files\MetaData</Filter>
+    </ClInclude>
+    <ClInclude Include="MemberExpression.h">
+      <Filter>Source Files\AbstractSyntaxTree\SyntaxTree\Expression</Filter>
+    </ClInclude>
+    <ClInclude Include="convertMemberExpression.h">
+      <Filter>Source Files\AbstractSyntaxTree\convertSyntaxTree\convertExpression\convertMemberExpression</Filter>
+    </ClInclude>
+    <ClInclude Include="C_strPair.h">
+      <Filter>Source Files\MetaData\scope</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

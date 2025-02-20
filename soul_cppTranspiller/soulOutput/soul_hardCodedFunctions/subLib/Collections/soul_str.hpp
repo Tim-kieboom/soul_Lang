@@ -125,6 +125,18 @@ public:
         return rawStr.get(); 
     }
 
+    const char* __Copy_To_C_Str__() const noexcept
+    {
+        const size_t size = (size_ - offset_)+1;
+        char* buffer = new char[size];
+
+        for(uint32_t i = 0; i < size_; i++)
+            buffer[i] = rawStr.get()[i];
+        
+        buffer[size-1] = '\0';
+        return buffer;
+    }
+
     __Soul_ARRAY_Iterator__<char> begin()
     {
         return __Soul_ARRAY_Iterator__<char>((char*)rawStr.get() + offset_);
@@ -209,7 +221,7 @@ inline uint64_t len(__Soul_STR__ str)
     return str.size(); 
 }
 
-inline __Soul_STR__ __Soul_copy__(__Soul_STR__ other)
+__Soul_STR__ __Soul_copy__(const __Soul_STR__ other)
 {
     int64_t lastIndex = other.size() - other.offset();
 
@@ -289,3 +301,11 @@ inline __Soul_STR__ __soul_format_string__(Args&&... args)
     __soul__append_to_stream__(ss, std::forward<Args>(args)...);
     return toStr(ss);
 }
+
+inline double __Parse_f64__(__Soul_STR__& string) { return std::stod(string.__Copy_To_C_Str__()); }
+inline int64_t __Parse_i64__(__Soul_STR__& string) { return std::stoll(string.__Copy_To_C_Str__()); }
+inline uint64_t __Parse_u64__(__Soul_STR__& string) { return std::stoull(string.__Copy_To_C_Str__()); }
+
+inline double __Parse_f64__(const char* string) { return std::stod(string); }
+inline int64_t __Parse_i64__(const char* string) { return std::stoll(string); }
+inline uint64_t __Parse_u64__(const char* string) { return std::stoull(string); }

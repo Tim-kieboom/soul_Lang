@@ -133,8 +133,8 @@ public:
 
 	bool typeWrapperEquals(const RawType& other) const
 	{
-		if (((int64_t)typeWrappers.size()) - refrenceCounter != ((int64_t)other.typeWrappers.size()) - other.refrenceCounter)
-			return false;
+		if (other.typeWrappers.size() - other.refrenceCounter == typeWrappers.size() - refrenceCounter)
+			return true;
 
 		uint8_t maxRef = (refrenceCounter > other.refrenceCounter) ? refrenceCounter : other.refrenceCounter;
 
@@ -267,9 +267,9 @@ public:
 
 			if
 				(
-					primType == PrimitiveType::compile_dynamic_withoutStr || primType_other == PrimitiveType::compile_dynamic_withoutStr
+					(primType == PrimitiveType::compile_dynamic_withoutStr || primType_other == PrimitiveType::compile_dynamic_withoutStr)
 					&&
-					primType != PrimitiveType::str || primType_other != PrimitiveType::str
+					(primType != PrimitiveType::str || primType_other != PrimitiveType::str)
 				)
 			{
 				return {};

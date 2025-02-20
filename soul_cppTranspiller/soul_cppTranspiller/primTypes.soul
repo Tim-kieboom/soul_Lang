@@ -1,0 +1,128 @@
+//invis till endInvis is removed by tokenizer
+#invis
+//for syntax highlighting
+func Error(str err);
+func Ok(i32 val);
+
+func ctor();
+func println(str msg);
+func println();
+func len(str[] array);
+func len(str msg);
+func print(str msg);
+func checkThrow(bool condition, str msg);
+func checkFail(bool condition, str msg);
+func Throw(str msg);
+func Fail(str msg);
+struct self;
+struct pub;
+struct mut;
+struct pass;
+struct copy;
+struct func;
+struct priv;
+struct Range;
+struct delete;
+struct inline;
+struct Functional;
+struct CompileConst;
+class i8;
+class i16;
+class i32;
+class i64;
+class u8;
+class u16;
+class u32;
+class u64;
+class uSize;
+class f32;
+class f64;
+class str;
+class none;
+class Result;
+class TYPE;
+class f;
+# endInvis
+
+static f64 Parse(str string): f64
+{
+    return __Parse_f64__(string);
+}
+static f32 Parse(str string): f32
+{
+    return __Parse_f64__(string);
+}
+
+static u64 Parse(str string): u64
+{
+    return __Parse_u64__(string);
+}
+static u32 Parse(str string): u32
+{
+    return __Parse_u64__(string);
+}
+static u16 Parse(str string): u16
+{
+    return __Parse_u64__(string);
+}
+static u8 Parse(str string): u8
+{
+    return __Parse_u64__(string);
+}
+
+static i64 Parse(str string): i64
+{
+    return __Parse_i64__(string);
+}
+static i32 Parse(str string): i32
+{
+    return __Parse_i64__(string);
+}
+static i16 Parse(str string): i16
+{
+    return __Parse_i64__(string);
+}
+static i8 Parse(str string): i8
+{
+    return __Parse_i64__(string);
+}
+
+Functional char ToNumber(out u8 number): bool
+{
+    const asci = u8(this);
+
+    if (asci <= u8('0') || asci >= u8('9'))
+        return false;
+
+    number = asci - u8('0');
+    return true;
+}
+
+Functional str(uSize size): str
+{
+    return copy[size] "";
+}
+
+Functional static uSize  Max(): uSize { return (SYSTEM_BITS_AMOUNT ** 2) - 1; }
+
+Functional static u64 Max(): u64 { return (64 ** 2) - 1; }
+Functional static u32 Max(): u32 { return (32 ** 2) - 1; }
+Functional static u16 Max(): u16 { return (16 ** 2) - 1; }
+Functional static u8  Max(): u8  { return (8 ** 2) - 1; }
+
+Functional static uSize  Min(): uSize { return 0; }
+
+Functional static u64 Min(): u64 { return 0; }
+Functional static u32 Min(): u32 { return 0; }
+Functional static u16 Min(): u16 { return 0; }
+Functional static u8  Min(): u8  { return 0; }
+
+Functional static i64 Max(): i64 { return ((64 ** 2)/2) - 1; }
+Functional static i32 Max(): i32 { return ((32 ** 2)/2) - 1; }
+Functional static i16 Max(): i16 { return ((16 ** 2)/2) - 1; }
+Functional static i8  Max(): i8  { return ((8 ** 2)/2) - 1; }
+
+Functional static i64 Min(): i64 { return -((64 ** 2)/2); }
+Functional static i32 Min(): i32 { return -((32 ** 2)/2); }
+Functional static i16 Min(): i16 { return -((16 ** 2)/2); }
+Functional static i8  Min(): i8  { return -((8 ** 2)/2); }

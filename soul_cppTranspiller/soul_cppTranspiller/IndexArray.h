@@ -4,12 +4,12 @@
 class IndexArray : public SuperExpression
 {
 public:
-	std::string arrayName;
+	std::shared_ptr<SuperExpression> array;
 	std::shared_ptr<SuperExpression> index;
 
 	IndexArray() = default;
-	IndexArray(std::string& arrayName, std::shared_ptr<SuperExpression> index) 
-		: arrayName(arrayName), index(index)
+	IndexArray(std::shared_ptr<SuperExpression> array, std::shared_ptr<SuperExpression> index)
+		: array(array), index(index)
 	{
 	}
 
@@ -21,7 +21,7 @@ public:
 	std::string printToString() const override
 	{
 		std::stringstream ss;
-		ss << "IndexArray(array: " << arrayName << ", Index: " << index->printToString() << ")";
+		ss << "IndexArray(array: " << array->printToString() << ", Index: " << index->printToString() << ")";
 		return ss.str();
 	}
 	

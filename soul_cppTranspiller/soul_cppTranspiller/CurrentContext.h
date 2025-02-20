@@ -9,9 +9,21 @@
 struct CurrentContext
 {
 	enum class FuncRuleSet { invalid, default_, Functional };
+	struct MemberInfo 
+	{
+		std::string type = "<invalid>";
+		bool isAllowedToUsePrivate = false;
+
+		MemberInfo() = default;
+		MemberInfo(std::string type, bool isAllowedToUsePrivate)
+			: type(type), isAllowedToUsePrivate(isAllowedToUsePrivate)
+		{
+		}
+	};
 
 	ScopeIterator scope;
 	Nullable<ClassInfo> inClass;
+	Nullable<MemberInfo> parentOfCurrentMember;
 	std::map<std::string, TemplateType> currentTemplateTypes;
 	FuncRuleSet functionRuleSet = FuncRuleSet::default_;
 

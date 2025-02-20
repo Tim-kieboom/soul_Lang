@@ -10,6 +10,7 @@
 #include "BinairyExpression.h"
 #include "convertIndexArray.h"
 #include "convertExpression.h"
+#include "convertMemberExpression.h"
 
 using namespace std;
 
@@ -30,18 +31,12 @@ static inline Result<void> _isSymboolAllowed(string& symbool, MetaData& metaData
 
 	initializer_list<const char*> allowedSymbols;
 
-	if (toString(type) == "i32[]&")
-		int d = 0;
-
 	if (type.isRefrence())
 	{
-		Result<RawType> child = type.getTypeChild(iterator.currentLine);
+		Result<void> child = type.removeRefrences(iterator.currentLine);
 		if (child.hasError)
 			return child.error;
-
-		type = child.value();
 	}
-
 
 	if (type.isArray())
 	{
@@ -94,60 +89,13 @@ static inline shared_ptr<SuperExpression> _addCompountAssignment(const std::stri
 	return expression;
 }
 
-Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterator, MetaData& metaData, VarInfo* varInfo, CurrentContext& context)
+Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterator, std::shared_ptr<SuperExpression> setVariable, RawType& setVariableType, MetaData& metaData, VarInfo* varInfo, CurrentContext& context)
 {
 	BodyStatment_Result<Assignment> bodyResult;
-
-	Result<RawType> typeResult = getRawType_fromStringedRawType(varInfo->stringedRawType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
-	if (typeResult.hasError)
-		return typeResult.error;
-
-	RawType assignVar_type = typeResult.value();
-
 	string& token = iterator.currentToken;
-	if (!iterator.nextToken())
-		return ERROR_convertAssignment_outOfBounds(iterator);
-
 	string symbool = token;
-	Result<void> isAllowed = _isSymboolAllowed(symbool, metaData, varInfo, assignVar_type, iterator);
-	if (isAllowed.hasError)
-		return isAllowed.error;
 
-	std::shared_ptr<SuperExpression> setVariable;
-	if (symbool == "[")
-	{
-		if (!iterator.nextToken(/*steps:*/-1))
-			return ERROR_convertAssignment_outOfBounds(iterator);
-
-		Result<BodyStatment_Result<IndexArray>> indexResult = convertIndexArray(iterator, metaData, context);
-		if (indexResult.hasError)
-			return indexResult.error;
-
-		bodyResult.addToBodyResult(indexResult.value());
-
-		setVariable = indexResult.value().expression;
-
-		if (!iterator.nextToken())
-			return ERROR_convertAssignment_outOfBounds(iterator);
-
-		symbool = token;
-
-
-		Result<RawType> indexType = assignVar_type.getTypeChild(iterator.currentLine);
-		if (indexType.hasError)
-			return indexType.error;
-
-		assignVar_type = indexType.value();
-
-		if (!assignVar_type.isMutable)
-			return ErrorInfo("can not change a const value, var: \'" + indexResult.value().expression->printToString() + "\', type: \'" + toString(assignVar_type) + "\'", iterator.currentLine);
-	}
-	else
-	{
-		setVariable = make_shared<Variable>(Variable(varInfo->name));
-	}
-
-	isAllowed = _isSymboolAllowed(symbool, metaData, varInfo, assignVar_type, iterator);
+	Result<void> isAllowed = _isSymboolAllowed(symbool, metaData, varInfo, setVariableType, iterator);
 	if (isAllowed.hasError)
 		return isAllowed.error;
 
@@ -158,7 +106,7 @@ Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterato
 	{
 		varInfo->isAssigned = true;
 
-		if (assignVar_type.toDuckType() != DuckType::Number)
+		if (setVariableType.toDuckType() != DuckType::Number)
 			return ErrorInfo("invalid symbol after variable symbool: \'" + symbool + "\'", iterator.currentLine);
 
 		if (token != ";")
@@ -174,17 +122,17 @@ Result<BodyStatment_Result<Assignment>> convertAssignment(TokenIterator& iterato
 	}
 
 	RawType type;
-	bool shouldBeMutable = (assignVar_type.isMutable && assignVar_type.isRefrence());
-	Result<BodyStatment_Result<SuperExpression>> expressionResult = convertExpression(iterator, metaData, context, assignVar_type, {";"}, shouldBeMutable, &type);
+	bool shouldBeMutable = (setVariableType.isMutable && setVariableType.isRefrence());
+	Result<BodyStatment_Result<SuperExpression>> expressionResult = convertExpression(iterator, metaData, context, setVariableType, {";"}, shouldBeMutable, &type);
 	if (expressionResult.hasError)
 		return ErrorInfo("in assingment of Variable: \'" +varInfo->name+ "\'\n" + expressionResult.error.message, expressionResult.error.lineNumber);
 
 	varInfo->isAssigned = true;
 
-	if (assignVar_type.isArray() || assignVar_type.isRefrence() || assignVar_type.isPointer())
+	if (setVariableType.isArray() || setVariableType.isRefrence() || setVariableType.isPointer())
 	{
-		if (!type.isMutable && assignVar_type.isMutable)
-			return ErrorInfo("argument: \'" + toString(type) + "\' and argument: \'" + toString(assignVar_type) + "\' have diffrent mutability", iterator.currentLine);
+		if (!type.isMutable && setVariableType.isMutable)
+			return ErrorInfo("argument: \'" + toString(type) + "\' and argument: \'" + toString(setVariableType) + "\' have diffrent mutability", iterator.currentLine);
 	}
 
 	shared_ptr<SuperExpression> expression = _addCompountAssignment(symbool, varInfo->name, expressionResult.value().expression);

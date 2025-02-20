@@ -34,8 +34,9 @@ Result<ClassNode> convertClass(TokenIterator& iterator, MetaData& metaData)
 	classContext.scope.scope->emplace_back(Nesting());
 	classContext.inClass = Nullable<ClassInfo>(classInfo);
 
-	for (auto& field : classInfo.fields)
+	for (auto& kv : classInfo.fields)
 	{
+		auto& field = kv.second;
 		auto var = VarInfo(field.name, field.stringRawType);
 		var.isForwardDecl = true;
 		classContext.scope.getCurrentNesting().addVariable(var);

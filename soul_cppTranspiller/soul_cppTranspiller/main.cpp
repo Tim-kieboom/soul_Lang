@@ -2,14 +2,13 @@
 #include <string>
 #include <memory>
 #include <cstdio>
-#include <chrono>
+#include <time.h>
 #include <thread>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
 #include <unordered_map>
-
 #include "Token.h"
 #include "Result.h"
 #include "MetaData.h"
@@ -21,21 +20,24 @@
 
 using namespace std;
 
-void printFile(const string& file)
+struct RunOptions
 {
-    cout << "\n-------------- RawSourceFile --------------\n\n";
-    uint64_t lineCounter = 1;
-    vector<string> lines = string_split(file, '\n');
-    for (uint32_t i = 0; i < lines.size(); i += 2)
-        cout << lineCounter++ << ". " << lines.at(i) << '\n';
-}
+    bool printTokenizer = true;
+    bool printAST = true;
+};
 
-void printTokenizer(const string& sourceFile, const vector<Token>& tokens, const unordered_map<string, C_strPair>& constStringStore)
+void printTokenizer(const string& sourceFile, const vector<Token>& tokens, const unordered_map<string, C_strPair>& constStringStore, clock_t start, clock_t end)
 {
     cout << "\n-------------- reduced SourceFile --------------\n\n";
     vector<string> lines = string_split(sourceFile, '\n');
     for (uint32_t i = 0; i < lines.size(); i += 2)
-        cout << lines.at(i) << '\n';
+    {
+        string& line = lines.at(i);
+        if (line == " ")
+            continue;
+
+        cout << line << '\n';
+    }
 
     cout << "\n-------------- Tokens --------------\n\n";
     for (const Token& token : tokens)
@@ -45,52 +47,15 @@ void printTokenizer(const string& sourceFile, const vector<Token>& tokens, const
     for (const auto& pair : constStringStore)
         cout << pair.second.name << " = " << pair.second.value << "\n";
     cout << endl;
+
+    cout << "\n----------------------------------------------------------\n\n";
+    cout << "tokenize:\n";
+        cout << "\treduced file length: " << sourceFile.size() << " chars" << '\n';
+        cout << "\tamount of tokens: " << tokens.size() << " tokens" << '\n';
+        cout << "\ttokenize time: " << (end - start) << "ms" << '\n';
+
+    cout << "\n----------------------------------------------------------\n" << endl;
 }
-
-#ifdef _WIN32
-    #define popen _popen
-    #define pclose _pclose
-#elif defined(__APPLE__) || defined(__linux__)
-    #include <cstdio>
-#else
-    #error "Unsupported platform"
-#endif
-
-static string execAndPrint(const char* cmd)
-{
-    if (cmd == nullptr)
-        return string();
-
-    string result;
-
-    try
-    {
-        vector<char> buffer(128);
-        unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-        if (!pipe)
-            throw std::runtime_error("popen() failed!");
-
-        while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr)
-        {
-            result += buffer.data();
-            if (result.size() > 1000000) // Arbitrary limit to prevent excessive memory usage
-            {  
-                throw std::runtime_error("Output too large");
-            }
-        }
-    }
-    catch (const std::exception ex)
-    {
-        return "execute: " + string(cmd) + ", failed" + string(ex.what());
-    }
-
-    return result;
-}
-
-//constexpr const char* test_Path = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_cppTranspiller\\Source.soul";
-constexpr const char* test_Path = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_cppTranspiller\\quickTest.soul";
-constexpr const char* test_outputPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soulOutput\\out.cpp";
-//constexpr const char* test_hardCodedPath = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_hardCodedFunctions\\soul_hardCodedFunctions.cpp";
 
 static inline void _tokenizerGetErrorLine(string& sourceFile, Result<vector<Token>>& tokensResult)
 {
@@ -103,39 +68,12 @@ static inline void _tokenizerGetErrorLine(string& sourceFile, Result<vector<Toke
     cout << "tokenizeError: " << tokensResult.error.message << ", charIndex: " << charNumber << ", prediced lineNumber: " << lineNumber;
 }
 
-int main(int argc, char* argv[])
+pair<vector<Token>, MetaData> tokenize(string& sourceFile, RunOptions& option)
 {
-    const char* path;
-    const char* outputPath = "out.cpp";
-    const char* hardCodedPath = "soul_hardCodedFunctions.cpp";
-
-    if (argc == 1)
-    {
-        path = test_Path;
-        outputPath = test_outputPath;
-        //hardCodedPath = test_hardCodedPath;
-    }
-    else
-    {
-        path = argv[1];
-    }
-
-
-
-    int64_t lineCount;
-    int64_t libLineCount;
-    string sourceFile = readFile_andStoreLine(path, lineCount);
-    //string hardCodeLib = readFile(hardCodedPath, libLineCount);
-    if (lineCount <= 0 /*|| libLineCount <= 0*/)
-    {
-        cout << "!!error!! readFile() lineCount: " << lineCount << ", libLineCount: " /*<< libLineCount*/ << endl;
-        exit(1);
-    }
-
-    //printFile(sourceFile);
-
     MetaData metaData;
+    clock_t start = clock();
     Result<vector<Token>> tokensResult = tokenize(/*out*/ sourceFile, /*out*/metaData);
+    clock_t end = clock();
     if (tokensResult.hasError)
     {
         _tokenizerGetErrorLine(sourceFile, tokensResult);
@@ -143,40 +81,117 @@ int main(int argc, char* argv[])
     }
     vector<Token> tokens = tokensResult.value();
 
-    //printTokenizer(sourceFile, tokens, metaData.c_strStore);
+    if(option.printTokenizer)
+        printTokenizer(sourceFile, tokens, metaData.c_strStore, start, end);
+    
+    return pair<vector<Token>, MetaData>(move(tokens), metaData);
+}
 
-#ifdef NDEBUG
-    try
+void transpile(vector<Token>& tokens, MetaData& metaData, RunOptions& option)
+{
+    clock_t start;
+    clock_t end;
+
+    if (option.printAST)
+        cout << "\n----------------------------- Abstract_Syntax_Tree -----------------------------\n\n";
+
+    start = clock();
+    Result<SyntaxTree> syntaxTreeResult = getAbstractSyntaxTree(TokenIterator(tokens), metaData);
+    end = clock();
+    if (syntaxTreeResult.hasError)
     {
-#endif
-        Result<SyntaxTree> syntaxTreeResult = getAbstractSyntaxTree(TokenIterator(tokens), metaData);
-        if (syntaxTreeResult.hasError)
-        {
-            cout << "transpillerError: \n" << syntaxTreeResult.error.message << ", onLine: " << syntaxTreeResult.error.lineNumber;
-            exit(1);
-        }
+        cout << "transpillerError: \n" << syntaxTreeResult.error.message << ", onLine: " << syntaxTreeResult.error.lineNumber;
+        exit(1);
+    }
 
-        SyntaxTree syntaxTree = move(syntaxTreeResult.value());
+    SyntaxTree syntaxTree = move(syntaxTreeResult.value());
+    if (option.printAST)
+    {
         syntaxTree.print();
+        cout << "\n----------------------------------------------------------\n\n";
+        cout << "getAbstractSyntaxTree:\n";
+            cout << "\tsyntaxTree amount of globalVariables:\t" << syntaxTree.globalVariables.size() << '\n';
+            cout << "\tsyntaxTree amount of funcs/classes:\t" << syntaxTree.funcsAndClasses.size() << '\n';
+            cout << "\tconvert to syntaxTree time:\t\t" << (end - start) << "ms" << '\n';
 
-        Result<string> cppFile = convertToCpp(syntaxTree, metaData);
-        if (cppFile.hasError)
-        {
-            cout << "cppConverterError: \n" << cppFile.error.message << ", onLine: " << cppFile.error.lineNumber;
-            exit(1);
-        }
+        cout << "\n----------------------------------------------------------\n" << endl;
+    }
+
+    start = clock();
+    Result<string> cppFile = convertToCpp(syntaxTree, metaData);
+    end = clock();
+    if (cppFile.hasError)
+    {
+        cout << "cppConverterError: \n" << cppFile.error.message << ", onLine: " << cppFile.error.lineNumber;
+        exit(1);
+    }
+
+    if (option.printAST)
+    {
 
         cout << "\n----------------------------- CPP_FILE -----------------------------\n\n";
         cout << cppFile.value();
 
-        //ofstream fileWriter(outputPath);
-        //fileWriter << "#include \"soul_hardCodedFunctions.h\"" << cppFile.value();
-        //fileWriter.close();
+        cout << "\n----------------------------------------------------------\n\n";
+            cout << "getAbstractSyntaxTree:\n";
+            cout << "convert to cpp:\t\t" << (end - start) << "ms" << endl;
+        cout << "\n----------------------------------------------------------\n" << endl;
+    }
+    //ofstream fileWriter(outputPath);
+    //fileWriter << "#include \"soul_hardCodedFunctions.h\"" << cppFile.value();
+    //fileWriter.close();
 
-        //string execCppCodeCommand = "g++ " + string(outputPath);
-        //execAndPrint(execCppCodeCommand.c_str());
-        //string output = execAndPrint("a.exe");
-        //cout << output << endl;
+    //string execCppCodeCommand = "g++ " + string(outputPath);
+    //execAndPrint(execCppCodeCommand.c_str());
+    //string output = execAndPrint("a.exe");
+    //cout << output << endl;
+
+}
+
+const char* selectArg(int argc, char* argv[], RunOptions& option)
+{
+    constexpr const char* test_Path = "C:\\Users\\tim_k\\OneDrive\\Documenten\\GitHub\\hobby\\soul_Lang\\soul_cppTranspiller\\soul_cppTranspiller\\quickTest.soul";
+
+    const char* path;
+    const char* outputPath = "out.cpp";
+
+    if (argc == 1)
+    {
+        path = test_Path;
+    }
+    else
+    {
+        path = argv[1];
+    }
+
+    return path;
+}
+
+int main(int argc, char* argv[])
+{
+#ifdef NDEBUG
+    try
+    {
+#endif
+
+    RunOptions option;
+    const char* path = selectArg(argc, argv, /*out*/option);
+
+    int64_t lineCount;
+    string sourceFile = readFile_andStoreLine(path, /*out*/lineCount);
+    if (lineCount <= 0)
+    {
+        cout << "!!error!! readFile() lineCount: " << lineCount << endl;
+        exit(1);
+    }
+
+    //printFile(sourceFile);
+
+    pair<vector<Token>, MetaData> tokenResult = tokenize(sourceFile, option);
+    vector<Token>& tokens = tokenResult.first;
+    MetaData& metaData = tokenResult.second;
+
+    transpile(tokens, metaData, option);
 
 #ifdef NDEBUG
     }

@@ -20,6 +20,12 @@ static inline bool isVarVariable(RawType* type)
 
 static inline Result<BodyStatment_Result<InitializeVariable>> _convertInitVariable(TokenIterator& iterator, MetaData& metaData, RawType* type, CurrentContext& context, bool isInGlobalScope, bool isVariableConstant)
 {
+	if (type != nullptr)
+	{
+		if (type->toPrimitiveType() == PrimitiveType::none)
+			return ErrorInfo("can not use 'none' as variable type", iterator.currentLine);
+	}
+
 	string& token = iterator.currentToken;
 	vector<shared_ptr<SuperStatement>> statments;
 	statments.reserve(2);
@@ -94,6 +100,10 @@ static inline Result<BodyStatment_Result<InitializeVariable>> _convertInitVariab
 
 		assignType.isMutable = !isVariableConstant;
 		varResult.value()->stringedRawType = toString(assignType);
+		varResult.value()->isAssigned = true;
+
+		if (assignType.toPrimitiveType() == PrimitiveType::none)
+			return ErrorInfo("can not use 'none' as variable type", iterator.currentLine);
 
 		auto setVariable = make_shared<Variable>(Variable(varName));
 		shared_ptr<Assignment> assignment = make_shared<Assignment>
@@ -105,17 +115,17 @@ static inline Result<BodyStatment_Result<InitializeVariable>> _convertInitVariab
 		bodyResult.expression = make_shared<InitializeVariable>(InitializeVariable(varResult.value()->stringedRawType, varName, assignment));
 		return bodyResult;
 	}
+	else
+	{
 
-	if (!iterator.nextToken(/*steps:*/-1))
-		return ERROR_convertInitVariable_outOfBounds(iterator);
+		Result<BodyStatment_Result<Assignment>> assignResult = convertAssignment(iterator, make_shared<Variable>(Variable(varName)), *type, metaData, varResult.value(), context);
+		if (assignResult.hasError)
+			return assignResult.error;
 
-	Result<BodyStatment_Result<Assignment>> assignResult = convertAssignment(iterator, metaData, varResult.value(), context);
-	if (assignResult.hasError)
-		return assignResult.error;
-
-	bodyResult.addToBodyResult(assignResult.value());
-	bodyResult.expression = make_shared<InitializeVariable>(InitializeVariable(varResult.value()->stringedRawType, varName, assignResult.value().expression));
-	return bodyResult;
+		bodyResult.addToBodyResult(assignResult.value());
+		bodyResult.expression = make_shared<InitializeVariable>(InitializeVariable(varResult.value()->stringedRawType, varName, assignResult.value().expression));
+		return bodyResult;
+	}
 }
 
 Result<BodyStatment_Result<InitializeVariable>> convertInitVariable_inGlobal(TokenIterator& iterator, MetaData& metaData, RawType& type)

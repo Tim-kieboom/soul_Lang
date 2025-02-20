@@ -43,6 +43,7 @@
         "iostream": "cpp",
         "string_view": "cpp",
         "cassert": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "map": "cpp"
     }
 }

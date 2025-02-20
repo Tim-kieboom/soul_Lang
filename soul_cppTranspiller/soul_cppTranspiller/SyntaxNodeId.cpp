@@ -27,11 +27,12 @@ bool isSyntaxTree_Expression(SyntaxNodeId id)
 			id == SyntaxNodeId::Increment ||
 			id == SyntaxNodeId::IndexArray ||
 			id == SyntaxNodeId::FunctionCall ||
-			id == SyntaxNodeId::DefineTemplateTypes ||
 			id == SyntaxNodeId::StringLiteral ||
 			id == SyntaxNodeId::EmptyExpresion ||
 			id == SyntaxNodeId::ConstructArray ||
 			id == SyntaxNodeId::CopyExpression ||
 			id == SyntaxNodeId::RangeExpression ||
-			id == SyntaxNodeId::BinairyExpression;
+			id == SyntaxNodeId::MemberExpression ||
+			id == SyntaxNodeId::BinairyExpression ||
+			id == SyntaxNodeId::DefineTemplateTypes;
 }

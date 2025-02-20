@@ -16,7 +16,7 @@ public:
 	}
 
 	Nullable()
-		: isNull_(true), value_({})
+		: isNull_(true), value_()
 	{
 	}
 

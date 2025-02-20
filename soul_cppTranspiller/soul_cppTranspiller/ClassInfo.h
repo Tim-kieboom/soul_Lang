@@ -39,8 +39,8 @@ struct MethodeDecleration
 struct ClassInfo
 {
 	std::string name;
-	std::vector<FieldsInfo> fields;
-	std::vector<MethodeDecleration> methodes;
+	std::map<std::string, FieldsInfo> fields;
+	std::map<std::string, MethodeDecleration> methodes;
 	std::map<std::string, TemplateType> templateTypes;
 
 	ClassInfo() = default;
@@ -51,23 +51,38 @@ struct ClassInfo
 
 	void addMethode(MethodeDecleration& methode)
 	{
-		methodes.push_back(methode);
+		methodes[methode.methodeName] = methode;
 	}
 
 	void addField(FieldsInfo field)
 	{
-		fields.push_back(field);
+		fields[field.name] = field;
 	}
 
-	Result<FieldsInfo> isField(std::string& name, uint32_t currentLine)
+	Result<FieldsInfo> getField(std::string& name, uint32_t currentLine)
 	{
-		for (FieldsInfo& field : fields)
-		{
-			if (field.name == name)
-				return field;
-		}
+		if (!isField(name))
+			return ErrorInfo("isNotField", currentLine);
 
-		return ErrorInfo("isNotField", currentLine);
+		return fields[name];
+	}
+
+	Result<MethodeDecleration> getMethode(std::string& name, std::string& className, uint32_t currentLine)
+	{
+		if (!isMethode(name, className))
+			return ErrorInfo("isNotMethode", currentLine);
+
+		return methodes[className + "#" + name];
+	}
+
+	bool isField(std::string& name)
+	{
+		return fields.find(name) != fields.end();
+	}
+
+	bool isMethode(std::string& name, std::string& className)
+	{
+		return methodes.find(className + "#" + name) != methodes.end();
 	}
 
 	bool isEqual(const ClassInfo& other) const

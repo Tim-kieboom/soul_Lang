@@ -144,6 +144,7 @@
     <ClCompile Include="convertIndexArray.cpp" />
     <ClCompile Include="convertInitializeVariable_ToCpp.cpp" />
     <ClCompile Include="convertInitVariable.cpp" />
+    <ClCompile Include="convertMemberExpression.cpp" />
     <ClCompile Include="convertReturnStatment.cpp" />
     <ClCompile Include="convertToCpp.cpp" />
     <ClCompile Include="convertWhileStatment.cpp" />
@@ -174,6 +175,8 @@
     <ClCompile Include="TypeWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="math.soul" />
+    <None Include="primTypes.soul" />
     <None Include="quickTest.soul" />
     <None Include="Source.soul" />
   </ItemGroup>
@@ -191,6 +194,7 @@
     <ClInclude Include="convertCompileConstVariable.h" />
     <ClInclude Include="convertCompileConstVariable_ToCpp.h" />
     <ClInclude Include="convertInitializeVariable_ToCpp.h" />
+    <ClInclude Include="convertMemberExpression.h" />
     <ClInclude Include="convert_Cpp_FuncDeclaration.h" />
     <ClInclude Include="convertExpression.h" />
     <ClInclude Include="convertBody.h" />
@@ -224,6 +228,7 @@
     <ClInclude Include="Increment.h" />
     <ClInclude Include="IndexArray.h" />
     <ClInclude Include="internalFuntions.h" />
+    <ClInclude Include="MemberExpression.h" />
     <ClInclude Include="Nesting.h" />
     <ClInclude Include="Nullable.h" />
     <ClInclude Include="PrimitiveType.h" />

@@ -123,6 +123,11 @@ public:
 		return _tryGetMethode(methodeName, thisClass, context, args, optionals, funcInfo, currentLine, error, funcInfoIndex, false);
 	}
 
+	std::string getMethodeMapEntryName(const std::string& methodeName, const ClassInfo& thisClass)
+	{
+		return thisClass.name + "#" + methodeName;
+	}
+
 private:
 	bool _tryGetMethode(const std::string& methodeName, ClassInfo& thisClass, CurrentContext& context, std::vector<ArgumentInfo>& args, std::vector<ArgumentInfo>& optionals, FuncDeclaration& funcInfo, int64_t currentLine, ErrorInfo& error, uint64_t* funcInfoIndex, bool isCtor = false)
 	{
@@ -161,11 +166,6 @@ private:
 			*funcInfoIndex = i;
 
 		return false;
-	}
-
-	std::string getMethodeMapEntryName(const std::string& methodeName, const ClassInfo& thisClass)
-	{
-		return thisClass.name + "#" + methodeName;
 	}
 
 	void sortTemplateFunctionsLast(const std::string& funcName)

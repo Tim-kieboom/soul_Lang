@@ -381,6 +381,7 @@ Result<SyntaxTree> getAbstractSyntaxTree(TokenIterator&& iterator, MetaData& met
     iterator.i = beginI;
     while (iterator.nextToken())
     {
+
         map<string, TemplateType> dummyHashMap;
         typeResult = getRawType(iterator, metaData.classStore, dummyHashMap);
 

@@ -51,20 +51,12 @@ static inline Result<BodyStatment_Result<SuperExpression>> getIndex(TokenIterato
     return index;
 }
 
-Result<BodyStatment_Result<IndexArray>> convertIndexArray(TokenIterator& iterator, MetaData& metaData, CurrentContext& context)
+Result<BodyStatment_Result<IndexArray>> convertIndexArray(TokenIterator& iterator, shared_ptr<SuperExpression>& arrayExpression, MetaData& metaData, CurrentContext& context)
 {
     static const shared_ptr<SuperExpression> emptyExpression = make_shared<EmptyExpression>(EmptyExpression());
     BodyStatment_Result<IndexArray> bodyResult;
 
     string& token = iterator.currentToken;
-    string arrayName = token;
-
-    Result<VarInfo*> isArrayValidVar = context.scope.tryGetVariable_fromCurrent(arrayName, metaData.globalScope, iterator.currentLine);
-    if (isArrayValidVar.hasError)
-        return isArrayValidVar.error;
-
-    if (!iterator.nextToken())
-        return ERROR_IndexArray_outOfRange(iterator);
 
     if(token != "[")
         return ErrorInfo("\'" +token+ "\' should be '['", iterator.currentLine);
@@ -132,6 +124,6 @@ Result<BodyStatment_Result<IndexArray>> convertIndexArray(TokenIterator& iterato
     if (token != "]")
         return ErrorInfo("\'" + token + "\' should be ']'", iterator.currentLine);
 
-    bodyResult.expression = make_shared<IndexArray>(IndexArray(arrayName, index));
+    bodyResult.expression = make_shared<IndexArray>(IndexArray(arrayExpression, index));
     return bodyResult;
 }

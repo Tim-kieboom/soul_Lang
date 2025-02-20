@@ -134,45 +134,27 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 	{
 		BodyStatment_Result<SuperStatement> res;
 
-		string varName;
-		if (!iterator.peekToken(varName))
+		if (!iterator.nextToken())
 			return ERROR_convertBody_outOfBounds(funcInfo, iterator);
 
+		string varName = token;
 		varResult = context.scope.tryGetVariable_fromCurrent(varName, metaData.globalScope, iterator.currentLine);
 		if (varResult.hasError)
 			return varResult.error;
 
-		string nextToken;
-		if (!iterator.peekToken(nextToken, /*steps:*/2))
+		RawType shouldBeNumber = RawType("f64", true);
+		Result<BodyStatment_Result<SuperExpression>> variableExpression = getVariableExpression(iterator, metaData, context, varResult, &shouldBeNumber, nullptr, true);
+		if (variableExpression.hasError)
+			return variableExpression.error;
+
+		auto increment = make_shared<Increment>(Increment(variableExpression.value().expression, true, (token == "--"), 1));
+
+		res.addToBodyResult(variableExpression.value());
+		res.expression = make_shared<Assignment>(Assignment(variableExpression.value().expression, increment));
+
+		if (!iterator.nextToken())
 			return ERROR_convertBody_outOfBounds(funcInfo, iterator);
 
-		shared_ptr<SuperExpression> setVariable;
-		if(nextToken == "[")
-		{
-			if (!iterator.nextToken())
-				return ERROR_convertBody_outOfBounds(funcInfo, iterator);
-
-			Result<BodyStatment_Result<IndexArray>> index = convertIndexArray(iterator, metaData, context);
-			if (index.hasError)
-				return index.error;
-
-			res.addToBodyResult(index.value());
-			setVariable = index.value().expression;
-
-			if (!iterator.nextToken())
-				return ERROR_convertBody_outOfBounds(funcInfo, iterator);
-		}
-		else
-		{
-			setVariable = make_shared<Variable>(Variable(varName));
-		}
-
-		Result<BodyStatment_Result<SuperExpression>> increment = convertExpression(iterator, metaData, context, { ";" }, true);
-		if (increment.hasError)
-			return increment.error;
-
-		res.expression = make_shared<Assignment>(Assignment(setVariable, increment.value().expression));
-		res.addToBodyResult(increment.value());
 		return res;
 	}
 	else if (isType(typeResult))
@@ -196,7 +178,19 @@ Result<BodyStatment_Result<SuperStatement>> convertBodyElement(TokenIterator& it
 	}
 	else if (isVariable(varResult))
 	{
-		Result<BodyStatment_Result<Assignment>> assignResult = convertAssignment(iterator, metaData, varResult.value(), context);
+		Result<RawType> varTypeResult = getRawType_fromStringedRawType(varResult.value()->stringedRawType, metaData.classStore, context.currentTemplateTypes, iterator.currentLine);
+		if (varTypeResult.hasError)
+			return varTypeResult.error;
+
+		RawType& varType = varTypeResult.value();
+		Result<BodyStatment_Result<SuperExpression>> variableExpression = getVariableExpression(iterator, metaData, context, varResult, nullptr, &varType, true);
+		if (variableExpression.hasError)
+			return variableExpression.error;
+
+		if (!iterator.nextToken())
+			return ERROR_convertBody_outOfBounds(funcInfo, iterator);
+
+		Result<BodyStatment_Result<Assignment>> assignResult = convertAssignment(iterator, variableExpression.value().expression, varType, metaData, varResult.value(), context);
 		if (assignResult.hasError)
 			return assignResult.error;
 
@@ -309,7 +303,7 @@ Result<shared_ptr<BodyNode>> convertBody(TokenIterator& iterator, MetaData& meta
 	uint32_t openCurlyBracketCounter = 0;
 	while (iterator.nextToken())
 	{
-		if (iterator.currentLine == 300)
+		if (iterator.currentLine == 306)
 			int d = 0;
 
 		Result<BodyStatment_Result<SuperStatement>> bodyElementResult = convertBodyElement(iterator, metaData, funcInfo, context, openCurlyBracketCounter, parentNode);

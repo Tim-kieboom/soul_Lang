@@ -200,10 +200,13 @@ static inline Result<string> _convertIndexArray(shared_ptr<SuperExpression> expr
 
 	stringstream ss;
 	shared_ptr<IndexArray> indexArray = dynamic_pointer_cast<IndexArray>(expression);
-	string& arrayName = indexArray->arrayName;
+	shared_ptr<SuperExpression>& array = indexArray->array;
 	shared_ptr<SuperExpression>& index = indexArray->index;
 
-	ss << arrayName;
+	Result<string> arrayCpp = SuperExpression_ToCpp(array, metaData, context);
+	if (arrayCpp.hasError)
+		return arrayCpp.error;
+	ss << arrayCpp.value();
 
 	if(index->getId() == SyntaxNodeId::RangeExpression)
 	{
